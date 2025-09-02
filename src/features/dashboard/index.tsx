@@ -193,15 +193,15 @@ export function Dashboard() {
 const topNav = [
   {
     title: 'Overview',
-    href: 'dashboard/overview',
+    href: '/',
     isActive: true,
     disabled: false,
   },
   {
     title: 'Customers',
-    href: 'dashboard/customers',
-    isActive: false,
-    disabled: true,
+    href: 'dashboard/customer',
+    isActive: true,
+    disabled: false,
   },
   {
     title: 'Products',
