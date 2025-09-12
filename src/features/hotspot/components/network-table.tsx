@@ -1,3 +1,4 @@
+// hotspot-table
 "use client"
 
 import { useState } from "react"
@@ -7,9 +8,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronDown, Power, PowerOff, ChevronRight } from "lucide-react"
-import { ConfirmationModal } from "./modals/confirmation-modal"
-import { EditUserModal } from "./modals/edit-user-modal"
-import { EditProfileModal } from "./modals/edit-profile-modal"
+import { ConfirmationModal } from "./dialogs/confirmation-modal"
+import { EditUserModal } from "./dialogs/edit-user-modal"
+import { EditProfileModal } from "./dialogs/edit-profile-modal"
 
 interface NetworkTableProps {
   activeTab: string

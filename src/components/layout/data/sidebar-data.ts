@@ -21,6 +21,7 @@ import {
   AudioWaveform,
   Command,
   GalleryVerticalEnd,
+  Wifi,
 } from 'lucide-react'
 import { ClerkLogo } from '@/assets/clerk-logo'
 import { useAuthStore } from '@/stores/auth-store'
@@ -97,6 +98,11 @@ export const useSidebarData = (): SidebarData => {
             title: 'Mikrotik',
             url: '/mikrotik',
             icon: Monitor,
+          },
+          {
+            title: 'Hotspot',
+            url: '/hotspot/server',
+            icon: Wifi,
           },
           {
             title: 'Secured by Clerk',

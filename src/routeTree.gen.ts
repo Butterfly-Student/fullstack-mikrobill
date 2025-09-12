@@ -41,6 +41,12 @@ import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
+import { Route as AuthenticatedHotspotUsersNonActiveRouteImport } from './routes/_authenticated/hotspot/users-non-active'
+import { Route as AuthenticatedHotspotUsersActiveRouteImport } from './routes/_authenticated/hotspot/users-active'
+import { Route as AuthenticatedHotspotUsersRouteImport } from './routes/_authenticated/hotspot/users'
+import { Route as AuthenticatedHotspotUserProfilesRouteImport } from './routes/_authenticated/hotspot/user-profiles'
+import { Route as AuthenticatedHotspotServerRouteImport } from './routes/_authenticated/hotspot/server'
+import { Route as AuthenticatedHotspotHostsRouteImport } from './routes/_authenticated/hotspot/hosts'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedDashboardProductRouteImport } from './routes/_authenticated/dashboard/product'
 import { Route as AuthenticatedDashboardCustomerRouteImport } from './routes/_authenticated/dashboard/customer'
@@ -213,6 +219,42 @@ const AuthenticatedSettingsAccountRoute =
     path: '/account',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedHotspotUsersNonActiveRoute =
+  AuthenticatedHotspotUsersNonActiveRouteImport.update({
+    id: '/hotspot/users-non-active',
+    path: '/hotspot/users-non-active',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUsersActiveRoute =
+  AuthenticatedHotspotUsersActiveRouteImport.update({
+    id: '/hotspot/users-active',
+    path: '/hotspot/users-active',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUsersRoute =
+  AuthenticatedHotspotUsersRouteImport.update({
+    id: '/hotspot/users',
+    path: '/hotspot/users',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUserProfilesRoute =
+  AuthenticatedHotspotUserProfilesRouteImport.update({
+    id: '/hotspot/user-profiles',
+    path: '/hotspot/user-profiles',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotServerRoute =
+  AuthenticatedHotspotServerRouteImport.update({
+    id: '/hotspot/server',
+    path: '/hotspot/server',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotHostsRoute =
+  AuthenticatedHotspotHostsRouteImport.update({
+    id: '/hotspot/hosts',
+    path: '/hotspot/hosts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
@@ -250,6 +292,12 @@ export interface FileRoutesByFullPath {
   '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -283,6 +331,12 @@ export interface FileRoutesByTo {
   '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -321,6 +375,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/_authenticated/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/_authenticated/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/_authenticated/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/_authenticated/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/_authenticated/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/_authenticated/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -358,6 +418,12 @@ export interface FileRouteTypes {
     | '/dashboard/customer'
     | '/dashboard/product'
     | '/errors/$error'
+    | '/hotspot/hosts'
+    | '/hotspot/server'
+    | '/hotspot/user-profiles'
+    | '/hotspot/users'
+    | '/hotspot/users-active'
+    | '/hotspot/users-non-active'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -391,6 +457,12 @@ export interface FileRouteTypes {
     | '/dashboard/customer'
     | '/dashboard/product'
     | '/errors/$error'
+    | '/hotspot/hosts'
+    | '/hotspot/server'
+    | '/hotspot/user-profiles'
+    | '/hotspot/users'
+    | '/hotspot/users-active'
+    | '/hotspot/users-non-active'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -428,6 +500,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/customer'
     | '/_authenticated/dashboard/product'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/hotspot/hosts'
+    | '/_authenticated/hotspot/server'
+    | '/_authenticated/hotspot/user-profiles'
+    | '/_authenticated/hotspot/users'
+    | '/_authenticated/hotspot/users-active'
+    | '/_authenticated/hotspot/users-non-active'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
@@ -687,6 +765,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/hotspot/users-non-active': {
+      id: '/_authenticated/hotspot/users-non-active'
+      path: '/hotspot/users-non-active'
+      fullPath: '/hotspot/users-non-active'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersNonActiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/users-active': {
+      id: '/_authenticated/hotspot/users-active'
+      path: '/hotspot/users-active'
+      fullPath: '/hotspot/users-active'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersActiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/users': {
+      id: '/_authenticated/hotspot/users'
+      path: '/hotspot/users'
+      fullPath: '/hotspot/users'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/user-profiles': {
+      id: '/_authenticated/hotspot/user-profiles'
+      path: '/hotspot/user-profiles'
+      fullPath: '/hotspot/user-profiles'
+      preLoaderRoute: typeof AuthenticatedHotspotUserProfilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/server': {
+      id: '/_authenticated/hotspot/server'
+      path: '/hotspot/server'
+      fullPath: '/hotspot/server'
+      preLoaderRoute: typeof AuthenticatedHotspotServerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/hosts': {
+      id: '/_authenticated/hotspot/hosts'
+      path: '/hotspot/hosts'
+      fullPath: '/hotspot/hosts'
+      preLoaderRoute: typeof AuthenticatedHotspotHostsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
@@ -740,6 +860,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardCustomerRoute: typeof AuthenticatedDashboardCustomerRoute
   AuthenticatedDashboardProductRoute: typeof AuthenticatedDashboardProductRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedHotspotHostsRoute: typeof AuthenticatedHotspotHostsRoute
+  AuthenticatedHotspotServerRoute: typeof AuthenticatedHotspotServerRoute
+  AuthenticatedHotspotUserProfilesRoute: typeof AuthenticatedHotspotUserProfilesRoute
+  AuthenticatedHotspotUsersRoute: typeof AuthenticatedHotspotUsersRoute
+  AuthenticatedHotspotUsersActiveRoute: typeof AuthenticatedHotspotUsersActiveRoute
+  AuthenticatedHotspotUsersNonActiveRoute: typeof AuthenticatedHotspotUsersNonActiveRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
@@ -756,6 +882,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardCustomerRoute: AuthenticatedDashboardCustomerRoute,
   AuthenticatedDashboardProductRoute: AuthenticatedDashboardProductRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedHotspotHostsRoute: AuthenticatedHotspotHostsRoute,
+  AuthenticatedHotspotServerRoute: AuthenticatedHotspotServerRoute,
+  AuthenticatedHotspotUserProfilesRoute: AuthenticatedHotspotUserProfilesRoute,
+  AuthenticatedHotspotUsersRoute: AuthenticatedHotspotUsersRoute,
+  AuthenticatedHotspotUsersActiveRoute: AuthenticatedHotspotUsersActiveRoute,
+  AuthenticatedHotspotUsersNonActiveRoute:
+    AuthenticatedHotspotUsersNonActiveRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,

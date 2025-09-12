@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createServerRootRoute } from '@tanstack/react-start/server'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -31,6 +33,7 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedMikrotikIndexRouteImport } from './routes/_authenticated/mikrotik/index'
 import { Route as AuthenticatedHotspotIndexRouteImport } from './routes/_authenticated/hotspot/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authenticated/apps/index'
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
@@ -40,7 +43,18 @@ import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
+import { Route as AuthenticatedHotspotUsersNonActiveRouteImport } from './routes/_authenticated/hotspot/users-non-active'
+import { Route as AuthenticatedHotspotUsersActiveRouteImport } from './routes/_authenticated/hotspot/users-active'
+import { Route as AuthenticatedHotspotUsersRouteImport } from './routes/_authenticated/hotspot/users'
+import { Route as AuthenticatedHotspotUserProfilesRouteImport } from './routes/_authenticated/hotspot/user-profiles'
+import { Route as AuthenticatedHotspotServerRouteImport } from './routes/_authenticated/hotspot/server'
+import { Route as AuthenticatedHotspotHostsRouteImport } from './routes/_authenticated/hotspot/hosts'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
+import { Route as AuthenticatedDashboardProductRouteImport } from './routes/_authenticated/dashboard/product'
+import { Route as AuthenticatedDashboardCustomerRouteImport } from './routes/_authenticated/dashboard/customer'
+import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
+
+const rootServerRouteImport = createServerRootRoute()
 
 const ClerkRouteRoute = ClerkRouteRouteImport.update({
   id: '/clerk',
@@ -154,6 +168,12 @@ const AuthenticatedHelpCenterIndexRoute =
     path: '/help-center/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardIndexRoute =
+  AuthenticatedDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedChatsIndexRoute = AuthenticatedChatsIndexRouteImport.update({
   id: '/chats/',
   path: '/chats/',
@@ -204,12 +224,65 @@ const AuthenticatedSettingsAccountRoute =
     path: '/account',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedHotspotUsersNonActiveRoute =
+  AuthenticatedHotspotUsersNonActiveRouteImport.update({
+    id: '/hotspot/users-non-active',
+    path: '/hotspot/users-non-active',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUsersActiveRoute =
+  AuthenticatedHotspotUsersActiveRouteImport.update({
+    id: '/hotspot/users-active',
+    path: '/hotspot/users-active',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUsersRoute =
+  AuthenticatedHotspotUsersRouteImport.update({
+    id: '/hotspot/users',
+    path: '/hotspot/users',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotUserProfilesRoute =
+  AuthenticatedHotspotUserProfilesRouteImport.update({
+    id: '/hotspot/user-profiles',
+    path: '/hotspot/user-profiles',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotServerRoute =
+  AuthenticatedHotspotServerRouteImport.update({
+    id: '/hotspot/server',
+    path: '/hotspot/server',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedHotspotHostsRoute =
+  AuthenticatedHotspotHostsRouteImport.update({
+    id: '/hotspot/hosts',
+    path: '/hotspot/hosts',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedErrorsErrorRoute =
   AuthenticatedErrorsErrorRouteImport.update({
     id: '/errors/$error',
     path: '/errors/$error',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDashboardProductRoute =
+  AuthenticatedDashboardProductRouteImport.update({
+    id: '/dashboard/product',
+    path: '/dashboard/product',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardCustomerRoute =
+  AuthenticatedDashboardCustomerRouteImport.update({
+    id: '/dashboard/customer',
+    path: '/dashboard/customer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
+  id: '/api/users',
+  path: '/api/users',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -226,7 +299,15 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
+  '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -236,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/hotspot': typeof AuthenticatedHotspotIndexRoute
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
@@ -256,7 +338,15 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
+  '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -266,6 +356,7 @@ export interface FileRoutesByTo {
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/apps': typeof AuthenticatedAppsIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
+  '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/hotspot': typeof AuthenticatedHotspotIndexRoute
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
@@ -291,7 +382,15 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
+  '/_authenticated/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
+  '/_authenticated/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
+  '/_authenticated/hotspot/server': typeof AuthenticatedHotspotServerRoute
+  '/_authenticated/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
+  '/_authenticated/hotspot/users': typeof AuthenticatedHotspotUsersRoute
+  '/_authenticated/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
+  '/_authenticated/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
@@ -301,6 +400,7 @@ export interface FileRoutesById {
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
   '/_authenticated/apps/': typeof AuthenticatedAppsIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
+  '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/hotspot/': typeof AuthenticatedHotspotIndexRoute
   '/_authenticated/mikrotik/': typeof AuthenticatedMikrotikIndexRoute
@@ -325,7 +425,15 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/dashboard/customer'
+    | '/dashboard/product'
     | '/errors/$error'
+    | '/hotspot/hosts'
+    | '/hotspot/server'
+    | '/hotspot/user-profiles'
+    | '/hotspot/users'
+    | '/hotspot/users-active'
+    | '/hotspot/users-non-active'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -335,6 +443,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/dashboard'
     | '/help-center'
     | '/hotspot'
     | '/mikrotik'
@@ -355,7 +464,15 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/dashboard/customer'
+    | '/dashboard/product'
     | '/errors/$error'
+    | '/hotspot/hosts'
+    | '/hotspot/server'
+    | '/hotspot/user-profiles'
+    | '/hotspot/users'
+    | '/hotspot/users-active'
+    | '/hotspot/users-non-active'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
@@ -365,6 +482,7 @@ export interface FileRouteTypes {
     | '/clerk/user-management'
     | '/apps'
     | '/chats'
+    | '/dashboard'
     | '/help-center'
     | '/hotspot'
     | '/mikrotik'
@@ -389,7 +507,15 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/dashboard/customer'
+    | '/_authenticated/dashboard/product'
     | '/_authenticated/errors/$error'
+    | '/_authenticated/hotspot/hosts'
+    | '/_authenticated/hotspot/server'
+    | '/_authenticated/hotspot/user-profiles'
+    | '/_authenticated/hotspot/users'
+    | '/_authenticated/hotspot/users-active'
+    | '/_authenticated/hotspot/users-non-active'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
@@ -399,6 +525,7 @@ export interface FileRouteTypes {
     | '/clerk/_authenticated/user-management'
     | '/_authenticated/apps/'
     | '/_authenticated/chats/'
+    | '/_authenticated/dashboard/'
     | '/_authenticated/help-center/'
     | '/_authenticated/hotspot/'
     | '/_authenticated/mikrotik/'
@@ -420,6 +547,27 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+}
+export interface FileServerRoutesByFullPath {
+  '/api/users': typeof ApiUsersServerRoute
+}
+export interface FileServerRoutesByTo {
+  '/api/users': typeof ApiUsersServerRoute
+}
+export interface FileServerRoutesById {
+  __root__: typeof rootServerRouteImport
+  '/api/users': typeof ApiUsersServerRoute
+}
+export interface FileServerRouteTypes {
+  fileServerRoutesByFullPath: FileServerRoutesByFullPath
+  fullPaths: '/api/users'
+  fileServerRoutesByTo: FileServerRoutesByTo
+  to: '/api/users'
+  id: '__root__' | '/api/users'
+  fileServerRoutesById: FileServerRoutesById
+}
+export interface RootServerRouteChildren {
+  ApiUsersServerRoute: typeof ApiUsersServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -578,6 +726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard/': {
+      id: '/_authenticated/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/chats/': {
       id: '/_authenticated/chats/'
       path: '/chats'
@@ -641,12 +796,79 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/hotspot/users-non-active': {
+      id: '/_authenticated/hotspot/users-non-active'
+      path: '/hotspot/users-non-active'
+      fullPath: '/hotspot/users-non-active'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersNonActiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/users-active': {
+      id: '/_authenticated/hotspot/users-active'
+      path: '/hotspot/users-active'
+      fullPath: '/hotspot/users-active'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersActiveRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/users': {
+      id: '/_authenticated/hotspot/users'
+      path: '/hotspot/users'
+      fullPath: '/hotspot/users'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/user-profiles': {
+      id: '/_authenticated/hotspot/user-profiles'
+      path: '/hotspot/user-profiles'
+      fullPath: '/hotspot/user-profiles'
+      preLoaderRoute: typeof AuthenticatedHotspotUserProfilesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/server': {
+      id: '/_authenticated/hotspot/server'
+      path: '/hotspot/server'
+      fullPath: '/hotspot/server'
+      preLoaderRoute: typeof AuthenticatedHotspotServerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/hosts': {
+      id: '/_authenticated/hotspot/hosts'
+      path: '/hotspot/hosts'
+      fullPath: '/hotspot/hosts'
+      preLoaderRoute: typeof AuthenticatedHotspotHostsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/errors/$error': {
       id: '/_authenticated/errors/$error'
       path: '/errors/$error'
       fullPath: '/errors/$error'
       preLoaderRoute: typeof AuthenticatedErrorsErrorRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/product': {
+      id: '/_authenticated/dashboard/product'
+      path: '/dashboard/product'
+      fullPath: '/dashboard/product'
+      preLoaderRoute: typeof AuthenticatedDashboardProductRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/customer': {
+      id: '/_authenticated/dashboard/customer'
+      path: '/dashboard/customer'
+      fullPath: '/dashboard/customer'
+      preLoaderRoute: typeof AuthenticatedDashboardCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+  }
+}
+declare module '@tanstack/react-start/server' {
+  interface ServerFileRoutesByPath {
+    '/api/users': {
+      id: '/api/users'
+      path: '/api/users'
+      fullPath: '/api/users'
+      preLoaderRoute: typeof ApiUsersServerRouteImport
+      parentRoute: typeof rootServerRouteImport
     }
   }
 }
@@ -677,9 +899,18 @@ const AuthenticatedSettingsRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedDashboardCustomerRoute: typeof AuthenticatedDashboardCustomerRoute
+  AuthenticatedDashboardProductRoute: typeof AuthenticatedDashboardProductRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
+  AuthenticatedHotspotHostsRoute: typeof AuthenticatedHotspotHostsRoute
+  AuthenticatedHotspotServerRoute: typeof AuthenticatedHotspotServerRoute
+  AuthenticatedHotspotUserProfilesRoute: typeof AuthenticatedHotspotUserProfilesRoute
+  AuthenticatedHotspotUsersRoute: typeof AuthenticatedHotspotUsersRoute
+  AuthenticatedHotspotUsersActiveRoute: typeof AuthenticatedHotspotUsersActiveRoute
+  AuthenticatedHotspotUsersNonActiveRoute: typeof AuthenticatedHotspotUsersNonActiveRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
+  AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedHotspotIndexRoute: typeof AuthenticatedHotspotIndexRoute
   AuthenticatedMikrotikIndexRoute: typeof AuthenticatedMikrotikIndexRoute
@@ -690,9 +921,19 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedDashboardCustomerRoute: AuthenticatedDashboardCustomerRoute,
+  AuthenticatedDashboardProductRoute: AuthenticatedDashboardProductRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
+  AuthenticatedHotspotHostsRoute: AuthenticatedHotspotHostsRoute,
+  AuthenticatedHotspotServerRoute: AuthenticatedHotspotServerRoute,
+  AuthenticatedHotspotUserProfilesRoute: AuthenticatedHotspotUserProfilesRoute,
+  AuthenticatedHotspotUsersRoute: AuthenticatedHotspotUsersRoute,
+  AuthenticatedHotspotUsersActiveRoute: AuthenticatedHotspotUsersActiveRoute,
+  AuthenticatedHotspotUsersNonActiveRoute:
+    AuthenticatedHotspotUsersNonActiveRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
+  AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedHotspotIndexRoute: AuthenticatedHotspotIndexRoute,
   AuthenticatedMikrotikIndexRoute: AuthenticatedMikrotikIndexRoute,
@@ -763,3 +1004,9 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+const rootServerRouteChildren: RootServerRouteChildren = {
+  ApiUsersServerRoute: ApiUsersServerRoute,
+}
+export const serverRouteTree = rootServerRouteImport
+  ._addFileChildren(rootServerRouteChildren)
+  ._addFileTypes<FileServerRouteTypes>()

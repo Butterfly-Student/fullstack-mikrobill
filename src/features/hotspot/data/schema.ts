@@ -25,19 +25,13 @@ const characterSet = z.union([
 ])
 export type CharacterSet = z.infer<typeof characterSet>
 
-// Expired mode  - untuk profile
-const expiredMode = z.union([
-  z.literal('rem'),
-  z.literal('remc'),
-  z.literal('ntf'),
-  z.literal('ntfc'),
-  z.literal('0'),
-])
+
 export type ExpiredMode = z.infer<typeof expiredMode>
 
 // Lock setting  - untuk profile
-const lockSetting = z.union([z.literal('yes'), z.literal('no')])
-export type LockSetting = z.infer<typeof lockSetting>
+// enum/union biar strict
+const expiredMode = z.enum(["rem", "remc", "ntf", "ntfc", "0"])
+const lockSetting = z.enum(["Enable", "Disable"])
 
 // Login method 
 const loginBy = z.union([
@@ -96,7 +90,7 @@ export const generateVoucher = z.object({
 export type GenerateVoucher = z.infer<typeof generateVoucher>
 
 // User 
-export const User = z
+export const HotspotUser = z
   .object({
     server: z.string().min(1, {
       message: 'Server must be selected.',
@@ -136,28 +130,39 @@ export const User = z
       path: ['password'],
     }
   )
-export type User = z.infer<typeof User>
+export type HotspotUser = z.infer<typeof HotspotUser>
 
-// Profile 
 export const Profile = z.object({
-  profileName: z.string().min(2, {
-    message: 'Profile name must be at least 2 characters.',
-  }),
-  expiredMode: expiredMode,
-  price: z.string().optional(),
-  sellingPrice: z.string().optional(),
+  name: z.string(),
+  sharedUsers: z.number(),
+  rateLimit: z.string(),
+  expiredMode,
+  validity: z.string(),
+  price: z.string(),
+  sellingPrice: z.string(),
+  addressPool: z.string(),
   lockUser: lockSetting,
   lockServer: lockSetting,
-  // Additional profile-specific fields
-  bandwidth: z.string().optional(),
-  sessionTimeout: z.string().optional(),
-  idleTimeout: z.string().optional(),
-  downloadLimit: z.string().optional(),
-  uploadLimit: z.string().optional(),
-  maxSessions: z.string().optional(),
-  description: z.string().optional(),
+  parentQueue: z.string(),
+
+  // field tambahan kalau mau extend
+  statusAutoRefresh: z.string(),
+  onLogin: z.string(),
+
+  // tambahan dari schema lama (opsional)
+  bandwidth: z.string(),
+  sessionTimeout: z.string(),
+  idleTimeout: z.string(),
+  downloadLimit: z.string(),
+  uploadLimit: z.string(),
+  maxSessions: z.string(),
 })
+
 export type Profile = z.infer<typeof Profile>
+
+export type ProfileForm = Omit<Profile, "onLogin">
+
+
 
 // Active table 
 export const ActiveUser = z.object({
@@ -222,7 +227,7 @@ export type HostsTableList = z.infer<typeof hostsTableList>
 export const nonActiveTableList = z.array(NonActiveUser)
 export type NonActiveTableList = z.infer<typeof nonActiveTableList>
 
-export const userList = z.array(User)
+export const userList = z.array(HotspotUser)
 export type UserList = z.infer<typeof userList>
 
 export const profileList = z.array(Profile)
@@ -294,7 +299,7 @@ export const generateVoucherFilter = z.object({
 export type GenerateVoucherFilter = z.infer<typeof generateVoucherFilter>
 
 export type HotspotType =
-  | User
+  | HotspotUser
   | Profile
   | GenerateVoucher
   | Hosts
