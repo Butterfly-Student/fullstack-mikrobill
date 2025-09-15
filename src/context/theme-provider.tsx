@@ -32,25 +32,44 @@ const initialState: ThemeProviderState = {
 
 const ThemeContext = createContext<ThemeProviderState>(initialState)
 
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia(query)
+    setMatches(mediaQuery.matches)
+
+    const handler = () => setMatches(mediaQuery.matches)
+    mediaQuery.addEventListener('change', handler)
+
+    return () => mediaQuery.removeEventListener('change', handler)
+  }, [query])
+
+  return matches
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = DEFAULT_THEME,
   storageKey = THEME_COOKIE_NAME,
   ...props
 }: ThemeProviderProps) {
-  const [theme, _setTheme] = useState<Theme>(
-    () => (getCookie(storageKey) as Theme) || defaultTheme
-  )
+  const [theme, _setTheme] = useState<Theme>(() => {
+    // Safe untuk SSR
+    if (typeof window === 'undefined') return defaultTheme
+    return (getCookie(storageKey) as Theme) || defaultTheme
+  })
 
-  // Optimized: Memoize the resolved theme calculation to prevent unnecessary re-computations
+  const prefersDark = useMediaQuery('(prefers-color-scheme: dark)')
+
   const resolvedTheme = useMemo((): ResolvedTheme => {
     if (theme === 'system') {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light'
+      return prefersDark ? 'dark' : 'light'
     }
     return theme as ResolvedTheme
-  }, [theme])
+  }, [theme, prefersDark])
 
   useEffect(() => {
     const root = window.document.documentElement

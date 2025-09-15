@@ -27,6 +27,7 @@ import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-p
 import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_authenticated/route'
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
+import { Route as ApiUserIndexRouteImport } from './routes/api/user/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
@@ -39,6 +40,7 @@ import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authentica
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
+import { Route as ApiMiddlewareAuthRouteImport } from './routes/api/_middleware/auth'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -52,7 +54,18 @@ import { Route as AuthenticatedHotspotHostsRouteImport } from './routes/_authent
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedDashboardProductRouteImport } from './routes/_authenticated/dashboard/product'
 import { Route as AuthenticatedDashboardCustomerRouteImport } from './routes/_authenticated/dashboard/customer'
-import { ServerRoute as ApiUsersServerRouteImport } from './routes/api/users'
+import { ServerRoute as ApiUserServerRouteImport } from './routes/api/user'
+import { ServerRoute as ApiRoleIndexServerRouteImport } from './routes/api/role/index'
+import { ServerRoute as ApiUserIdServerRouteImport } from './routes/api/user.$id'
+import { ServerRoute as ApiRoleRole_idServerRouteImport } from './routes/api/role/$role_id'
+import { ServerRoute as ApiMikrotikRouterServerRouteImport } from './routes/api/mikrotik/router'
+import { ServerRoute as ApiAuthSignUpServerRouteImport } from './routes/api/auth/sign-up'
+import { ServerRoute as ApiAuthSignInServerRouteImport } from './routes/api/auth/sign-in'
+import { ServerRoute as ApiAuthRefreshServerRouteImport } from './routes/api/auth/refresh'
+import { ServerRoute as ApiAuthMeServerRouteImport } from './routes/api/auth/me'
+import { ServerRoute as ApiRoleRole_idPermissionsServerRouteImport } from './routes/api/role/$role_id.permissions'
+import { ServerRoute as ApiMikrotikRouterIdServerRouteImport } from './routes/api/mikrotik/router.$id'
+import { ServerRoute as ApiMikrotikRouterIdStatusServerRouteImport } from './routes/api/mikrotik/router.$id.status'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -134,6 +147,11 @@ const AuthenticatedSettingsRouteRoute =
     path: '/settings',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiUserIndexRoute = ApiUserIndexRouteImport.update({
+  id: '/api/user/',
+  path: '/api/user/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -199,6 +217,11 @@ const ClerkauthSignInRoute = ClerkauthSignInRouteImport.update({
   id: '/sign-in',
   path: '/sign-in',
   getParentRoute: () => ClerkauthRouteRoute,
+} as any)
+const ApiMiddlewareAuthRoute = ApiMiddlewareAuthRouteImport.update({
+  id: '/api/_middleware/auth',
+  path: '/api/auth',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
@@ -278,11 +301,69 @@ const AuthenticatedDashboardCustomerRoute =
     path: '/dashboard/customer',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const ApiUsersServerRoute = ApiUsersServerRouteImport.update({
-  id: '/api/users',
-  path: '/api/users',
+const ApiUserServerRoute = ApiUserServerRouteImport.update({
+  id: '/api/user',
+  path: '/api/user',
   getParentRoute: () => rootServerRouteImport,
 } as any)
+const ApiRoleIndexServerRoute = ApiRoleIndexServerRouteImport.update({
+  id: '/api/role/',
+  path: '/api/role/',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiUserIdServerRoute = ApiUserIdServerRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiUserServerRoute,
+} as any)
+const ApiRoleRole_idServerRoute = ApiRoleRole_idServerRouteImport.update({
+  id: '/api/role/$role_id',
+  path: '/api/role/$role_id',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiMikrotikRouterServerRoute = ApiMikrotikRouterServerRouteImport.update({
+  id: '/api/mikrotik/router',
+  path: '/api/mikrotik/router',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSignUpServerRoute = ApiAuthSignUpServerRouteImport.update({
+  id: '/api/auth/sign-up',
+  path: '/api/auth/sign-up',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSignInServerRoute = ApiAuthSignInServerRouteImport.update({
+  id: '/api/auth/sign-in',
+  path: '/api/auth/sign-in',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthRefreshServerRoute = ApiAuthRefreshServerRouteImport.update({
+  id: '/api/auth/refresh',
+  path: '/api/auth/refresh',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthMeServerRoute = ApiAuthMeServerRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiRoleRole_idPermissionsServerRoute =
+  ApiRoleRole_idPermissionsServerRouteImport.update({
+    id: '/permissions',
+    path: '/permissions',
+    getParentRoute: () => ApiRoleRole_idServerRoute,
+  } as any)
+const ApiMikrotikRouterIdServerRoute =
+  ApiMikrotikRouterIdServerRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiMikrotikRouterServerRoute,
+  } as any)
+const ApiMikrotikRouterIdStatusServerRoute =
+  ApiMikrotikRouterIdStatusServerRouteImport.update({
+    id: '/status',
+    path: '/status',
+    getParentRoute: () => ApiMikrotikRouterIdServerRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -312,6 +393,7 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/api/auth': typeof ApiMiddlewareAuthRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -324,6 +406,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/api/user': typeof ApiUserIndexRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -351,6 +434,7 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/api/auth': typeof ApiMiddlewareAuthRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -363,6 +447,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/api/user': typeof ApiUserIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -395,6 +480,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/api/_middleware/auth': typeof ApiMiddlewareAuthRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -407,6 +493,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/api/user/': typeof ApiUserIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -438,6 +525,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/api/auth'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
@@ -450,6 +538,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/tasks'
     | '/users'
+    | '/api/user'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -477,6 +566,7 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/api/auth'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
@@ -489,6 +579,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tasks'
     | '/users'
+    | '/api/user'
   id:
     | '__root__'
     | '/_authenticated'
@@ -520,6 +611,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/api/_middleware/auth'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
@@ -532,6 +624,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
     | '/_authenticated/users/'
+    | '/api/user/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -547,27 +640,106 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+  ApiMiddlewareAuthRoute: typeof ApiMiddlewareAuthRoute
+  ApiUserIndexRoute: typeof ApiUserIndexRoute
 }
 export interface FileServerRoutesByFullPath {
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/user': typeof ApiUserServerRouteWithChildren
+  '/api/auth/me': typeof ApiAuthMeServerRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
+  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
+  '/api/role/$role_id': typeof ApiRoleRole_idServerRouteWithChildren
+  '/api/user/$id': typeof ApiUserIdServerRoute
+  '/api/role': typeof ApiRoleIndexServerRoute
+  '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
+  '/api/role/$role_id/permissions': typeof ApiRoleRole_idPermissionsServerRoute
+  '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
 }
 export interface FileServerRoutesByTo {
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/user': typeof ApiUserServerRouteWithChildren
+  '/api/auth/me': typeof ApiAuthMeServerRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
+  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
+  '/api/role/$role_id': typeof ApiRoleRole_idServerRouteWithChildren
+  '/api/user/$id': typeof ApiUserIdServerRoute
+  '/api/role': typeof ApiRoleIndexServerRoute
+  '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
+  '/api/role/$role_id/permissions': typeof ApiRoleRole_idPermissionsServerRoute
+  '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
-  '/api/users': typeof ApiUsersServerRoute
+  '/api/user': typeof ApiUserServerRouteWithChildren
+  '/api/auth/me': typeof ApiAuthMeServerRoute
+  '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
+  '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
+  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
+  '/api/role/$role_id': typeof ApiRoleRole_idServerRouteWithChildren
+  '/api/user/$id': typeof ApiUserIdServerRoute
+  '/api/role/': typeof ApiRoleIndexServerRoute
+  '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
+  '/api/role/$role_id/permissions': typeof ApiRoleRole_idPermissionsServerRoute
+  '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/users'
+  fullPaths:
+    | '/api/user'
+    | '/api/auth/me'
+    | '/api/auth/refresh'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/mikrotik/router'
+    | '/api/role/$role_id'
+    | '/api/user/$id'
+    | '/api/role'
+    | '/api/mikrotik/router/$id'
+    | '/api/role/$role_id/permissions'
+    | '/api/mikrotik/router/$id/status'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/users'
-  id: '__root__' | '/api/users'
+  to:
+    | '/api/user'
+    | '/api/auth/me'
+    | '/api/auth/refresh'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/mikrotik/router'
+    | '/api/role/$role_id'
+    | '/api/user/$id'
+    | '/api/role'
+    | '/api/mikrotik/router/$id'
+    | '/api/role/$role_id/permissions'
+    | '/api/mikrotik/router/$id/status'
+  id:
+    | '__root__'
+    | '/api/user'
+    | '/api/auth/me'
+    | '/api/auth/refresh'
+    | '/api/auth/sign-in'
+    | '/api/auth/sign-up'
+    | '/api/mikrotik/router'
+    | '/api/role/$role_id'
+    | '/api/user/$id'
+    | '/api/role/'
+    | '/api/mikrotik/router/$id'
+    | '/api/role/$role_id/permissions'
+    | '/api/mikrotik/router/$id/status'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
-  ApiUsersServerRoute: typeof ApiUsersServerRoute
+  ApiUserServerRoute: typeof ApiUserServerRouteWithChildren
+  ApiAuthMeServerRoute: typeof ApiAuthMeServerRoute
+  ApiAuthRefreshServerRoute: typeof ApiAuthRefreshServerRoute
+  ApiAuthSignInServerRoute: typeof ApiAuthSignInServerRoute
+  ApiAuthSignUpServerRoute: typeof ApiAuthSignUpServerRoute
+  ApiMikrotikRouterServerRoute: typeof ApiMikrotikRouterServerRouteWithChildren
+  ApiRoleRole_idServerRoute: typeof ApiRoleRole_idServerRouteWithChildren
+  ApiRoleIndexServerRoute: typeof ApiRoleIndexServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -684,6 +856,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/user/': {
+      id: '/api/user/'
+      path: '/api/user'
+      fullPath: '/api/user'
+      preLoaderRoute: typeof ApiUserIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/users/': {
       id: '/_authenticated/users/'
       path: '/users'
@@ -767,6 +946,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/clerk/sign-in'
       preLoaderRoute: typeof ClerkauthSignInRouteImport
       parentRoute: typeof ClerkauthRouteRoute
+    }
+    '/api/_middleware/auth': {
+      id: '/api/_middleware/auth'
+      path: '/api/auth'
+      fullPath: '/api/auth'
+      preLoaderRoute: typeof ApiMiddlewareAuthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
@@ -863,12 +1049,89 @@ declare module '@tanstack/react-router' {
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
-    '/api/users': {
-      id: '/api/users'
-      path: '/api/users'
-      fullPath: '/api/users'
-      preLoaderRoute: typeof ApiUsersServerRouteImport
+    '/api/user': {
+      id: '/api/user'
+      path: '/api/user'
+      fullPath: '/api/user'
+      preLoaderRoute: typeof ApiUserServerRouteImport
       parentRoute: typeof rootServerRouteImport
+    }
+    '/api/role/': {
+      id: '/api/role/'
+      path: '/api/role'
+      fullPath: '/api/role'
+      preLoaderRoute: typeof ApiRoleIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/user/$id': {
+      id: '/api/user/$id'
+      path: '/$id'
+      fullPath: '/api/user/$id'
+      preLoaderRoute: typeof ApiUserIdServerRouteImport
+      parentRoute: typeof ApiUserServerRoute
+    }
+    '/api/role/$role_id': {
+      id: '/api/role/$role_id'
+      path: '/api/role/$role_id'
+      fullPath: '/api/role/$role_id'
+      preLoaderRoute: typeof ApiRoleRole_idServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/router': {
+      id: '/api/mikrotik/router'
+      path: '/api/mikrotik/router'
+      fullPath: '/api/mikrotik/router'
+      preLoaderRoute: typeof ApiMikrotikRouterServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sign-up': {
+      id: '/api/auth/sign-up'
+      path: '/api/auth/sign-up'
+      fullPath: '/api/auth/sign-up'
+      preLoaderRoute: typeof ApiAuthSignUpServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sign-in': {
+      id: '/api/auth/sign-in'
+      path: '/api/auth/sign-in'
+      fullPath: '/api/auth/sign-in'
+      preLoaderRoute: typeof ApiAuthSignInServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/refresh': {
+      id: '/api/auth/refresh'
+      path: '/api/auth/refresh'
+      fullPath: '/api/auth/refresh'
+      preLoaderRoute: typeof ApiAuthRefreshServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/role/$role_id/permissions': {
+      id: '/api/role/$role_id/permissions'
+      path: '/permissions'
+      fullPath: '/api/role/$role_id/permissions'
+      preLoaderRoute: typeof ApiRoleRole_idPermissionsServerRouteImport
+      parentRoute: typeof ApiRoleRole_idServerRoute
+    }
+    '/api/mikrotik/router/$id': {
+      id: '/api/mikrotik/router/$id'
+      path: '/$id'
+      fullPath: '/api/mikrotik/router/$id'
+      preLoaderRoute: typeof ApiMikrotikRouterIdServerRouteImport
+      parentRoute: typeof ApiMikrotikRouterServerRoute
+    }
+    '/api/mikrotik/router/$id/status': {
+      id: '/api/mikrotik/router/$id/status'
+      path: '/status'
+      fullPath: '/api/mikrotik/router/$id/status'
+      preLoaderRoute: typeof ApiMikrotikRouterIdStatusServerRouteImport
+      parentRoute: typeof ApiMikrotikRouterIdServerRoute
     }
   }
 }
@@ -987,6 +1250,57 @@ const ClerkRouteRouteWithChildren = ClerkRouteRoute._addFileChildren(
   ClerkRouteRouteChildren,
 )
 
+interface ApiUserServerRouteChildren {
+  ApiUserIdServerRoute: typeof ApiUserIdServerRoute
+}
+
+const ApiUserServerRouteChildren: ApiUserServerRouteChildren = {
+  ApiUserIdServerRoute: ApiUserIdServerRoute,
+}
+
+const ApiUserServerRouteWithChildren = ApiUserServerRoute._addFileChildren(
+  ApiUserServerRouteChildren,
+)
+
+interface ApiMikrotikRouterIdServerRouteChildren {
+  ApiMikrotikRouterIdStatusServerRoute: typeof ApiMikrotikRouterIdStatusServerRoute
+}
+
+const ApiMikrotikRouterIdServerRouteChildren: ApiMikrotikRouterIdServerRouteChildren =
+  {
+    ApiMikrotikRouterIdStatusServerRoute: ApiMikrotikRouterIdStatusServerRoute,
+  }
+
+const ApiMikrotikRouterIdServerRouteWithChildren =
+  ApiMikrotikRouterIdServerRoute._addFileChildren(
+    ApiMikrotikRouterIdServerRouteChildren,
+  )
+
+interface ApiMikrotikRouterServerRouteChildren {
+  ApiMikrotikRouterIdServerRoute: typeof ApiMikrotikRouterIdServerRouteWithChildren
+}
+
+const ApiMikrotikRouterServerRouteChildren: ApiMikrotikRouterServerRouteChildren =
+  {
+    ApiMikrotikRouterIdServerRoute: ApiMikrotikRouterIdServerRouteWithChildren,
+  }
+
+const ApiMikrotikRouterServerRouteWithChildren =
+  ApiMikrotikRouterServerRoute._addFileChildren(
+    ApiMikrotikRouterServerRouteChildren,
+  )
+
+interface ApiRoleRole_idServerRouteChildren {
+  ApiRoleRole_idPermissionsServerRoute: typeof ApiRoleRole_idPermissionsServerRoute
+}
+
+const ApiRoleRole_idServerRouteChildren: ApiRoleRole_idServerRouteChildren = {
+  ApiRoleRole_idPermissionsServerRoute: ApiRoleRole_idPermissionsServerRoute,
+}
+
+const ApiRoleRole_idServerRouteWithChildren =
+  ApiRoleRole_idServerRoute._addFileChildren(ApiRoleRole_idServerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ClerkRouteRoute: ClerkRouteRouteWithChildren,
@@ -1000,12 +1314,21 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
+  ApiMiddlewareAuthRoute: ApiMiddlewareAuthRoute,
+  ApiUserIndexRoute: ApiUserIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
-  ApiUsersServerRoute: ApiUsersServerRoute,
+  ApiUserServerRoute: ApiUserServerRouteWithChildren,
+  ApiAuthMeServerRoute: ApiAuthMeServerRoute,
+  ApiAuthRefreshServerRoute: ApiAuthRefreshServerRoute,
+  ApiAuthSignInServerRoute: ApiAuthSignInServerRoute,
+  ApiAuthSignUpServerRoute: ApiAuthSignUpServerRoute,
+  ApiMikrotikRouterServerRoute: ApiMikrotikRouterServerRouteWithChildren,
+  ApiRoleRole_idServerRoute: ApiRoleRole_idServerRouteWithChildren,
+  ApiRoleIndexServerRoute: ApiRoleIndexServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { AuthenticatedLayout } from '@/components/layout/authenticated-layout'
 
 export const Route = createFileRoute('/_authenticated')({
-  beforeLoad: async () => {
+  beforeLoad: async ({location}) => {
     // Quick check - jika tidak ada token langsung redirect
     const { auth } = useAuthStore.getState()
 
@@ -12,7 +12,7 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({
         to: '/sign-in',
         search: {
-          redirect: window.location.pathname,
+          redirect: location.pathname,
         },
       })
     }

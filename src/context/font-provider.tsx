@@ -21,6 +21,7 @@ export function FontProvider({ children }: { children: React.ReactNode }) {
     return fonts.includes(savedFont as Font) ? (savedFont as Font) : fonts[0]
   })
 
+
   useEffect(() => {
     const applyFont = (font: string) => {
       const root = document.documentElement

@@ -2,7 +2,7 @@ import "dotenv/config";
 import * as schema from "@/db/schema/user";
 import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
-import { db } from "@/index";
+import { db } from "@/db/index";
 import { nanoid } from "nanoid";
 
 

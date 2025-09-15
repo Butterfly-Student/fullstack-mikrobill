@@ -63,9 +63,9 @@ export function UserAuthForm({
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
-
     try {
       const result = await auth.login(data.emailOrUsername, data.password)
+      console.log(result)
 
       if (result.success) {
         const userIdentifier = data.emailOrUsername.includes('@')

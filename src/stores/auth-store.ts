@@ -2,7 +2,76 @@ import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 
 const ACCESS_TOKEN = 'mikrobill_token'
-const BASE_URL = 'http://localhost:5000/api/mikrobill/auth'
+
+// Mock data untuk testing
+const MOCK_USERS = [
+  {
+    id: 'user-001',
+    accountNo: 'ACC001',
+    email: 'admin@mikrobill.com',
+    password: 'admin123', // Untuk mock saja, jangan gunakan di production
+    name: 'Admin User',
+    username: 'admin',
+    first_name: 'Admin',
+    last_name: 'User',
+    phone: '+62812345678',
+    role: ['admin', 'user'],
+    image: 'https://via.placeholder.com/150?text=Admin',
+    emailVerified: true,
+    is_active: true,
+    last_login: '2024-09-13T10:30:00Z',
+    createdAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    id: 'user-002',
+    accountNo: 'ACC002',
+    email: 'user@mikrobill.com',
+    password: 'user123',
+    name: 'Regular User',
+    username: 'user',
+    first_name: 'Regular',
+    last_name: 'User',
+    phone: '+62887654321',
+    role: ['user'],
+    image: 'https://via.placeholder.com/150?text=User',
+    emailVerified: true,
+    is_active: true,
+    last_login: '2024-09-12T14:20:00Z',
+    createdAt: '2024-02-15T00:00:00Z',
+  },
+  {
+    id: 'user-003',
+    accountNo: 'ACC003',
+    email: 'manager@mikrobill.com',
+    password: 'manager123',
+    name: 'Manager User',
+    username: 'manager',
+    first_name: 'Manager',
+    last_name: 'User',
+    phone: '+62811223344',
+    role: ['manager', 'user'],
+    image: 'https://via.placeholder.com/150?text=Manager',
+    emailVerified: false,
+    is_active: true,
+    last_login: '2024-09-10T09:15:00Z',
+    createdAt: '2024-03-01T00:00:00Z',
+  },
+]
+
+// Mock JWT token generator
+const generateMockToken = (userId: string) => {
+  const header = btoa(JSON.stringify({ typ: 'JWT', alg: 'HS256' }))
+  const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 // 7 days from now
+  const payload = btoa(
+    JSON.stringify({
+      userId,
+      exp,
+      iat: Math.floor(Date.now() / 1000),
+    })
+  )
+  const signature = btoa('mock-signature')
+  return `${header}.${payload}.${signature}`
+}
 
 interface AuthUser {
   accountNo: string
@@ -115,52 +184,50 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         return auth.user.exp < currentTime
       },
 
-      // Login function
+      // Mock Login function
       login: async (email: string, password: string) => {
         try {
-          const response = await fetch(`${BASE_URL}/login`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password }),
-          })
+          // Simulate API delay
+          await new Promise((resolve) => setTimeout(resolve, 1000))
 
-          if (response.ok) {
-            const data = await response.json()
+          // Find user in mock data
+          const mockUser = MOCK_USERS.find(
+            (user) => user.email === email && user.password === password
+          )
 
-            // Map backend user data to frontend format
+          if (mockUser) {
+            // Generate mock token
+            const mockToken = generateMockToken(mockUser.id)
+
+            // Map mock user data to frontend format
             const userData: AuthUser = {
-              id: data.user.id,
-              accountNo: data.user.accountNo || data.user.id,
-              email: data.user.email,
-              name: data.user.name,
-              username: data.user.username,
-              first_name: data.user.first_name,
-              last_name: data.user.last_name,
-              phone: data.user.phone,
-              role: Array.isArray(data.user.role)
-                ? data.user.role
-                : [data.user.role],
-              image: data.user.image,
-              emailVerified: data.user.emailVerified,
-              is_active: data.user.is_active,
-              last_login: data.user.last_login,
-              createdAt: data.user.createdAt,
+              id: mockUser.id,
+              accountNo: mockUser.accountNo,
+              email: mockUser.email,
+              name: mockUser.name,
+              username: mockUser.username,
+              first_name: mockUser.first_name,
+              last_name: mockUser.last_name,
+              phone: mockUser.phone,
+              role: mockUser.role,
+              image: mockUser.image,
+              emailVerified: mockUser.emailVerified,
+              is_active: mockUser.is_active,
+              last_login: new Date().toISOString(), // Update last login
+              createdAt: mockUser.createdAt,
               exp:
-                decodeJWT(data.token)?.exp ||
+                decodeJWT(mockToken)?.exp ||
                 Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
             }
 
-            get().auth.setAccessToken(data.token)
+            get().auth.setAccessToken(mockToken)
             get().auth.setUser(userData)
 
             return { success: true }
           } else {
-            const error = await response.json()
             return {
               success: false,
-              message: error.error || error.message || 'Login failed',
+              message: 'Email atau password salah',
             }
           }
         } catch {
@@ -171,29 +238,16 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Logout function
+      // Mock Logout function
       logout: async () => {
-        const { auth } = get()
-
-        if (auth.accessToken) {
-          // Call logout API to clear session from database
-          try {
-            await fetch(`${BASE_URL}/logout`, {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${auth.accessToken}`,
-              },
-            })
-          } catch {
-            // Silently handle logout API errors
-          }
-        }
+        // Simulate API delay
+        await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Clear state and cookie
-        auth.reset()
+        get().auth.reset()
       },
 
-      // Check authentication status
+      // Mock Check authentication status
       checkAuth: async (): Promise<boolean> => {
         const { auth } = get()
 
@@ -212,51 +266,49 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           return true
         }
 
-        // Try to validate token and fetch user data from API
+        // Mock token validation
         try {
-          const response = await fetch(`${BASE_URL}/validate`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${auth.accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          })
+          // Simulate API delay
+          await new Promise((resolve) => setTimeout(resolve, 500))
 
-          if (response.ok) {
-            const data = await response.json()
+          const payload = decodeJWT(auth.accessToken)
+          const mockUser = MOCK_USERS.find(
+            (user) => user.id === payload?.userId
+          )
 
-            // Map backend user data
+          if (
+            mockUser &&
+            payload?.exp &&
+            payload.exp > Math.floor(Date.now() / 1000)
+          ) {
+            // Map mock user data
             const userData: AuthUser = {
-              id: data.user.id,
-              accountNo: data.user.accountNo || data.user.id,
-              email: data.user.email,
-              name: data.user.name,
-              username: data.user.username,
-              first_name: data.user.first_name,
-              last_name: data.user.last_name,
-              phone: data.user.phone,
-              role: Array.isArray(data.user.role)
-                ? data.user.role
-                : [data.user.role],
-              image: data.user.image,
-              emailVerified: data.user.emailVerified,
-              is_active: data.user.is_active,
-              last_login: data.user.last_login,
-              createdAt: data.user.createdAt,
-              exp:
-                decodeJWT(auth.accessToken)?.exp ||
-                Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+              id: mockUser.id,
+              accountNo: mockUser.accountNo,
+              email: mockUser.email,
+              name: mockUser.name,
+              username: mockUser.username,
+              first_name: mockUser.first_name,
+              last_name: mockUser.last_name,
+              phone: mockUser.phone,
+              role: mockUser.role,
+              image: mockUser.image,
+              emailVerified: mockUser.emailVerified,
+              is_active: mockUser.is_active,
+              last_login: mockUser.last_login,
+              createdAt: mockUser.createdAt,
+              exp: payload.exp,
             }
 
             auth.setUser(userData)
             return true
           } else {
-            // Token invalid or session not found, clear auth
+            // Token invalid, clear auth
             auth.reset()
             return false
           }
         } catch {
-          // Network error, clear auth to be safe
+          // Error during validation, clear auth to be safe
           auth.reset()
           return false
         }
@@ -264,3 +316,10 @@ export const useAuthStore = create<AuthState>()((set, get) => {
     },
   }
 })
+
+// Export mock data untuk referensi (bisa dihapus di production)
+export const MOCK_LOGIN_CREDENTIALS = {
+  admin: { email: 'admin@mikrobill.com', password: 'admin123' },
+  user: { email: 'user@mikrobill.com', password: 'user123' },
+  manager: { email: 'manager@mikrobill.com', password: 'manager123' },
+}

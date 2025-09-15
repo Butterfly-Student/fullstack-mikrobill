@@ -1,6 +1,6 @@
-import { schema } from '@/db/schema/index'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
+import { schema } from '../db/schema/index'
 
 // tetap bisa pakai schema yang sama
 

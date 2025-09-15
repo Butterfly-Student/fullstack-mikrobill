@@ -1,10 +1,9 @@
 import HotspotUserProfiles from '@/features/hotspot/user-profiles'
-import { getHotspotProfiless } from '@/lib/mikrotik'
+import { createMikrotikHotspot } from '@/lib/mikrotik/hotspot'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_authenticated/hotspot/user-profiles')({
   loader: async ({ context }) => {
-    // Menggunakan QueryClient dari context untuk ensure data
     return await context.queryClient.ensureQueryData({
       queryKey: ['hotspot-profiles', 1],
       queryFn: () => getHotspotProfiless(1),
@@ -15,3 +14,8 @@ export const Route = createFileRoute('/_authenticated/hotspot/user-profiles')({
   component: HotspotUserProfiles,
 })
 
+const getHotspotProfiless = async (id: number) => {
+
+  const client = createMikrotikHotspot(id);
+  return (await client).getHotspotProfiles()
+}

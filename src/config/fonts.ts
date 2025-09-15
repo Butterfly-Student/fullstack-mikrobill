@@ -16,4 +16,12 @@
  *      --font-roboto: 'Roboto', var(--font-sans);
  *   }
  */
-export const fonts = ['inter', 'manrope', 'system'] as const
+export const fonts = [
+  'system-ui', // fallback ke font bawaan OS (San Francisco, Segoe UI, Roboto)
+  'Inter', // modern, clean, readable – salah satu yang paling populer
+  'Manrope', // sedikit lebih "friendly", cocok untuk UI dengan karakter
+  'Roboto', // aman dan familiar, sering dipakai di aplikasi material design
+  'SF Pro', // default macOS/iOS system font – clean & elegan
+  'Work Sans', // lebih ringan, cocok untuk desain yang airy
+  'Space Grotesk', // sedikit lebih unik, bagus untuk heading
+] as const

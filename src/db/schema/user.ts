@@ -293,3 +293,5 @@ export type Account = typeof account.$inferSelect
 export type NewAccount = typeof account.$inferInsert
 export type Verification = typeof verification.$inferSelect
 export type NewVerification = typeof verification.$inferInsert
+export type Router = typeof routers.$inferSelect
+export type NewRouter = typeof routers.$inferInsert
