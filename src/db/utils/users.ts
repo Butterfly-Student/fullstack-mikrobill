@@ -2,7 +2,6 @@ import "dotenv/config";
 import { db } from "../index";
 import { schema } from "../schema/index";
 import { eq, and } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 
 export interface UserWithRoles {
 	id: string; // Changed from number to string
@@ -159,13 +158,12 @@ export async function createUser(
 	password: string,
 	name: string
 ) {
-	const hashedPassword = await bcrypt.hash(password, 10);
 
 	const newUser: typeof schema.users.$inferInsert = {
     id: crypto.randomUUID(),
 		email,
 		username,
-		password: hashedPassword,
+		password,
 		name,
 	};
 

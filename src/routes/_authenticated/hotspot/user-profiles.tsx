@@ -6,7 +6,7 @@ export const Route = createFileRoute('/_authenticated/hotspot/user-profiles')({
   loader: async ({ context }) => {
     return await context.queryClient.ensureQueryData({
       queryKey: ['hotspot-profiles', 1],
-      queryFn: () => getHotspotProfiless(1),
+      queryFn: () => [],
       staleTime: 5 * 60 * 1000, // 5 minutes
     })
   },
@@ -14,8 +14,8 @@ export const Route = createFileRoute('/_authenticated/hotspot/user-profiles')({
   component: HotspotUserProfiles,
 })
 
-const getHotspotProfiless = async (id: number) => {
+// const getHotspotProfiless = async (id: number) => {
 
-  const client = createMikrotikHotspot(id);
-  return (await client).getHotspotProfiles()
-}
+//   const client = createMikrotikHotspot(id);
+//   return (await client).getHotspotProfiles()
+// }

@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs'
 import { SignJWT } from 'jose'
 
 const signInSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: z.email('Invalid email format'),
   password: z.string().min(1, 'Password is required'),
 })
 
@@ -48,7 +48,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
       const user = await getUserByEmail(validatedData.email)
       if (!user) {
         // Menggunakan pesan error yang sama untuk mencegah email enumeration
-        return json({ error: 'Invalid email or password' }, { status: 401 })
+        return json({ error: 'No user found.' }, { status: 401 })
       }
 
       // Check if user has a password (in case of OAuth users)
@@ -61,6 +61,9 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
           { status: 401 }
         )
       }
+      
+      console.log("User", validatedData)
+      console.log("Passwor", user.password)
 
       // Verify password dengan bcrypt
       const isValidPassword = await bcrypt.compare(
@@ -68,6 +71,10 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
         user.password
       )
       if (!isValidPassword) {
+        // Untuk debugging, coba manual verification
+        const manualTest = await bcrypt.hash(validatedData.password, 12)
+        console.log('Manual hash test:', manualTest)
+        
         return json({ error: 'Invalid email or password' }, { status: 401 })
       }
 
@@ -122,7 +129,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
         return json(
           {
             error: 'Validation error',
-            details: error.errors,
+            details: error.message,
           },
           { status: 400 }
         )

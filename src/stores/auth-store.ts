@@ -1,95 +1,75 @@
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
+import { apiRequest } from '@/utils/helper'
 
 const ACCESS_TOKEN = 'mikrobill_token'
 
-// Mock data untuk testing
-const MOCK_USERS = [
-  {
-    id: 'user-001',
-    accountNo: 'ACC001',
-    email: 'admin@mikrobill.com',
-    password: 'admin123', // Untuk mock saja, jangan gunakan di production
-    name: 'Admin User',
-    username: 'admin',
-    first_name: 'Admin',
-    last_name: 'User',
-    phone: '+62812345678',
-    role: ['admin', 'user'],
-    image: 'https://via.placeholder.com/150?text=Admin',
-    emailVerified: true,
-    is_active: true,
-    last_login: '2024-09-13T10:30:00Z',
-    createdAt: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: 'user-002',
-    accountNo: 'ACC002',
-    email: 'user@mikrobill.com',
-    password: 'user123',
-    name: 'Regular User',
-    username: 'user',
-    first_name: 'Regular',
-    last_name: 'User',
-    phone: '+62887654321',
-    role: ['user'],
-    image: 'https://via.placeholder.com/150?text=User',
-    emailVerified: true,
-    is_active: true,
-    last_login: '2024-09-12T14:20:00Z',
-    createdAt: '2024-02-15T00:00:00Z',
-  },
-  {
-    id: 'user-003',
-    accountNo: 'ACC003',
-    email: 'manager@mikrobill.com',
-    password: 'manager123',
-    name: 'Manager User',
-    username: 'manager',
-    first_name: 'Manager',
-    last_name: 'User',
-    phone: '+62811223344',
-    role: ['manager', 'user'],
-    image: 'https://via.placeholder.com/150?text=Manager',
-    emailVerified: false,
-    is_active: true,
-    last_login: '2024-09-10T09:15:00Z',
-    createdAt: '2024-03-01T00:00:00Z',
-  },
-]
-
-// Mock JWT token generator
-const generateMockToken = (userId: string) => {
-  const header = btoa(JSON.stringify({ typ: 'JWT', alg: 'HS256' }))
-  const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60 // 7 days from now
-  const payload = btoa(
-    JSON.stringify({
-      userId,
-      exp,
-      iat: Math.floor(Date.now() / 1000),
-    })
-  )
-  const signature = btoa('mock-signature')
-  return `${header}.${payload}.${signature}`
-}
-
 interface AuthUser {
-  accountNo: string
+  id: string
   email: string
-  role: string[]
+  username?: string
+  name: string
+  roles: string[]
   exp: number
   // Additional fields from your backend
-  id?: string
-  name?: string
-  username?: string
+  accountNo?: string
   first_name?: string
   last_name?: string
   phone?: string
   image?: string
-  emailVerified?: boolean
-  is_active?: boolean
+  emailVerified?: boolean | string
+  is_active?: boolean | string
   last_login?: string
   createdAt?: string
+  updatedAt?: string
+}
+
+interface SignInResponse {
+  message: string
+  user: {
+    id: string
+    email: string
+    username?: string
+    name: string
+    roles?: Array<{ name: string }>
+    [key: string]: string
+  }
+  token: string
+  expiresIn?: string
+}
+
+interface SignUpData {
+  email: string
+  username?: string
+  password: string
+  name: string
+}
+
+interface SignUpResponse {
+  message: string
+  user: {
+    id: string
+    email: string
+    username?: string
+    name: string
+    [key: string]: string
+  }
+}
+
+interface MeResponse {
+  user: {
+    id: string
+    email: string
+    username?: string
+    name: string
+    roles?: Array<{ name: string }>
+    [key: string]: any
+  }
+}
+
+interface RefreshResponse {
+  message: string
+  token: string
 }
 
 interface AuthState {
@@ -105,13 +85,26 @@ interface AuthState {
     login: (
       email: string,
       password: string
-    ) => Promise<{ success: boolean; message?: string }>
+    ) => Promise<{ success: boolean; message?: string; user?: AuthUser }>
+    register: (
+      data: SignUpData
+    ) => Promise<{ success: boolean; message?: string; user?: any }>
     logout: () => void
     checkAuth: () => Promise<boolean>
+    // New functions
+    me: () => Promise<{ success: boolean; message?: string; user?: AuthUser }>
+    verify: (
+      token?: string
+    ) => Promise<{ success: boolean; message?: string; user?: AuthUser }>
+    refresh: () => Promise<{
+      success: boolean
+      message?: string
+      token?: string
+    }>
   }
 }
 
-// Helper to decode JWT payload (for exp field)
+// Helper to decode JWT payload
 const decodeJWT = (token: string) => {
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
@@ -120,6 +113,7 @@ const decodeJWT = (token: string) => {
     return null
   }
 }
+
 
 export const useAuthStore = create<AuthState>()((set, get) => {
   // Initialize token from cookie
@@ -184,70 +178,301 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         return auth.user.exp < currentTime
       },
 
-      // Mock Login function
+      // Login function
       login: async (email: string, password: string) => {
         try {
-          // Simulate API delay
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-
-          // Find user in mock data
-          const mockUser = MOCK_USERS.find(
-            (user) => user.email === email && user.password === password
+          const response: SignInResponse = await apiRequest(
+            '/api/auth/sign-in',
+            {
+              method: 'POST',
+              body: JSON.stringify({ email, password }),
+            }
           )
 
-          if (mockUser) {
-            // Generate mock token
-            const mockToken = generateMockToken(mockUser.id)
+          // Extract JWT payload for additional info
+          const tokenPayload = decodeJWT(response.token)
 
-            // Map mock user data to frontend format
-            const userData: AuthUser = {
-              id: mockUser.id,
-              accountNo: mockUser.accountNo,
-              email: mockUser.email,
-              name: mockUser.name,
-              username: mockUser.username,
-              first_name: mockUser.first_name,
-              last_name: mockUser.last_name,
-              phone: mockUser.phone,
-              role: mockUser.role,
-              image: mockUser.image,
-              emailVerified: mockUser.emailVerified,
-              is_active: mockUser.is_active,
-              last_login: new Date().toISOString(), // Update last login
-              createdAt: mockUser.createdAt,
-              exp:
-                decodeJWT(mockToken)?.exp ||
-                Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
-            }
+          // Map API response to frontend format
+          const userData: AuthUser = {
+            id: response.user.id,
+            email: response.user.email,
+            username: response.user.username,
+            name: response.user.name,
+            roles: response.user.roles?.map((role) => role.name) || [],
+            exp:
+              tokenPayload?.exp || Math.floor(Date.now() / 1000) + 24 * 60 * 60,
 
-            get().auth.setAccessToken(mockToken)
-            get().auth.setUser(userData)
-
-            return { success: true }
-          } else {
-            return {
-              success: false,
-              message: 'Email atau password salah',
-            }
+            // Additional fields (adjust based on your API response)
+            accountNo: response.user.accountNo,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            phone: response.user.phone,
+            image: response.user.image,
+            emailVerified: response.user.emailVerified,
+            is_active: response.user.is_active,
+            last_login: response.user.last_login,
+            createdAt: response.user.createdAt,
+            updatedAt: response.user.updatedAt,
           }
-        } catch {
+
+          // Set token and user data
+          get().auth.setAccessToken(response.token)
+          get().auth.setUser(userData)
+
+          return {
+            success: true,
+            message: response.message,
+            user: userData,
+          }
+        } catch (error) {
+          console.error('Login error:', error)
+
           return {
             success: false,
-            message: 'Network error. Please try again.',
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Login failed. Please try again.',
           }
         }
       },
 
-      // Mock Logout function
-      logout: async () => {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 500))
+      // Register function
+      register: async (data: SignUpData) => {
+        try {
+          const response: SignUpResponse = await apiRequest(
+            '/api/auth/sign-up',
+            {
+              method: 'POST',
+              body: JSON.stringify(data),
+            }
+          )
 
-        // Clear state and cookie
-        get().auth.reset()
+          return {
+            success: true,
+            message: response.message,
+            user: response.user,
+          }
+        } catch (error) {
+          console.error('Registration error:', error)
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Registration failed. Please try again.',
+          }
+        }
       },
 
-      // Mock Check authentication status
+      // Logout function
+      logout: async () => {
+        try {
+          // Optional: Call logout API endpoint if you have one
+          await apiRequest('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${get().auth.accessToken}`,
+            },
+          })
+
+          // Clear state and cookie
+          get().auth.reset()
+        } catch (error) {
+          console.error('Logout error:', error)
+          // Always clear local state even if API call fails
+          get().auth.reset()
+        }
+      },
+
+      // Get current user info from server
+      me: async () => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No access token available',
+            }
+          }
+
+          const response: MeResponse = await apiRequest('/api/auth/me', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+            },
+          })
+
+          // Map API response to frontend format
+          const userData: AuthUser = {
+            id: response.user.id,
+            email: response.user.email,
+            username: response.user.username,
+            name: response.user.name,
+            roles: response.user.roles?.map((role) => role.name) || [],
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // Set default exp
+
+            // Additional fields
+            accountNo: response.user.accountNo,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            phone: response.user.phone,
+            image: response.user.image,
+            emailVerified: response.user.emailVerified,
+            is_active: response.user.is_active,
+            last_login: response.user.last_login,
+            createdAt: response.user.createdAt,
+            updatedAt: response.user.updatedAt,
+          }
+
+          // Update user data in store
+          auth.setUser(userData)
+
+          return {
+            success: true,
+            user: userData,
+          }
+        } catch (error) {
+          console.error('Get user info error:', error)
+
+          // If unauthorized, clear auth state
+          if (error instanceof Error && error.message.includes('401')) {
+            get().auth.reset()
+          }
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to get user information.',
+          }
+        }
+      },
+
+      // Verify token validity (similar to checkAuth but with server verification)
+      verify: async (token?: string) => {
+        try {
+          const { auth } = get()
+          const tokenToVerify = token || auth.accessToken
+
+          if (!tokenToVerify) {
+            return {
+              success: false,
+              message: 'No token to verify',
+            }
+          }
+
+          // Try to get user info to verify token
+          const response: MeResponse = await apiRequest('/api/auth/me', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${tokenToVerify}`,
+            },
+          })
+
+          // If token parameter was provided, update the stored token
+          if (token && token !== auth.accessToken) {
+            auth.setAccessToken(token)
+          }
+
+          // Map API response to frontend format
+          const userData: AuthUser = {
+            id: response.user.id,
+            email: response.user.email,
+            username: response.user.username,
+            name: response.user.name,
+            roles: response.user.roles?.map((role) => role.name) || [],
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
+
+            // Additional fields
+            accountNo: response.user.accountNo,
+            first_name: response.user.first_name,
+            last_name: response.user.last_name,
+            phone: response.user.phone,
+            image: response.user.image,
+            emailVerified: response.user.emailVerified,
+            is_active: response.user.is_active,
+            last_login: response.user.last_login,
+            createdAt: response.user.createdAt,
+            updatedAt: response.user.updatedAt,
+          }
+
+          // Update user data in store
+          auth.setUser(userData)
+
+          return {
+            success: true,
+            user: userData,
+          }
+        } catch (error) {
+          console.error('Token verification error:', error)
+
+          // If unauthorized, clear auth state
+          if (error instanceof Error && error.message.includes('401')) {
+            get().auth.reset()
+          }
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Token verification failed.',
+          }
+        }
+      },
+
+      // Refresh token
+      refresh: async () => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No token to refresh',
+            }
+          }
+
+          const response: RefreshResponse = await apiRequest(
+            '/api/auth/refresh',
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${auth.accessToken}`,
+              },
+            }
+          )
+
+          // Update token in store
+          auth.setAccessToken(response.token)
+
+          // Optionally, get updated user info
+          const userResult = await auth.me()
+
+          return {
+            success: true,
+            message: response.message,
+            token: response.token,
+          }
+        } catch (error) {
+          console.error('Token refresh error:', error)
+
+          // If refresh fails, clear auth state
+          get().auth.reset()
+
+          return {
+            success: false,
+            message:
+              error instanceof Error ? error.message : 'Token refresh failed.',
+          }
+        }
+      },
+
+      // Enhanced checkAuth that uses the new verify function
       checkAuth: async (): Promise<boolean> => {
         const { auth } = get()
 
@@ -257,69 +482,41 @@ export const useAuthStore = create<AuthState>()((set, get) => {
 
         // Check if token expired
         if (auth.isTokenExpired()) {
-          auth.reset()
-          return false
-        }
-
-        // If user exists and token not expired, consider valid
-        if (auth.user) {
-          return true
-        }
-
-        // Mock token validation
-        try {
-          // Simulate API delay
-          await new Promise((resolve) => setTimeout(resolve, 500))
-
-          const payload = decodeJWT(auth.accessToken)
-          const mockUser = MOCK_USERS.find(
-            (user) => user.id === payload?.userId
-          )
-
-          if (
-            mockUser &&
-            payload?.exp &&
-            payload.exp > Math.floor(Date.now() / 1000)
-          ) {
-            // Map mock user data
-            const userData: AuthUser = {
-              id: mockUser.id,
-              accountNo: mockUser.accountNo,
-              email: mockUser.email,
-              name: mockUser.name,
-              username: mockUser.username,
-              first_name: mockUser.first_name,
-              last_name: mockUser.last_name,
-              phone: mockUser.phone,
-              role: mockUser.role,
-              image: mockUser.image,
-              emailVerified: mockUser.emailVerified,
-              is_active: mockUser.is_active,
-              last_login: mockUser.last_login,
-              createdAt: mockUser.createdAt,
-              exp: payload.exp,
-            }
-
-            auth.setUser(userData)
+          // Try to refresh token first
+          const refreshResult = await auth.refresh()
+          if (refreshResult.success) {
             return true
-          } else {
-            // Token invalid, clear auth
-            auth.reset()
-            return false
           }
-        } catch {
-          // Error during validation, clear auth to be safe
+
           auth.reset()
           return false
         }
+
+        // If user exists and token not expired, verify with server
+        if (auth.user) {
+          const verifyResult = await auth.verify()
+          return verifyResult.success
+        }
+
+        // If no user data, try to get it from server
+        const meResult = await auth.me()
+        return meResult.success
       },
     },
   }
 })
 
-// Export mock data untuk referensi (bisa dihapus di production)
-export const MOCK_LOGIN_CREDENTIALS = {
-  admin: { email: 'admin@mikrobill.com', password: 'admin123' },
-  user: { email: 'user@mikrobill.com', password: 'user123' },
-  manager: { email: 'manager@mikrobill.com', password: 'manager123' },
+// Export helper for getting current auth state
+export const getAuthState = () => useAuthStore.getState().auth
+
+// Export helper for getting current user
+export const getCurrentUser = () => useAuthStore.getState().auth.user
+
+// Export helper for getting current token
+export const getCurrentToken = () => useAuthStore.getState().auth.accessToken
+
+// Export helper for checking auth status
+export const checkAuthStatus = async () => {
+  const auth = useAuthStore.getState().auth
+  return await auth.checkAuth()
 }

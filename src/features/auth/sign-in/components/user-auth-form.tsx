@@ -65,7 +65,6 @@ export function UserAuthForm({
     setIsLoading(true)
     try {
       const result = await auth.login(data.emailOrUsername, data.password)
-      console.log(result)
 
       if (result.success) {
         const userIdentifier = data.emailOrUsername.includes('@')

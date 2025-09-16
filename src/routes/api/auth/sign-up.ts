@@ -4,8 +4,10 @@ import { json } from '@tanstack/react-start'
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import bcrypt from 'bcryptjs'
 
+// Pastikan menggunakan bcryptjs
+
 const signUpSchema = z.object({
-  email: z.string().email('Invalid email format'),
+  email: z.email('Invalid email format'),
   username: z
     .string()
     .min(3, 'Username must be at least 3 characters')
@@ -19,6 +21,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-up').methods({
     try {
       const body = await request.json()
       const validatedData = signUpSchema.parse(body)
+      console.log('User data:', validatedData)
 
       // Check if user already exists
       const existingUser = await getUserByEmail(validatedData.email)
@@ -37,18 +40,17 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-up').methods({
         }
       }
 
-      // Hash password dengan bcryptjs
-      const saltRounds = 12 // Recommended salt rounds untuk keamanan yang baik
-      const hashedPassword = await bcrypt.hash(
-        validatedData.password,
-        saltRounds
-      )
+      // Gunakan bcryptjs dengan salt rounds 12 (sama seperti sebelumnya)
+      const hashedPassword = await bcrypt.hash(validatedData.password, 12)
+
+      console.log('Original password:', validatedData.password)
+      console.log('Hashed password:', hashedPassword)
 
       // Create new user dengan hashed password
       const newUser = await createUser(
         validatedData.email,
         validatedData.username,
-        hashedPassword, // Menggunakan hashed password
+        hashedPassword,
         validatedData.name
       )
 
@@ -69,7 +71,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-up').methods({
         return json(
           {
             error: 'Validation error',
-            details: error.errors, // Menggunakan error.errors untuk detail yang lebih jelas
+            details: error.errors,
           },
           { status: 400 }
         )
