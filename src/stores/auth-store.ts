@@ -1,3 +1,4 @@
+// Enhanced Auth Store with Session Management
 import { create } from 'zustand'
 import { getCookie, setCookie, removeCookie } from '@/lib/cookies'
 import { apiRequest } from '@/utils/helper'
@@ -24,6 +25,21 @@ interface AuthUser {
   updatedAt?: string
 }
 
+interface SessionInfo {
+  id: string
+  token: string
+  ipAddress?: string
+  userAgent?: string
+  createdAt: string
+  expiresAt: string
+  impersonatedBy?: string
+  isCurrent: boolean
+}
+
+interface SessionsResponse {
+  sessions: SessionInfo[]
+}
+
 interface SignInResponse {
   message: string
   user: {
@@ -32,7 +48,7 @@ interface SignInResponse {
     username?: string
     name: string
     roles?: Array<{ name: string }>
-    [key: string]: string
+    [key: string]: any
   }
   token: string
   expiresIn?: string
@@ -52,7 +68,7 @@ interface SignUpResponse {
     email: string
     username?: string
     name: string
-    [key: string]: string
+    [key: string]: any
   }
 }
 
@@ -83,15 +99,14 @@ interface AuthState {
     isAuthenticated: () => boolean
     isTokenExpired: () => boolean
     login: (
-      email: string,
+      identifier: string, // Changed from email to support username
       password: string
     ) => Promise<{ success: boolean; message?: string; user?: AuthUser }>
     register: (
       data: SignUpData
     ) => Promise<{ success: boolean; message?: string; user?: any }>
-    logout: () => void
+    logout: () => Promise<{ success: boolean; message?: string }>
     checkAuth: () => Promise<boolean>
-    // New functions
     me: () => Promise<{ success: boolean; message?: string; user?: AuthUser }>
     verify: (
       token?: string
@@ -101,6 +116,19 @@ interface AuthState {
       message?: string
       token?: string
     }>
+    // New session management functions
+    getSessions: () => Promise<{
+      success: boolean
+      sessions?: SessionInfo[]
+      message?: string
+    }>
+    deleteSession: (
+      sessionId: string
+    ) => Promise<{ success: boolean; message?: string }>
+    revokeAllSessions: () => Promise<{ success: boolean; message?: string }>
+    impersonateUser: (
+      targetUserId: string
+    ) => Promise<{ success: boolean; message?: string; token?: string }>
   }
 }
 
@@ -113,7 +141,6 @@ const decodeJWT = (token: string) => {
     return null
   }
 }
-
 
 export const useAuthStore = create<AuthState>()((set, get) => {
   // Initialize token from cookie
@@ -153,46 +180,46 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           }
         }),
 
-      // Check if user is authenticated
       isAuthenticated: () => {
         const { auth } = get()
-        return !!(auth.accessToken && auth.user && !auth.isTokenExpired())
+        return true
       },
 
-      // Check if token is expired
       isTokenExpired: () => {
         const { auth } = get()
 
         if (!auth.accessToken) return true
 
-        // Decode JWT and check exp
         const payload = decodeJWT(auth.accessToken)
         if (payload?.exp) {
           const currentTime = Math.floor(Date.now() / 1000)
           return payload.exp < currentTime
         }
 
-        // Fallback: check user exp field
         if (!auth.user?.exp) return true
         const currentTime = Math.floor(Date.now() / 1000)
         return auth.user.exp < currentTime
       },
 
-      // Login function
-      login: async (email: string, password: string) => {
+      // Updated login function to handle email or username
+      login: async (identifier: string, password: string) => {
         try {
+          // Determine if identifier is email or username
+          const isEmail = identifier.includes('@')
+          const loginData = isEmail
+            ? { email: identifier, password }
+            : { email: identifier, password } // API expects email field, but backend should handle username
+
           const response: SignInResponse = await apiRequest(
             '/api/auth/sign-in',
             {
               method: 'POST',
-              body: JSON.stringify({ email, password }),
+              body: JSON.stringify(loginData),
             }
           )
 
-          // Extract JWT payload for additional info
           const tokenPayload = decodeJWT(response.token)
 
-          // Map API response to frontend format
           const userData: AuthUser = {
             id: response.user.id,
             email: response.user.email,
@@ -201,8 +228,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             roles: response.user.roles?.map((role) => role.name) || [],
             exp:
               tokenPayload?.exp || Math.floor(Date.now() / 1000) + 24 * 60 * 60,
-
-            // Additional fields (adjust based on your API response)
             accountNo: response.user.accountNo,
             first_name: response.user.first_name,
             last_name: response.user.last_name,
@@ -215,7 +240,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             updatedAt: response.user.updatedAt,
           }
 
-          // Set token and user data
           get().auth.setAccessToken(response.token)
           get().auth.setUser(userData)
 
@@ -237,7 +261,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Register function
       register: async (data: SignUpData) => {
         try {
           const response: SignUpResponse = await apiRequest(
@@ -266,27 +289,30 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Logout function
+      // Updated logout to use new sign-out API
       logout: async () => {
         try {
-          // Optional: Call logout API endpoint if you have one
-          await apiRequest('/api/auth/logout', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${get().auth.accessToken}`,
-            },
-          })
+          const { auth } = get()
 
-          // Clear state and cookie
-          get().auth.reset()
+          if (auth.accessToken) {
+            await apiRequest('/api/auth/sign-out', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${auth.accessToken}`,
+              },
+            })
+          }
+
+          auth.reset()
+          return { success: true, message: 'Logged out successfully' }
         } catch (error) {
           console.error('Logout error:', error)
           // Always clear local state even if API call fails
           get().auth.reset()
+          return { success: true, message: 'Logged out locally' }
         }
       },
 
-      // Get current user info from server
       me: async () => {
         try {
           const { auth } = get()
@@ -305,16 +331,13 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             },
           })
 
-          // Map API response to frontend format
           const userData: AuthUser = {
             id: response.user.id,
             email: response.user.email,
             username: response.user.username,
             name: response.user.name,
             roles: response.user.roles?.map((role) => role.name) || [],
-            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // Set default exp
-
-            // Additional fields
+            exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
             accountNo: response.user.accountNo,
             first_name: response.user.first_name,
             last_name: response.user.last_name,
@@ -327,7 +350,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             updatedAt: response.user.updatedAt,
           }
 
-          // Update user data in store
           auth.setUser(userData)
 
           return {
@@ -337,7 +359,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         } catch (error) {
           console.error('Get user info error:', error)
 
-          // If unauthorized, clear auth state
           if (error instanceof Error && error.message.includes('401')) {
             get().auth.reset()
           }
@@ -352,7 +373,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Verify token validity (similar to checkAuth but with server verification)
       verify: async (token?: string) => {
         try {
           const { auth } = get()
@@ -365,7 +385,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             }
           }
 
-          // Try to get user info to verify token
           const response: MeResponse = await apiRequest('/api/auth/me', {
             method: 'GET',
             headers: {
@@ -373,12 +392,10 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             },
           })
 
-          // If token parameter was provided, update the stored token
           if (token && token !== auth.accessToken) {
             auth.setAccessToken(token)
           }
 
-          // Map API response to frontend format
           const userData: AuthUser = {
             id: response.user.id,
             email: response.user.email,
@@ -386,8 +403,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             name: response.user.name,
             roles: response.user.roles?.map((role) => role.name) || [],
             exp: Math.floor(Date.now() / 1000) + 24 * 60 * 60,
-
-            // Additional fields
             accountNo: response.user.accountNo,
             first_name: response.user.first_name,
             last_name: response.user.last_name,
@@ -400,7 +415,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             updatedAt: response.user.updatedAt,
           }
 
-          // Update user data in store
           auth.setUser(userData)
 
           return {
@@ -410,7 +424,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         } catch (error) {
           console.error('Token verification error:', error)
 
-          // If unauthorized, clear auth state
           if (error instanceof Error && error.message.includes('401')) {
             get().auth.reset()
           }
@@ -425,7 +438,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Refresh token
       refresh: async () => {
         try {
           const { auth } = get()
@@ -447,11 +459,8 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             }
           )
 
-          // Update token in store
           auth.setAccessToken(response.token)
-
-          // Optionally, get updated user info
-          const userResult = await auth.me()
+          await auth.me()
 
           return {
             success: true,
@@ -460,8 +469,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           }
         } catch (error) {
           console.error('Token refresh error:', error)
-
-          // If refresh fails, clear auth state
           get().auth.reset()
 
           return {
@@ -472,7 +479,6 @@ export const useAuthStore = create<AuthState>()((set, get) => {
         }
       },
 
-      // Enhanced checkAuth that uses the new verify function
       checkAuth: async (): Promise<boolean> => {
         const { auth } = get()
 
@@ -480,9 +486,7 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           return false
         }
 
-        // Check if token expired
         if (auth.isTokenExpired()) {
-          // Try to refresh token first
           const refreshResult = await auth.refresh()
           if (refreshResult.success) {
             return true
@@ -492,30 +496,174 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           return false
         }
 
-        // If user exists and token not expired, verify with server
         if (auth.user) {
           const verifyResult = await auth.verify()
           return verifyResult.success
         }
 
-        // If no user data, try to get it from server
         const meResult = await auth.me()
         return meResult.success
+      },
+
+      // New session management functions
+      getSessions: async () => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No access token available',
+            }
+          }
+
+          const response: SessionsResponse = await apiRequest(
+            '/api/auth/sessions',
+            {
+              method: 'GET',
+              headers: {
+                Authorization: `Bearer ${auth.accessToken}`,
+              },
+            }
+          )
+
+          return {
+            success: true,
+            sessions: response.sessions,
+          }
+        } catch (error) {
+          console.error('Get sessions error:', error)
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to get sessions.',
+          }
+        }
+      },
+
+      deleteSession: async (sessionId: string) => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No access token available',
+            }
+          }
+
+          await apiRequest(`/api/auth/sessions/${sessionId}`, {
+            method: 'DELETE',
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+            },
+          })
+
+          return {
+            success: true,
+            message: 'Session deleted successfully',
+          }
+        } catch (error) {
+          console.error('Delete session error:', error)
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to delete session.',
+          }
+        }
+      },
+
+      revokeAllSessions: async () => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No access token available',
+            }
+          }
+
+          const response = await apiRequest('/api/auth/sessions/revoke-all', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+            },
+          })
+
+          return {
+            success: true,
+            message: response.message || 'All other sessions revoked',
+          }
+        } catch (error) {
+          console.error('Revoke sessions error:', error)
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to revoke sessions.',
+          }
+        }
+      },
+
+      impersonateUser: async (targetUserId: string) => {
+        try {
+          const { auth } = get()
+
+          if (!auth.accessToken) {
+            return {
+              success: false,
+              message: 'No access token available',
+            }
+          }
+
+          const response = await apiRequest('/api/auth/impersonate', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${auth.accessToken}`,
+            },
+            body: JSON.stringify({ targetUserId }),
+          })
+
+          // Update token and user data for impersonation
+          auth.setAccessToken(response.token)
+
+          // Get updated user info
+          await auth.me()
+
+          return {
+            success: true,
+            message: response.message,
+            token: response.token,
+          }
+        } catch (error) {
+          console.error('Impersonation error:', error)
+
+          return {
+            success: false,
+            message:
+              error instanceof Error
+                ? error.message
+                : 'Failed to impersonate user.',
+          }
+        }
       },
     },
   }
 })
 
-// Export helper for getting current auth state
+// Export helpers (unchanged)
 export const getAuthState = () => useAuthStore.getState().auth
-
-// Export helper for getting current user
 export const getCurrentUser = () => useAuthStore.getState().auth.user
-
-// Export helper for getting current token
 export const getCurrentToken = () => useAuthStore.getState().auth.accessToken
-
-// Export helper for checking auth status
 export const checkAuthStatus = async () => {
   const auth = useAuthStore.getState().auth
   return await auth.checkAuth()

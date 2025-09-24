@@ -40,12 +40,12 @@ export const useSidebarData = (): SidebarData => {
             auth.user.email?.split('@')[0] ||
             'User',
           email: auth.user.email || '',
-          avatar: auth.user.image || '/avatars/shadcn.jpg',
+          avatar: auth.user.image || '/avatars/01.png',
         }
       : {
           name: 'satnaing',
           email: 'satnaingdev@gmail.com',
-          avatar: '/avatars/shadcn.jpg',
+          avatar: '/avatars/02.png',
         },
     teams: [
       {
@@ -91,8 +91,25 @@ export const useSidebarData = (): SidebarData => {
           },
           {
             title: 'Users',
-            url: '/users',
             icon: Users,
+            items: [
+              {
+                title: 'List',
+                url: '/users',
+              },
+              {
+                title: 'Roles',
+                url: '/users/roles',
+              },
+              {
+                title: 'Permissions',
+                url: '/users/permissions',
+              },
+              {
+                title: "Sessions",
+                url: '/users/sessions',
+              }
+            ]
           },
           {
             title: 'Mikrotik',
@@ -101,7 +118,7 @@ export const useSidebarData = (): SidebarData => {
           },
           {
             title: 'Hotspot',
-            url: '/hotspot/server',
+            url: '/hotspot/users',
             icon: Wifi,
           },
           {

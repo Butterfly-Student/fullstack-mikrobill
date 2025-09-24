@@ -1,7 +1,7 @@
 import { UserPlus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
-import { UserHotspotActionDialog } from '../../components/dialogs/add-user-modal';
+import { AddUserHotspotDialog } from './add-user-action-dialog';
 import { GenerateUsersActionDialog } from '../../components/dialogs/generate-users-action-dialog';
 
 
@@ -22,7 +22,7 @@ export function HotspotUsersPrimaryButtons() {
           <span>Add User</span> <UserPlus size={18} />
         </Button>
       </div>
-      <UserHotspotActionDialog onOpenChange={setIsOpen} open={isOpen}/>
+      <AddUserHotspotDialog onOpenChange={setIsOpen} open={isOpen}/>
       <GenerateUsersActionDialog onOpenChange={setOpenGenrate} open={openGenrate}/>
     </>
   )

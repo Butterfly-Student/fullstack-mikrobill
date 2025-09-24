@@ -21,11 +21,10 @@ export default function HotspotTopNav({ children }: HotspotTopNavProps): JSX.Ele
   const topNav = () => {
 
     const navItems = [
-      {title: "Server", href: "/hotspot/server"},
-      { title: "Active", href: "/hotspot/users-active" },
-      { title: "Non-Active", href: "/hotspot/users-non-active" },
       { title: "Users", href: "/hotspot/users" },
       { title: "Profiles", href: "/hotspot/user-profiles" },
+      { title: "Active", href: "/hotspot/users-active" },
+      { title: "Non-Active", href: "/hotspot/users-non-active" },
       { title: "Hosts", href: "/hotspot/hosts" },
     ]
 

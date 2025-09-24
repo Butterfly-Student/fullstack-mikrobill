@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { type HotspotUser } from '../../data/schema'
 import { useState } from 'react'
-import { UserHotspotActionDialog } from '../../components/dialogs/add-user-modal'
+import { useHotspotUser } from './hotspot-user-provider'
 
 
 type DataTableRowActionsProps = {
@@ -30,8 +30,7 @@ type DataTableRowActionsProps = {
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const [open, setOpen] = useState(false);
-  const [currentRow, setCurrentRow] = useState<HotspotUser>(row.original)
+  const {setOpen, setCurrentRow} = useHotspotUser();
   const user = row.original
 
   return (
@@ -132,7 +131,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           <DropdownMenuItem
             onClick={() => {
               setCurrentRow(user)
-              setOpen(true)
+              setOpen("edit")
             }}
           >
             Edit User
@@ -155,7 +154,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <UserHotspotActionDialog onOpenChange={setOpen} open={open} currentRow={currentRow}/>
     </>
   )
 }

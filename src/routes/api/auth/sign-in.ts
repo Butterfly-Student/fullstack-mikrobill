@@ -1,5 +1,7 @@
+// /api/auth/sign-in.ts - Updated with session management
 import { z } from 'zod'
 import { getUserByEmail } from '@/db/utils/users'
+import { createSession, cleanupUserSessions } from '@/db/utils/sessions'
 import { json } from '@tanstack/react-start'
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import bcrypt from 'bcryptjs'
@@ -38,6 +40,17 @@ const createJWTPayload = (user: any) => {
   }
 }
 
+// Helper function to extract client info
+const getClientInfo = (request: Request) => {
+  const ipAddress = request.headers.get('x-forwarded-for') || 
+                   request.headers.get('x-real-ip') || 
+                   'unknown'
+  
+  const userAgent = request.headers.get('user-agent') || 'unknown'
+  
+  return { ipAddress, userAgent }
+}
+
 export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
   POST: async ({ request }) => {
     try {
@@ -47,7 +60,6 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
       // Find user by email
       const user = await getUserByEmail(validatedData.email)
       if (!user) {
-        // Menggunakan pesan error yang sama untuk mencegah email enumeration
         return json({ error: 'No user found.' }, { status: 401 })
       }
 
@@ -61,9 +73,20 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
           { status: 401 }
         )
       }
-      
-      console.log("User", validatedData)
-      console.log("Passwor", user.password)
+
+      // Check if user is banned
+      if (user.banned) {
+        const banMessage = user.banExpires 
+          ? `Account is banned until ${user.banExpires.toISOString()}. Reason: ${user.banReason || 'No reason provided'}`
+          : `Account is permanently banned. Reason: ${user.banReason || 'No reason provided'}`
+        
+        return json({ error: banMessage }, { status: 403 })
+      }
+
+      // Check if user is active
+      // if (!user.isActive) {
+      //   return json({ error: 'Account is inactive. Please contact support.' }, { status: 403 })
+      // }
 
       // Verify password dengan bcrypt
       const isValidPassword = await bcrypt.compare(
@@ -71,34 +94,35 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
         user.password
       )
       if (!isValidPassword) {
-        // Untuk debugging, coba manual verification
-        const manualTest = await bcrypt.hash(validatedData.password, 12)
-        console.log('Manual hash test:', manualTest)
-        
         return json({ error: 'Invalid email or password' }, { status: 401 })
       }
 
-      // Check if user account is active/verified (opsional)
-      // if (user.status && user.status !== 'active') {
-      //   return json(
-      //     {
-      //       error:
-      //         'Account is not active. Please verify your email or contact support.',
-      //     },
-      //     { status: 401 }
-      //   )
-      // }
-
       // Generate JWT token using jose
       const jwtPayload = createJWTPayload(user)
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
 
       const token = await new SignJWT(jwtPayload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
         .setExpirationTime('24h')
-        .setIssuer('your-app-name') // Ganti dengan nama aplikasi Anda
-        .setAudience('your-app-users') // Ganti dengan audience yang sesuai
+        .setIssuer('your-app-name')
+        .setAudience('your-app-users')
         .sign(getJWTSecret())
+
+      // Get client information
+      const { ipAddress, userAgent } = getClientInfo(request)
+
+      // Create session in database
+      await createSession(
+        user.id,
+        token,
+        expiresAt,
+        ipAddress,
+        userAgent
+      )
+
+      // Optional: Cleanup old sessions (keep only 5 most recent)
+      await cleanupUserSessions(user.id, 5)
 
       // Optional: Update last login timestamp
       // await updateUserLastLogin(user.id);
@@ -119,6 +143,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
             // Security headers
             'X-Content-Type-Options': 'nosniff',
             'X-Frame-Options': 'DENY',
+            'X-XSS-Protection': '1; mode=block',
           },
         }
       )
@@ -135,7 +160,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
         )
       }
 
-      // Jangan expose detail error ke client untuk keamanan
+      // Don't expose detailed error to client for security
       return json(
         {
           error: 'An error occurred during sign in. Please try again.',
@@ -145,3 +170,4 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
     }
   },
 })
+

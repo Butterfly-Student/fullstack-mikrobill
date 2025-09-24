@@ -1,9 +1,7 @@
 'use client'
 
-import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/lib/show-submitted-data'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -25,34 +23,14 @@ import { Input } from '@/components/ui/input'
 import { PasswordInput } from '@/components/password-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { commonPorts, timeoutOptions } from '../data/data'
-import { type Router } from '../data/schema'
-
-const formSchema = z.object({
-  name: z.string().min(1, 'Router name is required.').max(100),
-  hostname: z
-    .string()
-    .regex(
-      /\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/,
-      'Invalid IP address'
-    ),
-  username: z.string().min(1, 'Username is required.').max(50),
-  password: z.string().min(1, 'Password is required.').max(255),
-  port: z.coerce.number().int().min(1).max(65535, 'Port must be between 1-65535').default(8728),
-  timeout: z.coerce.number().int().positive().default(300000),
-  keepalive: z.boolean().default(true),
-  location: z.string().max(100).optional(),
-  description: z.string().optional(),
-  is_active: z.boolean().default(true),
-})
-
-type RouterForm = z.infer<typeof formSchema>
+import { formSchema, type RouterForm, type Router } from '../data/schema'
+import { useRouterCrud } from '@/hooks/use-router'
 
 type RouterActionDialogProps = {
   currentRow?: Router
   open: boolean
   onOpenChange: (open: boolean) => void
+  onSuccess?: () => void // Optional callback after successful operation
 }
 
 export function RoutersActionDialog({
@@ -60,6 +38,7 @@ export function RoutersActionDialog({
   open,
   onOpenChange,
 }: RouterActionDialogProps) {
+  const { isLoading, addRouter, updateRouter } = useRouterCrud();
   const isEdit = !!currentRow
   const form = useForm<RouterForm>({
     resolver: zodResolver(formSchema),
@@ -69,12 +48,12 @@ export function RoutersActionDialog({
         hostname: currentRow.hostname,
         username: currentRow.username,
         password: '', // Don't prefill password for security
-        port: currentRow.port,
-        timeout: currentRow.timeout,
-        keepalive: currentRow.keepalive,
+        port: currentRow.port || 8728,
+        timeout: currentRow.timeout || 300000,
+        keepalive: currentRow.keepalive || true,
         location: currentRow.location || '',
         description: currentRow.description || '',
-        is_active: currentRow.is_active,
+        is_active: currentRow.is_active || true,
       }
       : {
         name: '',
@@ -90,10 +69,29 @@ export function RoutersActionDialog({
       },
   })
 
-  const onSubmit = (values: RouterForm) => {
-    form.reset()
-    showSubmittedData(values)
-    onOpenChange(false)
+  const onSubmit = async (values: RouterForm) => {
+    try {
+      if (isEdit && currentRow) {
+        // Update existing router
+        await updateRouter(currentRow.id, values)
+        // Optional: Show success message
+        console.log('Router updated successfully')
+      } else {
+        // Add new router
+        await addRouter(values)
+        // Optional: Show success message
+        console.log('Router added successfully')
+      }
+
+      form.reset()
+      onOpenChange(false)
+      // Optional: Refresh data atau trigger refetch
+      // onRefresh?.()
+    } catch (error) {
+      console.error('Error saving router:', error)
+      // Handle error - show error message to user
+      // setError('Failed to save router')
+    }
   }
 
   return (
@@ -132,6 +130,7 @@ export function RoutersActionDialog({
                         placeholder='e.g., MikroTik-Main-Gateway'
                         className='col-span-4'
                         autoComplete='off'
+                        maxLength={100}
                         {...field}
                       />
                     </FormControl>
@@ -152,6 +151,7 @@ export function RoutersActionDialog({
                         placeholder='192.168.1.1'
                         className='col-span-4 font-mono'
                         autoComplete='off'
+                        maxLength={45}
                         {...field}
                       />
                     </FormControl>
@@ -165,16 +165,21 @@ export function RoutersActionDialog({
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
                     <FormLabel className='col-span-2 text-end'>Port</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value.toString()}
-                      onValueChange={(value) => field.onChange(parseInt(value))}
-                      placeholder='Select port'
-                      className='col-span-4'
-                      items={commonPorts.map(({ label, value }) => ({
-                        label,
-                        value: value.toString(),
-                      }))}
-                    />
+                    <FormControl>
+                      <Input
+                        placeholder='8728'
+                        className='col-span-4 font-mono'
+                        autoComplete='off'
+                        type='number'
+                        min={1}
+                        max={65535}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          field.onChange(value === '' ? undefined : parseInt(value, 10))
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>
                 )}
@@ -192,6 +197,7 @@ export function RoutersActionDialog({
                         placeholder='admin'
                         className='col-span-4'
                         autoComplete='off'
+                        maxLength={50}
                         {...field}
                       />
                     </FormControl>
@@ -211,6 +217,7 @@ export function RoutersActionDialog({
                       <PasswordInput
                         placeholder={isEdit ? 'Leave empty to keep current' : 'Enter password'}
                         className='col-span-4'
+                        maxLength={255}
                         {...field}
                       />
                     </FormControl>
@@ -223,17 +230,22 @@ export function RoutersActionDialog({
                 name='timeout'
                 render={({ field }) => (
                   <FormItem className='grid grid-cols-6 items-center space-y-0 gap-x-4 gap-y-1'>
-                    <FormLabel className='col-span-2 text-end'>Timeout</FormLabel>
-                    <SelectDropdown
-                      defaultValue={field.value.toString()}
-                      onValueChange={(value) => field.onChange(parseInt(value))}
-                      placeholder='Select timeout'
-                      className='col-span-4'
-                      items={timeoutOptions.map(({ label, value }) => ({
-                        label,
-                        value: value.toString(),
-                      }))}
-                    />
+                    <FormLabel className='col-span-2 text-end'>Timeout (ms)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder='300000'
+                        className='col-span-4 font-mono'
+                        autoComplete='off'
+                        type='number'
+                        min={1000}
+                        max={600000}
+                        value={field.value || ''}
+                        onChange={(e) => {
+                          const value = e.target.value
+                          field.onChange(value === '' ? undefined : parseInt(value, 10))
+                        }}
+                      />
+                    </FormControl>
                     <FormMessage className='col-span-4 col-start-3' />
                   </FormItem>
                 )}
@@ -251,6 +263,7 @@ export function RoutersActionDialog({
                         placeholder='e.g., Main Office, Jakarta'
                         className='col-span-4'
                         autoComplete='off'
+                        maxLength={100}
                         {...field}
                       />
                     </FormControl>
@@ -328,8 +341,15 @@ export function RoutersActionDialog({
           </Form>
         </div>
         <DialogFooter>
-          <Button type='submit' form='router-form'>
-            {isEdit ? 'Update Router' : 'Add Router'}
+          <Button
+            type="submit"
+            form="router-form"
+            disabled={isLoading}
+          >
+            {isLoading
+              ? (isEdit ? 'Updating...' : 'Adding...')
+              : (isEdit ? 'Update Router' : 'Add Router')
+            }
           </Button>
         </DialogFooter>
       </DialogContent>

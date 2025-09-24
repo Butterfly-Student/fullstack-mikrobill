@@ -16,7 +16,8 @@ import { SkipToMain } from '@/components/skip-to-main'
 import { useSidebarData } from './data/sidebar-data'
 import { NavGroup } from './nav-group'
 import { NavUser } from './nav-user'
-import { TeamSwitcher } from './team-switcher'
+import { RouterSwitcher } from './router-switcher'
+import { useAuthStore } from '@/stores/auth-store'
 
 type AuthenticatedLayoutProps = {
   children?: React.ReactNode
@@ -25,7 +26,8 @@ type AuthenticatedLayoutProps = {
 export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
   const defaultOpen = getCookie('sidebar_state') !== 'false'
   const sidebarData = useSidebarData()
-
+  const { isAuthenticated, user, verify, checkAuth } = useAuthStore.getState().auth
+  console.log("iS AUTHENTICATED", user)
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
@@ -33,7 +35,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
           <SkipToMain />
           <AppSidebar>
             <SidebarHeader>
-              <TeamSwitcher teams={sidebarData.teams} />
+              <RouterSwitcher />
             </SidebarHeader>
             <SidebarContent>
               {sidebarData.navGroups.map((props) => (

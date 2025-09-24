@@ -62,8 +62,8 @@ export function ProfileDropdown() {
     if (user.email) return user.email
 
     // Show primary role if no email
-    if (user.role && user.role.length > 0) {
-      const primaryRole = user.role[0]
+    if (user.roles && user.roles.length > 0) {
+      const primaryRole = user.roles[0]
       return `Role: ${primaryRole.charAt(0).toUpperCase() + primaryRole.slice(1)}`
     }
 
@@ -126,7 +126,7 @@ export function ProfileDropdown() {
             </DropdownMenuItem>
 
             {/* Show admin menu if user has admin role */}
-            {auth.user.role?.includes('admin') && (
+            {auth.user.roles?.includes('admin') && (
               <DropdownMenuItem asChild>
                 <Link to='/settings'>
                   Admin Panel
@@ -136,7 +136,7 @@ export function ProfileDropdown() {
             )}
 
             {/* Show manager menu if user has manager role */}
-            {auth.user.role?.includes('manager') && (
+            {auth.user.roles?.includes('manager') && (
               <DropdownMenuItem asChild>
                 <Link to='/settings'>
                   Management

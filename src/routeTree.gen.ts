@@ -39,6 +39,9 @@ import { Route as AuthenticatedAppsIndexRouteImport } from './routes/_authentica
 import { Route as ClerkAuthenticatedUserManagementRouteImport } from './routes/clerk/_authenticated/user-management'
 import { Route as ClerkauthSignUpRouteImport } from './routes/clerk/(auth)/sign-up'
 import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-in'
+import { Route as AuthenticatedUsersSessionsRouteImport } from './routes/_authenticated/users/sessions'
+import { Route as AuthenticatedUsersRolesRouteImport } from './routes/_authenticated/users/roles'
+import { Route as AuthenticatedUsersPermissionsRouteImport } from './routes/_authenticated/users/permissions'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
@@ -47,7 +50,6 @@ import { Route as AuthenticatedHotspotUsersNonActiveRouteImport } from './routes
 import { Route as AuthenticatedHotspotUsersActiveRouteImport } from './routes/_authenticated/hotspot/users-active'
 import { Route as AuthenticatedHotspotUsersRouteImport } from './routes/_authenticated/hotspot/users'
 import { Route as AuthenticatedHotspotUserProfilesRouteImport } from './routes/_authenticated/hotspot/user-profiles'
-import { Route as AuthenticatedHotspotServerRouteImport } from './routes/_authenticated/hotspot/server'
 import { Route as AuthenticatedHotspotHostsRouteImport } from './routes/_authenticated/hotspot/hosts'
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedDashboardProductRouteImport } from './routes/_authenticated/dashboard/product'
@@ -61,18 +63,35 @@ import { ServerRoute as ApiUsersIdServerRouteImport } from './routes/api/users/$
 import { ServerRoute as ApiRolesIdServerRouteImport } from './routes/api/roles/$id'
 import { ServerRoute as ApiResourceIdServerRouteImport } from './routes/api/resource/$id'
 import { ServerRoute as ApiPermissionsIdServerRouteImport } from './routes/api/permissions/$id'
-import { ServerRoute as ApiMikrotikRouterServerRouteImport } from './routes/api/mikrotik/router'
 import { ServerRoute as ApiAuthSignUpServerRouteImport } from './routes/api/auth/sign-up'
+import { ServerRoute as ApiAuthSignOutServerRouteImport } from './routes/api/auth/sign-out'
 import { ServerRoute as ApiAuthSignInServerRouteImport } from './routes/api/auth/sign-in'
 import { ServerRoute as ApiAuthRefreshServerRouteImport } from './routes/api/auth/refresh'
 import { ServerRoute as ApiAuthMeServerRouteImport } from './routes/api/auth/me'
 import { ServerRoute as ApiActionsIdServerRouteImport } from './routes/api/actions/$id'
 import { ServerRoute as ApiUsersIdIndexServerRouteImport } from './routes/api/users/$id/index'
+import { ServerRoute as ApiMikrotikRouterIndexServerRouteImport } from './routes/api/mikrotik/router/index'
+import { ServerRoute as ApiAuthSessionsIndexServerRouteImport } from './routes/api/auth/sessions/index'
 import { ServerRoute as ApiUsersIdRolesServerRouteImport } from './routes/api/users/$id/roles'
 import { ServerRoute as ApiRolesIdPermissionsServerRouteImport } from './routes/api/roles/$id.permissions'
-import { ServerRoute as ApiMikrotikRouterIdServerRouteImport } from './routes/api/mikrotik/router.$id'
+import { ServerRoute as ApiMikrotikRouterIdServerRouteImport } from './routes/api/mikrotik/router/$id'
+import { ServerRoute as ApiAuthSessionsRevokeAllServerRouteImport } from './routes/api/auth/sessions/revoke-all'
+import { ServerRoute as ApiAuthSessionsCleanupServerRouteImport } from './routes/api/auth/sessions/cleanup'
+import { ServerRoute as ApiAuthSessionsIdServerRouteImport } from './routes/api/auth/sessions/$id'
+import { ServerRoute as ApiMikrotikRouterActiveIndexServerRouteImport } from './routes/api/mikrotik/router/active/index'
+import { ServerRoute as ApiMikrotikHotspotUsersIndexServerRouteImport } from './routes/api/mikrotik/hotspot/users/index'
+import { ServerRoute as ApiMikrotikHotspotProfilesIndexServerRouteImport } from './routes/api/mikrotik/hotspot/profiles/index'
 import { ServerRoute as ApiUsersIdPermissionsCheckServerRouteImport } from './routes/api/users/$id/permissions.check'
-import { ServerRoute as ApiMikrotikRouterIdStatusServerRouteImport } from './routes/api/mikrotik/router.$id.status'
+import { ServerRoute as ApiMikrotikRouterIdStatusServerRouteImport } from './routes/api/mikrotik/router/$id.status'
+import { ServerRoute as ApiMikrotikRouterIdSetActiveServerRouteImport } from './routes/api/mikrotik/router/$id.set-active'
+import { ServerRoute as ApiMikrotikHotspotUsersNonActiveServerRouteImport } from './routes/api/mikrotik/hotspot/users/non-active'
+import { ServerRoute as ApiMikrotikHotspotUsersGenerateBatchServerRouteImport } from './routes/api/mikrotik/hotspot/users/generate-batch'
+import { ServerRoute as ApiMikrotikHotspotUsersActiveServerRouteImport } from './routes/api/mikrotik/hotspot/users/active'
+import { ServerRoute as ApiMikrotikHotspotUsersIdServerRouteImport } from './routes/api/mikrotik/hotspot/users/$id'
+import { ServerRoute as ApiMikrotikHotspotProfilesIdServerRouteImport } from './routes/api/mikrotik/hotspot/profiles/$id'
+import { ServerRoute as ApiMikrotikHotspotUsersNonActiveIdServerRouteImport } from './routes/api/mikrotik/hotspot/users/non-active.$id'
+import { ServerRoute as ApiMikrotikHotspotUsersActiveDisconnectServerRouteImport } from './routes/api/mikrotik/hotspot/users/active.disconnect'
+import { ServerRoute as ApiMikrotikHotspotUsersActiveIdServerRouteImport } from './routes/api/mikrotik/hotspot/users/active.$id'
 
 const rootServerRouteImport = createServerRootRoute()
 
@@ -220,6 +239,23 @@ const ClerkauthSignInRoute = ClerkauthSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => ClerkauthRouteRoute,
 } as any)
+const AuthenticatedUsersSessionsRoute =
+  AuthenticatedUsersSessionsRouteImport.update({
+    id: '/users/sessions',
+    path: '/users/sessions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedUsersRolesRoute = AuthenticatedUsersRolesRouteImport.update({
+  id: '/users/roles',
+  path: '/users/roles',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedUsersPermissionsRoute =
+  AuthenticatedUsersPermissionsRouteImport.update({
+    id: '/users/permissions',
+    path: '/users/permissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -266,12 +302,6 @@ const AuthenticatedHotspotUserProfilesRoute =
   AuthenticatedHotspotUserProfilesRouteImport.update({
     id: '/hotspot/user-profiles',
     path: '/hotspot/user-profiles',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHotspotServerRoute =
-  AuthenticatedHotspotServerRouteImport.update({
-    id: '/hotspot/server',
-    path: '/hotspot/server',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHotspotHostsRoute =
@@ -344,14 +374,14 @@ const ApiPermissionsIdServerRoute = ApiPermissionsIdServerRouteImport.update({
   path: '/api/permissions/$id',
   getParentRoute: () => rootServerRouteImport,
 } as any)
-const ApiMikrotikRouterServerRoute = ApiMikrotikRouterServerRouteImport.update({
-  id: '/api/mikrotik/router',
-  path: '/api/mikrotik/router',
-  getParentRoute: () => rootServerRouteImport,
-} as any)
 const ApiAuthSignUpServerRoute = ApiAuthSignUpServerRouteImport.update({
   id: '/api/auth/sign-up',
   path: '/api/auth/sign-up',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiAuthSignOutServerRoute = ApiAuthSignOutServerRouteImport.update({
+  id: '/api/auth/sign-out',
+  path: '/api/auth/sign-out',
   getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiAuthSignInServerRoute = ApiAuthSignInServerRouteImport.update({
@@ -379,6 +409,18 @@ const ApiUsersIdIndexServerRoute = ApiUsersIdIndexServerRouteImport.update({
   path: '/',
   getParentRoute: () => ApiUsersIdServerRoute,
 } as any)
+const ApiMikrotikRouterIndexServerRoute =
+  ApiMikrotikRouterIndexServerRouteImport.update({
+    id: '/api/mikrotik/router/',
+    path: '/api/mikrotik/router/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthSessionsIndexServerRoute =
+  ApiAuthSessionsIndexServerRouteImport.update({
+    id: '/api/auth/sessions/',
+    path: '/api/auth/sessions/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
 const ApiUsersIdRolesServerRoute = ApiUsersIdRolesServerRouteImport.update({
   id: '/roles',
   path: '/roles',
@@ -392,9 +434,44 @@ const ApiRolesIdPermissionsServerRoute =
   } as any)
 const ApiMikrotikRouterIdServerRoute =
   ApiMikrotikRouterIdServerRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => ApiMikrotikRouterServerRoute,
+    id: '/api/mikrotik/router/$id',
+    path: '/api/mikrotik/router/$id',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthSessionsRevokeAllServerRoute =
+  ApiAuthSessionsRevokeAllServerRouteImport.update({
+    id: '/api/auth/sessions/revoke-all',
+    path: '/api/auth/sessions/revoke-all',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthSessionsCleanupServerRoute =
+  ApiAuthSessionsCleanupServerRouteImport.update({
+    id: '/api/auth/sessions/cleanup',
+    path: '/api/auth/sessions/cleanup',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiAuthSessionsIdServerRoute = ApiAuthSessionsIdServerRouteImport.update({
+  id: '/api/auth/sessions/$id',
+  path: '/api/auth/sessions/$id',
+  getParentRoute: () => rootServerRouteImport,
+} as any)
+const ApiMikrotikRouterActiveIndexServerRoute =
+  ApiMikrotikRouterActiveIndexServerRouteImport.update({
+    id: '/api/mikrotik/router/active/',
+    path: '/api/mikrotik/router/active/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotUsersIndexServerRoute =
+  ApiMikrotikHotspotUsersIndexServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/users/',
+    path: '/api/mikrotik/hotspot/users/',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotProfilesIndexServerRoute =
+  ApiMikrotikHotspotProfilesIndexServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/profiles/',
+    path: '/api/mikrotik/hotspot/profiles/',
+    getParentRoute: () => rootServerRouteImport,
   } as any)
 const ApiUsersIdPermissionsCheckServerRoute =
   ApiUsersIdPermissionsCheckServerRouteImport.update({
@@ -407,6 +484,60 @@ const ApiMikrotikRouterIdStatusServerRoute =
     id: '/status',
     path: '/status',
     getParentRoute: () => ApiMikrotikRouterIdServerRoute,
+  } as any)
+const ApiMikrotikRouterIdSetActiveServerRoute =
+  ApiMikrotikRouterIdSetActiveServerRouteImport.update({
+    id: '/set-active',
+    path: '/set-active',
+    getParentRoute: () => ApiMikrotikRouterIdServerRoute,
+  } as any)
+const ApiMikrotikHotspotUsersNonActiveServerRoute =
+  ApiMikrotikHotspotUsersNonActiveServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/users/non-active',
+    path: '/api/mikrotik/hotspot/users/non-active',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotUsersGenerateBatchServerRoute =
+  ApiMikrotikHotspotUsersGenerateBatchServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/users/generate-batch',
+    path: '/api/mikrotik/hotspot/users/generate-batch',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotUsersActiveServerRoute =
+  ApiMikrotikHotspotUsersActiveServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/users/active',
+    path: '/api/mikrotik/hotspot/users/active',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotUsersIdServerRoute =
+  ApiMikrotikHotspotUsersIdServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/users/$id',
+    path: '/api/mikrotik/hotspot/users/$id',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotProfilesIdServerRoute =
+  ApiMikrotikHotspotProfilesIdServerRouteImport.update({
+    id: '/api/mikrotik/hotspot/profiles/$id',
+    path: '/api/mikrotik/hotspot/profiles/$id',
+    getParentRoute: () => rootServerRouteImport,
+  } as any)
+const ApiMikrotikHotspotUsersNonActiveIdServerRoute =
+  ApiMikrotikHotspotUsersNonActiveIdServerRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiMikrotikHotspotUsersNonActiveServerRoute,
+  } as any)
+const ApiMikrotikHotspotUsersActiveDisconnectServerRoute =
+  ApiMikrotikHotspotUsersActiveDisconnectServerRouteImport.update({
+    id: '/disconnect',
+    path: '/disconnect',
+    getParentRoute: () => ApiMikrotikHotspotUsersActiveServerRoute,
+  } as any)
+const ApiMikrotikHotspotUsersActiveIdServerRoute =
+  ApiMikrotikHotspotUsersActiveIdServerRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => ApiMikrotikHotspotUsersActiveServerRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -428,7 +559,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
-  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
   '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
@@ -437,6 +567,9 @@ export interface FileRoutesByFullPath {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
+  '/users/roles': typeof AuthenticatedUsersRolesRoute
+  '/users/sessions': typeof AuthenticatedUsersSessionsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -467,7 +600,6 @@ export interface FileRoutesByTo {
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
-  '/hotspot/server': typeof AuthenticatedHotspotServerRoute
   '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
@@ -476,6 +608,9 @@ export interface FileRoutesByTo {
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
+  '/users/roles': typeof AuthenticatedUsersRolesRoute
+  '/users/sessions': typeof AuthenticatedUsersSessionsRoute
   '/clerk/sign-in': typeof ClerkauthSignInRoute
   '/clerk/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -511,7 +646,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
   '/_authenticated/hotspot/hosts': typeof AuthenticatedHotspotHostsRoute
-  '/_authenticated/hotspot/server': typeof AuthenticatedHotspotServerRoute
   '/_authenticated/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/_authenticated/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/_authenticated/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
@@ -520,6 +654,9 @@ export interface FileRoutesById {
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/users/permissions': typeof AuthenticatedUsersPermissionsRoute
+  '/_authenticated/users/roles': typeof AuthenticatedUsersRolesRoute
+  '/_authenticated/users/sessions': typeof AuthenticatedUsersSessionsRoute
   '/clerk/(auth)/sign-in': typeof ClerkauthSignInRoute
   '/clerk/(auth)/sign-up': typeof ClerkauthSignUpRoute
   '/clerk/_authenticated/user-management': typeof ClerkAuthenticatedUserManagementRoute
@@ -554,7 +691,6 @@ export interface FileRouteTypes {
     | '/dashboard/product'
     | '/errors/$error'
     | '/hotspot/hosts'
-    | '/hotspot/server'
     | '/hotspot/user-profiles'
     | '/hotspot/users'
     | '/hotspot/users-active'
@@ -563,6 +699,9 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/users/permissions'
+    | '/users/roles'
+    | '/users/sessions'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
@@ -593,7 +732,6 @@ export interface FileRouteTypes {
     | '/dashboard/product'
     | '/errors/$error'
     | '/hotspot/hosts'
-    | '/hotspot/server'
     | '/hotspot/user-profiles'
     | '/hotspot/users'
     | '/hotspot/users-active'
@@ -602,6 +740,9 @@ export interface FileRouteTypes {
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/users/permissions'
+    | '/users/roles'
+    | '/users/sessions'
     | '/clerk/sign-in'
     | '/clerk/sign-up'
     | '/clerk/user-management'
@@ -636,7 +777,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/product'
     | '/_authenticated/errors/$error'
     | '/_authenticated/hotspot/hosts'
-    | '/_authenticated/hotspot/server'
     | '/_authenticated/hotspot/user-profiles'
     | '/_authenticated/hotspot/users'
     | '/_authenticated/hotspot/users-active'
@@ -645,6 +785,9 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/users/permissions'
+    | '/_authenticated/users/roles'
+    | '/_authenticated/users/sessions'
     | '/clerk/(auth)/sign-in'
     | '/clerk/(auth)/sign-up'
     | '/clerk/_authenticated/user-management'
@@ -678,8 +821,8 @@ export interface FileServerRoutesByFullPath {
   '/api/auth/me': typeof ApiAuthMeServerRoute
   '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
   '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutServerRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
-  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
   '/api/permissions/$id': typeof ApiPermissionsIdServerRoute
   '/api/resource/$id': typeof ApiResourceIdServerRoute
   '/api/roles/$id': typeof ApiRolesIdServerRouteWithChildren
@@ -689,20 +832,37 @@ export interface FileServerRoutesByFullPath {
   '/api/resource': typeof ApiResourceIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
+  '/api/auth/sessions/$id': typeof ApiAuthSessionsIdServerRoute
+  '/api/auth/sessions/cleanup': typeof ApiAuthSessionsCleanupServerRoute
+  '/api/auth/sessions/revoke-all': typeof ApiAuthSessionsRevokeAllServerRoute
   '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
   '/api/roles/$id/permissions': typeof ApiRolesIdPermissionsServerRoute
   '/api/users/$id/roles': typeof ApiUsersIdRolesServerRoute
+  '/api/auth/sessions': typeof ApiAuthSessionsIndexServerRoute
+  '/api/mikrotik/router': typeof ApiMikrotikRouterIndexServerRoute
   '/api/users/$id/': typeof ApiUsersIdIndexServerRoute
+  '/api/mikrotik/hotspot/profiles/$id': typeof ApiMikrotikHotspotProfilesIdServerRoute
+  '/api/mikrotik/hotspot/users/$id': typeof ApiMikrotikHotspotUsersIdServerRoute
+  '/api/mikrotik/hotspot/users/active': typeof ApiMikrotikHotspotUsersActiveServerRouteWithChildren
+  '/api/mikrotik/hotspot/users/generate-batch': typeof ApiMikrotikHotspotUsersGenerateBatchServerRoute
+  '/api/mikrotik/hotspot/users/non-active': typeof ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren
+  '/api/mikrotik/router/$id/set-active': typeof ApiMikrotikRouterIdSetActiveServerRoute
   '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
   '/api/users/$id/permissions/check': typeof ApiUsersIdPermissionsCheckServerRoute
+  '/api/mikrotik/hotspot/profiles': typeof ApiMikrotikHotspotProfilesIndexServerRoute
+  '/api/mikrotik/hotspot/users': typeof ApiMikrotikHotspotUsersIndexServerRoute
+  '/api/mikrotik/router/active': typeof ApiMikrotikRouterActiveIndexServerRoute
+  '/api/mikrotik/hotspot/users/active/$id': typeof ApiMikrotikHotspotUsersActiveIdServerRoute
+  '/api/mikrotik/hotspot/users/active/disconnect': typeof ApiMikrotikHotspotUsersActiveDisconnectServerRoute
+  '/api/mikrotik/hotspot/users/non-active/$id': typeof ApiMikrotikHotspotUsersNonActiveIdServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/actions/$id': typeof ApiActionsIdServerRoute
   '/api/auth/me': typeof ApiAuthMeServerRoute
   '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
   '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutServerRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
-  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
   '/api/permissions/$id': typeof ApiPermissionsIdServerRoute
   '/api/resource/$id': typeof ApiResourceIdServerRoute
   '/api/roles/$id': typeof ApiRolesIdServerRouteWithChildren
@@ -711,12 +871,29 @@ export interface FileServerRoutesByTo {
   '/api/resource': typeof ApiResourceIndexServerRoute
   '/api/roles': typeof ApiRolesIndexServerRoute
   '/api/users': typeof ApiUsersIndexServerRoute
+  '/api/auth/sessions/$id': typeof ApiAuthSessionsIdServerRoute
+  '/api/auth/sessions/cleanup': typeof ApiAuthSessionsCleanupServerRoute
+  '/api/auth/sessions/revoke-all': typeof ApiAuthSessionsRevokeAllServerRoute
   '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
   '/api/roles/$id/permissions': typeof ApiRolesIdPermissionsServerRoute
   '/api/users/$id/roles': typeof ApiUsersIdRolesServerRoute
+  '/api/auth/sessions': typeof ApiAuthSessionsIndexServerRoute
+  '/api/mikrotik/router': typeof ApiMikrotikRouterIndexServerRoute
   '/api/users/$id': typeof ApiUsersIdIndexServerRoute
+  '/api/mikrotik/hotspot/profiles/$id': typeof ApiMikrotikHotspotProfilesIdServerRoute
+  '/api/mikrotik/hotspot/users/$id': typeof ApiMikrotikHotspotUsersIdServerRoute
+  '/api/mikrotik/hotspot/users/active': typeof ApiMikrotikHotspotUsersActiveServerRouteWithChildren
+  '/api/mikrotik/hotspot/users/generate-batch': typeof ApiMikrotikHotspotUsersGenerateBatchServerRoute
+  '/api/mikrotik/hotspot/users/non-active': typeof ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren
+  '/api/mikrotik/router/$id/set-active': typeof ApiMikrotikRouterIdSetActiveServerRoute
   '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
   '/api/users/$id/permissions/check': typeof ApiUsersIdPermissionsCheckServerRoute
+  '/api/mikrotik/hotspot/profiles': typeof ApiMikrotikHotspotProfilesIndexServerRoute
+  '/api/mikrotik/hotspot/users': typeof ApiMikrotikHotspotUsersIndexServerRoute
+  '/api/mikrotik/router/active': typeof ApiMikrotikRouterActiveIndexServerRoute
+  '/api/mikrotik/hotspot/users/active/$id': typeof ApiMikrotikHotspotUsersActiveIdServerRoute
+  '/api/mikrotik/hotspot/users/active/disconnect': typeof ApiMikrotikHotspotUsersActiveDisconnectServerRoute
+  '/api/mikrotik/hotspot/users/non-active/$id': typeof ApiMikrotikHotspotUsersNonActiveIdServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
@@ -724,8 +901,8 @@ export interface FileServerRoutesById {
   '/api/auth/me': typeof ApiAuthMeServerRoute
   '/api/auth/refresh': typeof ApiAuthRefreshServerRoute
   '/api/auth/sign-in': typeof ApiAuthSignInServerRoute
+  '/api/auth/sign-out': typeof ApiAuthSignOutServerRoute
   '/api/auth/sign-up': typeof ApiAuthSignUpServerRoute
-  '/api/mikrotik/router': typeof ApiMikrotikRouterServerRouteWithChildren
   '/api/permissions/$id': typeof ApiPermissionsIdServerRoute
   '/api/resource/$id': typeof ApiResourceIdServerRoute
   '/api/roles/$id': typeof ApiRolesIdServerRouteWithChildren
@@ -735,12 +912,29 @@ export interface FileServerRoutesById {
   '/api/resource/': typeof ApiResourceIndexServerRoute
   '/api/roles/': typeof ApiRolesIndexServerRoute
   '/api/users/': typeof ApiUsersIndexServerRoute
+  '/api/auth/sessions/$id': typeof ApiAuthSessionsIdServerRoute
+  '/api/auth/sessions/cleanup': typeof ApiAuthSessionsCleanupServerRoute
+  '/api/auth/sessions/revoke-all': typeof ApiAuthSessionsRevokeAllServerRoute
   '/api/mikrotik/router/$id': typeof ApiMikrotikRouterIdServerRouteWithChildren
   '/api/roles/$id/permissions': typeof ApiRolesIdPermissionsServerRoute
   '/api/users/$id/roles': typeof ApiUsersIdRolesServerRoute
+  '/api/auth/sessions/': typeof ApiAuthSessionsIndexServerRoute
+  '/api/mikrotik/router/': typeof ApiMikrotikRouterIndexServerRoute
   '/api/users/$id/': typeof ApiUsersIdIndexServerRoute
+  '/api/mikrotik/hotspot/profiles/$id': typeof ApiMikrotikHotspotProfilesIdServerRoute
+  '/api/mikrotik/hotspot/users/$id': typeof ApiMikrotikHotspotUsersIdServerRoute
+  '/api/mikrotik/hotspot/users/active': typeof ApiMikrotikHotspotUsersActiveServerRouteWithChildren
+  '/api/mikrotik/hotspot/users/generate-batch': typeof ApiMikrotikHotspotUsersGenerateBatchServerRoute
+  '/api/mikrotik/hotspot/users/non-active': typeof ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren
+  '/api/mikrotik/router/$id/set-active': typeof ApiMikrotikRouterIdSetActiveServerRoute
   '/api/mikrotik/router/$id/status': typeof ApiMikrotikRouterIdStatusServerRoute
   '/api/users/$id/permissions/check': typeof ApiUsersIdPermissionsCheckServerRoute
+  '/api/mikrotik/hotspot/profiles/': typeof ApiMikrotikHotspotProfilesIndexServerRoute
+  '/api/mikrotik/hotspot/users/': typeof ApiMikrotikHotspotUsersIndexServerRoute
+  '/api/mikrotik/router/active/': typeof ApiMikrotikRouterActiveIndexServerRoute
+  '/api/mikrotik/hotspot/users/active/$id': typeof ApiMikrotikHotspotUsersActiveIdServerRoute
+  '/api/mikrotik/hotspot/users/active/disconnect': typeof ApiMikrotikHotspotUsersActiveDisconnectServerRoute
+  '/api/mikrotik/hotspot/users/non-active/$id': typeof ApiMikrotikHotspotUsersNonActiveIdServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
@@ -749,8 +943,8 @@ export interface FileServerRouteTypes {
     | '/api/auth/me'
     | '/api/auth/refresh'
     | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
     | '/api/auth/sign-up'
-    | '/api/mikrotik/router'
     | '/api/permissions/$id'
     | '/api/resource/$id'
     | '/api/roles/$id'
@@ -760,20 +954,37 @@ export interface FileServerRouteTypes {
     | '/api/resource'
     | '/api/roles'
     | '/api/users'
+    | '/api/auth/sessions/$id'
+    | '/api/auth/sessions/cleanup'
+    | '/api/auth/sessions/revoke-all'
     | '/api/mikrotik/router/$id'
     | '/api/roles/$id/permissions'
     | '/api/users/$id/roles'
+    | '/api/auth/sessions'
+    | '/api/mikrotik/router'
     | '/api/users/$id/'
+    | '/api/mikrotik/hotspot/profiles/$id'
+    | '/api/mikrotik/hotspot/users/$id'
+    | '/api/mikrotik/hotspot/users/active'
+    | '/api/mikrotik/hotspot/users/generate-batch'
+    | '/api/mikrotik/hotspot/users/non-active'
+    | '/api/mikrotik/router/$id/set-active'
     | '/api/mikrotik/router/$id/status'
     | '/api/users/$id/permissions/check'
+    | '/api/mikrotik/hotspot/profiles'
+    | '/api/mikrotik/hotspot/users'
+    | '/api/mikrotik/router/active'
+    | '/api/mikrotik/hotspot/users/active/$id'
+    | '/api/mikrotik/hotspot/users/active/disconnect'
+    | '/api/mikrotik/hotspot/users/non-active/$id'
   fileServerRoutesByTo: FileServerRoutesByTo
   to:
     | '/api/actions/$id'
     | '/api/auth/me'
     | '/api/auth/refresh'
     | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
     | '/api/auth/sign-up'
-    | '/api/mikrotik/router'
     | '/api/permissions/$id'
     | '/api/resource/$id'
     | '/api/roles/$id'
@@ -782,20 +993,37 @@ export interface FileServerRouteTypes {
     | '/api/resource'
     | '/api/roles'
     | '/api/users'
+    | '/api/auth/sessions/$id'
+    | '/api/auth/sessions/cleanup'
+    | '/api/auth/sessions/revoke-all'
     | '/api/mikrotik/router/$id'
     | '/api/roles/$id/permissions'
     | '/api/users/$id/roles'
+    | '/api/auth/sessions'
+    | '/api/mikrotik/router'
     | '/api/users/$id'
+    | '/api/mikrotik/hotspot/profiles/$id'
+    | '/api/mikrotik/hotspot/users/$id'
+    | '/api/mikrotik/hotspot/users/active'
+    | '/api/mikrotik/hotspot/users/generate-batch'
+    | '/api/mikrotik/hotspot/users/non-active'
+    | '/api/mikrotik/router/$id/set-active'
     | '/api/mikrotik/router/$id/status'
     | '/api/users/$id/permissions/check'
+    | '/api/mikrotik/hotspot/profiles'
+    | '/api/mikrotik/hotspot/users'
+    | '/api/mikrotik/router/active'
+    | '/api/mikrotik/hotspot/users/active/$id'
+    | '/api/mikrotik/hotspot/users/active/disconnect'
+    | '/api/mikrotik/hotspot/users/non-active/$id'
   id:
     | '__root__'
     | '/api/actions/$id'
     | '/api/auth/me'
     | '/api/auth/refresh'
     | '/api/auth/sign-in'
+    | '/api/auth/sign-out'
     | '/api/auth/sign-up'
-    | '/api/mikrotik/router'
     | '/api/permissions/$id'
     | '/api/resource/$id'
     | '/api/roles/$id'
@@ -805,12 +1033,29 @@ export interface FileServerRouteTypes {
     | '/api/resource/'
     | '/api/roles/'
     | '/api/users/'
+    | '/api/auth/sessions/$id'
+    | '/api/auth/sessions/cleanup'
+    | '/api/auth/sessions/revoke-all'
     | '/api/mikrotik/router/$id'
     | '/api/roles/$id/permissions'
     | '/api/users/$id/roles'
+    | '/api/auth/sessions/'
+    | '/api/mikrotik/router/'
     | '/api/users/$id/'
+    | '/api/mikrotik/hotspot/profiles/$id'
+    | '/api/mikrotik/hotspot/users/$id'
+    | '/api/mikrotik/hotspot/users/active'
+    | '/api/mikrotik/hotspot/users/generate-batch'
+    | '/api/mikrotik/hotspot/users/non-active'
+    | '/api/mikrotik/router/$id/set-active'
     | '/api/mikrotik/router/$id/status'
     | '/api/users/$id/permissions/check'
+    | '/api/mikrotik/hotspot/profiles/'
+    | '/api/mikrotik/hotspot/users/'
+    | '/api/mikrotik/router/active/'
+    | '/api/mikrotik/hotspot/users/active/$id'
+    | '/api/mikrotik/hotspot/users/active/disconnect'
+    | '/api/mikrotik/hotspot/users/non-active/$id'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
@@ -818,8 +1063,8 @@ export interface RootServerRouteChildren {
   ApiAuthMeServerRoute: typeof ApiAuthMeServerRoute
   ApiAuthRefreshServerRoute: typeof ApiAuthRefreshServerRoute
   ApiAuthSignInServerRoute: typeof ApiAuthSignInServerRoute
+  ApiAuthSignOutServerRoute: typeof ApiAuthSignOutServerRoute
   ApiAuthSignUpServerRoute: typeof ApiAuthSignUpServerRoute
-  ApiMikrotikRouterServerRoute: typeof ApiMikrotikRouterServerRouteWithChildren
   ApiPermissionsIdServerRoute: typeof ApiPermissionsIdServerRoute
   ApiResourceIdServerRoute: typeof ApiResourceIdServerRoute
   ApiRolesIdServerRoute: typeof ApiRolesIdServerRouteWithChildren
@@ -829,6 +1074,20 @@ export interface RootServerRouteChildren {
   ApiResourceIndexServerRoute: typeof ApiResourceIndexServerRoute
   ApiRolesIndexServerRoute: typeof ApiRolesIndexServerRoute
   ApiUsersIndexServerRoute: typeof ApiUsersIndexServerRoute
+  ApiAuthSessionsIdServerRoute: typeof ApiAuthSessionsIdServerRoute
+  ApiAuthSessionsCleanupServerRoute: typeof ApiAuthSessionsCleanupServerRoute
+  ApiAuthSessionsRevokeAllServerRoute: typeof ApiAuthSessionsRevokeAllServerRoute
+  ApiMikrotikRouterIdServerRoute: typeof ApiMikrotikRouterIdServerRouteWithChildren
+  ApiAuthSessionsIndexServerRoute: typeof ApiAuthSessionsIndexServerRoute
+  ApiMikrotikRouterIndexServerRoute: typeof ApiMikrotikRouterIndexServerRoute
+  ApiMikrotikHotspotProfilesIdServerRoute: typeof ApiMikrotikHotspotProfilesIdServerRoute
+  ApiMikrotikHotspotUsersIdServerRoute: typeof ApiMikrotikHotspotUsersIdServerRoute
+  ApiMikrotikHotspotUsersActiveServerRoute: typeof ApiMikrotikHotspotUsersActiveServerRouteWithChildren
+  ApiMikrotikHotspotUsersGenerateBatchServerRoute: typeof ApiMikrotikHotspotUsersGenerateBatchServerRoute
+  ApiMikrotikHotspotUsersNonActiveServerRoute: typeof ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren
+  ApiMikrotikHotspotProfilesIndexServerRoute: typeof ApiMikrotikHotspotProfilesIndexServerRoute
+  ApiMikrotikHotspotUsersIndexServerRoute: typeof ApiMikrotikHotspotUsersIndexServerRoute
+  ApiMikrotikRouterActiveIndexServerRoute: typeof ApiMikrotikRouterActiveIndexServerRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1029,6 +1288,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClerkauthSignInRouteImport
       parentRoute: typeof ClerkauthRouteRoute
     }
+    '/_authenticated/users/sessions': {
+      id: '/_authenticated/users/sessions'
+      path: '/users/sessions'
+      fullPath: '/users/sessions'
+      preLoaderRoute: typeof AuthenticatedUsersSessionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/roles': {
+      id: '/_authenticated/users/roles'
+      path: '/users/roles'
+      fullPath: '/users/roles'
+      preLoaderRoute: typeof AuthenticatedUsersRolesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/users/permissions': {
+      id: '/_authenticated/users/permissions'
+      path: '/users/permissions'
+      fullPath: '/users/permissions'
+      preLoaderRoute: typeof AuthenticatedUsersPermissionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
@@ -1083,13 +1363,6 @@ declare module '@tanstack/react-router' {
       path: '/hotspot/user-profiles'
       fullPath: '/hotspot/user-profiles'
       preLoaderRoute: typeof AuthenticatedHotspotUserProfilesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/hotspot/server': {
-      id: '/_authenticated/hotspot/server'
-      path: '/hotspot/server'
-      fullPath: '/hotspot/server'
-      preLoaderRoute: typeof AuthenticatedHotspotServerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hotspot/hosts': {
@@ -1187,18 +1460,18 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiPermissionsIdServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
-    '/api/mikrotik/router': {
-      id: '/api/mikrotik/router'
-      path: '/api/mikrotik/router'
-      fullPath: '/api/mikrotik/router'
-      preLoaderRoute: typeof ApiMikrotikRouterServerRouteImport
-      parentRoute: typeof rootServerRouteImport
-    }
     '/api/auth/sign-up': {
       id: '/api/auth/sign-up'
       path: '/api/auth/sign-up'
       fullPath: '/api/auth/sign-up'
       preLoaderRoute: typeof ApiAuthSignUpServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sign-out': {
+      id: '/api/auth/sign-out'
+      path: '/api/auth/sign-out'
+      fullPath: '/api/auth/sign-out'
+      preLoaderRoute: typeof ApiAuthSignOutServerRouteImport
       parentRoute: typeof rootServerRouteImport
     }
     '/api/auth/sign-in': {
@@ -1236,6 +1509,20 @@ declare module '@tanstack/react-start/server' {
       preLoaderRoute: typeof ApiUsersIdIndexServerRouteImport
       parentRoute: typeof ApiUsersIdServerRoute
     }
+    '/api/mikrotik/router/': {
+      id: '/api/mikrotik/router/'
+      path: '/api/mikrotik/router'
+      fullPath: '/api/mikrotik/router'
+      preLoaderRoute: typeof ApiMikrotikRouterIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sessions/': {
+      id: '/api/auth/sessions/'
+      path: '/api/auth/sessions'
+      fullPath: '/api/auth/sessions'
+      preLoaderRoute: typeof ApiAuthSessionsIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/users/$id/roles': {
       id: '/api/users/$id/roles'
       path: '/roles'
@@ -1252,10 +1539,52 @@ declare module '@tanstack/react-start/server' {
     }
     '/api/mikrotik/router/$id': {
       id: '/api/mikrotik/router/$id'
-      path: '/$id'
+      path: '/api/mikrotik/router/$id'
       fullPath: '/api/mikrotik/router/$id'
       preLoaderRoute: typeof ApiMikrotikRouterIdServerRouteImport
-      parentRoute: typeof ApiMikrotikRouterServerRoute
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sessions/revoke-all': {
+      id: '/api/auth/sessions/revoke-all'
+      path: '/api/auth/sessions/revoke-all'
+      fullPath: '/api/auth/sessions/revoke-all'
+      preLoaderRoute: typeof ApiAuthSessionsRevokeAllServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sessions/cleanup': {
+      id: '/api/auth/sessions/cleanup'
+      path: '/api/auth/sessions/cleanup'
+      fullPath: '/api/auth/sessions/cleanup'
+      preLoaderRoute: typeof ApiAuthSessionsCleanupServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/auth/sessions/$id': {
+      id: '/api/auth/sessions/$id'
+      path: '/api/auth/sessions/$id'
+      fullPath: '/api/auth/sessions/$id'
+      preLoaderRoute: typeof ApiAuthSessionsIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/router/active/': {
+      id: '/api/mikrotik/router/active/'
+      path: '/api/mikrotik/router/active'
+      fullPath: '/api/mikrotik/router/active'
+      preLoaderRoute: typeof ApiMikrotikRouterActiveIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/users/': {
+      id: '/api/mikrotik/hotspot/users/'
+      path: '/api/mikrotik/hotspot/users'
+      fullPath: '/api/mikrotik/hotspot/users'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/profiles/': {
+      id: '/api/mikrotik/hotspot/profiles/'
+      path: '/api/mikrotik/hotspot/profiles'
+      fullPath: '/api/mikrotik/hotspot/profiles'
+      preLoaderRoute: typeof ApiMikrotikHotspotProfilesIndexServerRouteImport
+      parentRoute: typeof rootServerRouteImport
     }
     '/api/users/$id/permissions/check': {
       id: '/api/users/$id/permissions/check'
@@ -1270,6 +1599,69 @@ declare module '@tanstack/react-start/server' {
       fullPath: '/api/mikrotik/router/$id/status'
       preLoaderRoute: typeof ApiMikrotikRouterIdStatusServerRouteImport
       parentRoute: typeof ApiMikrotikRouterIdServerRoute
+    }
+    '/api/mikrotik/router/$id/set-active': {
+      id: '/api/mikrotik/router/$id/set-active'
+      path: '/set-active'
+      fullPath: '/api/mikrotik/router/$id/set-active'
+      preLoaderRoute: typeof ApiMikrotikRouterIdSetActiveServerRouteImport
+      parentRoute: typeof ApiMikrotikRouterIdServerRoute
+    }
+    '/api/mikrotik/hotspot/users/non-active': {
+      id: '/api/mikrotik/hotspot/users/non-active'
+      path: '/api/mikrotik/hotspot/users/non-active'
+      fullPath: '/api/mikrotik/hotspot/users/non-active'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersNonActiveServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/users/generate-batch': {
+      id: '/api/mikrotik/hotspot/users/generate-batch'
+      path: '/api/mikrotik/hotspot/users/generate-batch'
+      fullPath: '/api/mikrotik/hotspot/users/generate-batch'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersGenerateBatchServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/users/active': {
+      id: '/api/mikrotik/hotspot/users/active'
+      path: '/api/mikrotik/hotspot/users/active'
+      fullPath: '/api/mikrotik/hotspot/users/active'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersActiveServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/users/$id': {
+      id: '/api/mikrotik/hotspot/users/$id'
+      path: '/api/mikrotik/hotspot/users/$id'
+      fullPath: '/api/mikrotik/hotspot/users/$id'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/profiles/$id': {
+      id: '/api/mikrotik/hotspot/profiles/$id'
+      path: '/api/mikrotik/hotspot/profiles/$id'
+      fullPath: '/api/mikrotik/hotspot/profiles/$id'
+      preLoaderRoute: typeof ApiMikrotikHotspotProfilesIdServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
+    '/api/mikrotik/hotspot/users/non-active/$id': {
+      id: '/api/mikrotik/hotspot/users/non-active/$id'
+      path: '/$id'
+      fullPath: '/api/mikrotik/hotspot/users/non-active/$id'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersNonActiveIdServerRouteImport
+      parentRoute: typeof ApiMikrotikHotspotUsersNonActiveServerRoute
+    }
+    '/api/mikrotik/hotspot/users/active/disconnect': {
+      id: '/api/mikrotik/hotspot/users/active/disconnect'
+      path: '/disconnect'
+      fullPath: '/api/mikrotik/hotspot/users/active/disconnect'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersActiveDisconnectServerRouteImport
+      parentRoute: typeof ApiMikrotikHotspotUsersActiveServerRoute
+    }
+    '/api/mikrotik/hotspot/users/active/$id': {
+      id: '/api/mikrotik/hotspot/users/active/$id'
+      path: '/$id'
+      fullPath: '/api/mikrotik/hotspot/users/active/$id'
+      preLoaderRoute: typeof ApiMikrotikHotspotUsersActiveIdServerRouteImport
+      parentRoute: typeof ApiMikrotikHotspotUsersActiveServerRoute
     }
   }
 }
@@ -1304,11 +1696,13 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardProductRoute: typeof AuthenticatedDashboardProductRoute
   AuthenticatedErrorsErrorRoute: typeof AuthenticatedErrorsErrorRoute
   AuthenticatedHotspotHostsRoute: typeof AuthenticatedHotspotHostsRoute
-  AuthenticatedHotspotServerRoute: typeof AuthenticatedHotspotServerRoute
   AuthenticatedHotspotUserProfilesRoute: typeof AuthenticatedHotspotUserProfilesRoute
   AuthenticatedHotspotUsersRoute: typeof AuthenticatedHotspotUsersRoute
   AuthenticatedHotspotUsersActiveRoute: typeof AuthenticatedHotspotUsersActiveRoute
   AuthenticatedHotspotUsersNonActiveRoute: typeof AuthenticatedHotspotUsersNonActiveRoute
+  AuthenticatedUsersPermissionsRoute: typeof AuthenticatedUsersPermissionsRoute
+  AuthenticatedUsersRolesRoute: typeof AuthenticatedUsersRolesRoute
+  AuthenticatedUsersSessionsRoute: typeof AuthenticatedUsersSessionsRoute
   AuthenticatedAppsIndexRoute: typeof AuthenticatedAppsIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
@@ -1326,12 +1720,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardProductRoute: AuthenticatedDashboardProductRoute,
   AuthenticatedErrorsErrorRoute: AuthenticatedErrorsErrorRoute,
   AuthenticatedHotspotHostsRoute: AuthenticatedHotspotHostsRoute,
-  AuthenticatedHotspotServerRoute: AuthenticatedHotspotServerRoute,
   AuthenticatedHotspotUserProfilesRoute: AuthenticatedHotspotUserProfilesRoute,
   AuthenticatedHotspotUsersRoute: AuthenticatedHotspotUsersRoute,
   AuthenticatedHotspotUsersActiveRoute: AuthenticatedHotspotUsersActiveRoute,
   AuthenticatedHotspotUsersNonActiveRoute:
     AuthenticatedHotspotUsersNonActiveRoute,
+  AuthenticatedUsersPermissionsRoute: AuthenticatedUsersPermissionsRoute,
+  AuthenticatedUsersRolesRoute: AuthenticatedUsersRolesRoute,
+  AuthenticatedUsersSessionsRoute: AuthenticatedUsersSessionsRoute,
   AuthenticatedAppsIndexRoute: AuthenticatedAppsIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
@@ -1388,34 +1784,6 @@ const ClerkRouteRouteWithChildren = ClerkRouteRoute._addFileChildren(
   ClerkRouteRouteChildren,
 )
 
-interface ApiMikrotikRouterIdServerRouteChildren {
-  ApiMikrotikRouterIdStatusServerRoute: typeof ApiMikrotikRouterIdStatusServerRoute
-}
-
-const ApiMikrotikRouterIdServerRouteChildren: ApiMikrotikRouterIdServerRouteChildren =
-  {
-    ApiMikrotikRouterIdStatusServerRoute: ApiMikrotikRouterIdStatusServerRoute,
-  }
-
-const ApiMikrotikRouterIdServerRouteWithChildren =
-  ApiMikrotikRouterIdServerRoute._addFileChildren(
-    ApiMikrotikRouterIdServerRouteChildren,
-  )
-
-interface ApiMikrotikRouterServerRouteChildren {
-  ApiMikrotikRouterIdServerRoute: typeof ApiMikrotikRouterIdServerRouteWithChildren
-}
-
-const ApiMikrotikRouterServerRouteChildren: ApiMikrotikRouterServerRouteChildren =
-  {
-    ApiMikrotikRouterIdServerRoute: ApiMikrotikRouterIdServerRouteWithChildren,
-  }
-
-const ApiMikrotikRouterServerRouteWithChildren =
-  ApiMikrotikRouterServerRoute._addFileChildren(
-    ApiMikrotikRouterServerRouteChildren,
-  )
-
 interface ApiRolesIdServerRouteChildren {
   ApiRolesIdPermissionsServerRoute: typeof ApiRolesIdPermissionsServerRoute
 }
@@ -1442,6 +1810,56 @@ const ApiUsersIdServerRouteChildren: ApiUsersIdServerRouteChildren = {
 const ApiUsersIdServerRouteWithChildren =
   ApiUsersIdServerRoute._addFileChildren(ApiUsersIdServerRouteChildren)
 
+interface ApiMikrotikRouterIdServerRouteChildren {
+  ApiMikrotikRouterIdSetActiveServerRoute: typeof ApiMikrotikRouterIdSetActiveServerRoute
+  ApiMikrotikRouterIdStatusServerRoute: typeof ApiMikrotikRouterIdStatusServerRoute
+}
+
+const ApiMikrotikRouterIdServerRouteChildren: ApiMikrotikRouterIdServerRouteChildren =
+  {
+    ApiMikrotikRouterIdSetActiveServerRoute:
+      ApiMikrotikRouterIdSetActiveServerRoute,
+    ApiMikrotikRouterIdStatusServerRoute: ApiMikrotikRouterIdStatusServerRoute,
+  }
+
+const ApiMikrotikRouterIdServerRouteWithChildren =
+  ApiMikrotikRouterIdServerRoute._addFileChildren(
+    ApiMikrotikRouterIdServerRouteChildren,
+  )
+
+interface ApiMikrotikHotspotUsersActiveServerRouteChildren {
+  ApiMikrotikHotspotUsersActiveIdServerRoute: typeof ApiMikrotikHotspotUsersActiveIdServerRoute
+  ApiMikrotikHotspotUsersActiveDisconnectServerRoute: typeof ApiMikrotikHotspotUsersActiveDisconnectServerRoute
+}
+
+const ApiMikrotikHotspotUsersActiveServerRouteChildren: ApiMikrotikHotspotUsersActiveServerRouteChildren =
+  {
+    ApiMikrotikHotspotUsersActiveIdServerRoute:
+      ApiMikrotikHotspotUsersActiveIdServerRoute,
+    ApiMikrotikHotspotUsersActiveDisconnectServerRoute:
+      ApiMikrotikHotspotUsersActiveDisconnectServerRoute,
+  }
+
+const ApiMikrotikHotspotUsersActiveServerRouteWithChildren =
+  ApiMikrotikHotspotUsersActiveServerRoute._addFileChildren(
+    ApiMikrotikHotspotUsersActiveServerRouteChildren,
+  )
+
+interface ApiMikrotikHotspotUsersNonActiveServerRouteChildren {
+  ApiMikrotikHotspotUsersNonActiveIdServerRoute: typeof ApiMikrotikHotspotUsersNonActiveIdServerRoute
+}
+
+const ApiMikrotikHotspotUsersNonActiveServerRouteChildren: ApiMikrotikHotspotUsersNonActiveServerRouteChildren =
+  {
+    ApiMikrotikHotspotUsersNonActiveIdServerRoute:
+      ApiMikrotikHotspotUsersNonActiveIdServerRoute,
+  }
+
+const ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren =
+  ApiMikrotikHotspotUsersNonActiveServerRoute._addFileChildren(
+    ApiMikrotikHotspotUsersNonActiveServerRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ClerkRouteRoute: ClerkRouteRouteWithChildren,
@@ -1464,8 +1882,8 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiAuthMeServerRoute: ApiAuthMeServerRoute,
   ApiAuthRefreshServerRoute: ApiAuthRefreshServerRoute,
   ApiAuthSignInServerRoute: ApiAuthSignInServerRoute,
+  ApiAuthSignOutServerRoute: ApiAuthSignOutServerRoute,
   ApiAuthSignUpServerRoute: ApiAuthSignUpServerRoute,
-  ApiMikrotikRouterServerRoute: ApiMikrotikRouterServerRouteWithChildren,
   ApiPermissionsIdServerRoute: ApiPermissionsIdServerRoute,
   ApiResourceIdServerRoute: ApiResourceIdServerRoute,
   ApiRolesIdServerRoute: ApiRolesIdServerRouteWithChildren,
@@ -1475,6 +1893,27 @@ const rootServerRouteChildren: RootServerRouteChildren = {
   ApiResourceIndexServerRoute: ApiResourceIndexServerRoute,
   ApiRolesIndexServerRoute: ApiRolesIndexServerRoute,
   ApiUsersIndexServerRoute: ApiUsersIndexServerRoute,
+  ApiAuthSessionsIdServerRoute: ApiAuthSessionsIdServerRoute,
+  ApiAuthSessionsCleanupServerRoute: ApiAuthSessionsCleanupServerRoute,
+  ApiAuthSessionsRevokeAllServerRoute: ApiAuthSessionsRevokeAllServerRoute,
+  ApiMikrotikRouterIdServerRoute: ApiMikrotikRouterIdServerRouteWithChildren,
+  ApiAuthSessionsIndexServerRoute: ApiAuthSessionsIndexServerRoute,
+  ApiMikrotikRouterIndexServerRoute: ApiMikrotikRouterIndexServerRoute,
+  ApiMikrotikHotspotProfilesIdServerRoute:
+    ApiMikrotikHotspotProfilesIdServerRoute,
+  ApiMikrotikHotspotUsersIdServerRoute: ApiMikrotikHotspotUsersIdServerRoute,
+  ApiMikrotikHotspotUsersActiveServerRoute:
+    ApiMikrotikHotspotUsersActiveServerRouteWithChildren,
+  ApiMikrotikHotspotUsersGenerateBatchServerRoute:
+    ApiMikrotikHotspotUsersGenerateBatchServerRoute,
+  ApiMikrotikHotspotUsersNonActiveServerRoute:
+    ApiMikrotikHotspotUsersNonActiveServerRouteWithChildren,
+  ApiMikrotikHotspotProfilesIndexServerRoute:
+    ApiMikrotikHotspotProfilesIndexServerRoute,
+  ApiMikrotikHotspotUsersIndexServerRoute:
+    ApiMikrotikHotspotUsersIndexServerRoute,
+  ApiMikrotikRouterActiveIndexServerRoute:
+    ApiMikrotikRouterActiveIndexServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
   ._addFileChildren(rootServerRouteChildren)

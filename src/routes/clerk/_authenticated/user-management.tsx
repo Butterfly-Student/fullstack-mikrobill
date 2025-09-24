@@ -14,11 +14,11 @@ import { Main } from '@/components/layout/main'
 import { LearnMore } from '@/components/learn-more'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { UsersDialogs } from '@/features/users/components/users-dialogs'
-import { UsersPrimaryButtons } from '@/features/users/components/users-primary-buttons'
-import { UsersProvider } from '@/features/users/components/users-provider'
-import { UsersTable } from '@/features/users/components/users-table'
-import { users } from '@/features/users/data/users'
+import { UsersDialogs } from '@/features/users/sessions/components/sessions-dialogs'
+import { UsersPrimaryButtons } from '@/features/users/sessions/components/sessions-primary-buttons'
+import { UsersProvider } from '@/features/users/sessions/components/sessions-provider'
+import { UsersTable } from '@/features/users/sessions/components/sessions-table'
+import { users } from '@/features/users/sessions/data/sessions'
 
 export const Route = createFileRoute('/clerk/_authenticated/user-management')({
   component: UserManagement,

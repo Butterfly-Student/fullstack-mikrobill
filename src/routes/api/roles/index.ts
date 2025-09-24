@@ -58,7 +58,7 @@ export const ServerRoute = createServerFileRoute("/api/roles/").methods({
       if (error instanceof z.ZodError) {
         return json({ 
           error: "Validation error", 
-          details: error.errors 
+          details: error.message 
         }, { status: 400 });
       }
 

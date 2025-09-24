@@ -8,12 +8,13 @@ import { ThemeSwitch } from '@/components/theme-switch'
 import { RoutersDialogs } from './components/routers-dialogs'
 import { RoutersProvider } from './components/routers-provider'
 import { RoutersTable } from './components/routers-table'
-import { routers } from './data/routers'
 import { RoutersPrimaryButtons } from './components/routers-primary-button'
+import { useRouterSwitcherData } from '@/hooks/use-router'
 
 const route = getRouteApi('/_authenticated/mikrotik/')
 
 export function Routers() {
+  const {routers} = useRouterSwitcherData()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   // console.log(route)

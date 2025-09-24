@@ -37,7 +37,7 @@ export async function authenticateToken(request: Request): Promise<AuthUser | nu
     const token = authHeader.substring(7);
     const { payload } = await jwtVerify(token, getJWTSecret());
 
-    const jwtPayload = payload as JWTPayload;
+    const jwtPayload = payload as unknown as JWTPayload;
 
     // Verify user still exists
     const user = await getUserById(jwtPayload.userId);

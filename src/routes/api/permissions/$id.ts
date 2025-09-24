@@ -1,4 +1,3 @@
-// /api/permissions/[permissionId].ts
 import { z } from 'zod';
 import { updatePermission, deletePermission } from '@/db/utils/users';
 import { json } from '@tanstack/react-start';
@@ -42,7 +41,7 @@ export const ServerRoute = createServerFileRoute('/api/permissions/$id').methods
         return json(
           {
             error: 'Validation error',
-            details: error.errors,
+            details: error.message,
           },
           { status: 400 }
         )
@@ -54,7 +53,7 @@ export const ServerRoute = createServerFileRoute('/api/permissions/$id').methods
 
   DELETE: async ({ params }) => {
     try {
-      const permissionId = parseInt(params.permissionId)
+      const permissionId = parseInt(params.id)
       if (isNaN(permissionId)) {
         return json({ error: 'Invalid permission ID' }, { status: 400 })
       }

@@ -9,9 +9,16 @@ import {
 } from '@/components/ui/card'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
+import { checkAuthStatus, useAuthStore } from '@/stores/auth-store'
 
 export function SignIn() {
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
+  const { isAuthenticated, user, accessToken, isTokenExpired } = useAuthStore.getState().auth
+  console.log("login")
+  console.log("AUTHENTICATED:", isAuthenticated())
+  console.log("Access Token:", !!accessToken)
+  console.log("User:", !!user) // 👈 Ini yang mungkin false
+  console.log("Token Expired:", isTokenExpired())
 
   return (
     <AuthLayout>

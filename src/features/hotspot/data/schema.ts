@@ -8,13 +8,6 @@ const _userStatus = z.union([
 ])
 export type UserStatus = z.infer<typeof _userStatus>
 
-// User mode  - untuk generate voucher
-const userMode = z.union([
-  z.literal('single'),
-  z.literal('batch'),
-  z.literal('bulk'),
-])
-export type UserMode = z.infer<typeof userMode>
 
 // Character set  - untuk generate voucher
 const characterSet = z.union([
@@ -35,14 +28,12 @@ const lockSetting = z.enum(["Enable", "Disable"])
 
 // Login method 
 const loginBy = z.union([
-  z.literal('trial'),
-  z.literal('mac'),
   z.literal('cookie'),
-  z.literal('https'),
-  z.literal('http-chap'),
   z.literal('http-pap'),
+  z.literal('https'),
+  z.literal('mac'),
+  z.literal('trial'),
 ])
-export type LoginBy = z.infer<typeof loginBy>
 
 // Generate voucher 
 export const generateVoucher = z.object({
@@ -63,7 +54,6 @@ export const generateVoucher = z.object({
   server: z.string().min(1, {
     message: 'Server must be selected.',
   }),
-  userMode: userMode,
   nameLength: z
     .string()
     .min(1, {
@@ -86,50 +76,27 @@ export const generateVoucher = z.object({
   timeLimit: z.string().optional(),
   comment: z.string().optional(),
   dataLimit: z.string().optional(),
+  genCode: z.string().optional(),
 })
 export type GenerateVoucher = z.infer<typeof generateVoucher>
 
 // User 
-export const HotspotUser = z
-  .object({
-    server: z.string().min(1, {
-      message: 'Server must be selected.',
-    }),
-    name: z.string().min(2, {
-      message: 'Name must be at least 2 characters.',
-    }),
-    passwordEnabled: z.boolean(),
-    password: z.string().optional(),
-    macAddress: z.string().optional(),
-    profile: z.string().min(1, {
-      message: 'Profile must be selected.',
-    }),
-    timeLimit: z.string().optional(),
-    dataLimit: z.string().optional(),
-    comment: z.string().optional(),
-    uptime: z.string().optional(),
-    bytesIn: z.string().optional(),
-    bytesOut: z.string().optional(),
-    limitUptime: z.string().optional(),
-    limitBytesTotal: z.string().optional(),
-    userCode: z.string().optional(),
-    expireDate: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (
-        data.passwordEnabled &&
-        (!data.password || data.password.length < 1)
-      ) {
-        return false
-      }
-      return true
-    },
-    {
-      message: 'Password is required when password is enabled.',
-      path: ['password'],
-    }
-  )
+export const HotspotUser = z.object({
+  id: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
+  comment: z.string().optional().nullable(),
+  email: z.string().optional().nullable(),
+  limitBytesIn: z.number().optional().nullable(),
+  limitBytesOut: z.number().optional().nullable(),
+  limitBytesTotal: z.number().optional().nullable(),
+  limitUptime: z.string().optional().nullable(),
+  macAddress: z.string().optional().nullable(),
+  name: z.string().min(2, { message: 'Name must be at least 2 characters.' }),
+  password: z.string().optional().nullable(),
+  profile: z.string().optional().nullable(),
+  routes: z.string().optional().nullable(),
+  server: z.string().optional().nullable(),
+})
 export type HotspotUser = z.infer<typeof HotspotUser>
 
 export const Profile = z.object({
@@ -164,25 +131,30 @@ export type ProfileForm = Omit<Profile, "onLogin">
 
 
 
-// Active table 
-export const ActiveUser = z.object({
+export const ActiveUserSchema = z.object({
+  '.id': z.string().optional().nullable(),
   server: z.string().min(1),
   user: z.string().min(1),
   address: z
     .string()
     .regex(
-      /\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/,
+      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
       'Invalid IP address'
     ),
-  macAddress: z.string().optional().nullable(),
+  'mac-address': z.string().optional().nullable(),
   uptime: z.string().optional().nullable(),
-  bytesIn: z.string().optional().nullable(),
-  bytesOut: z.string().optional().nullable(),
-  timeLeft: z.string().optional().nullable(),
-  loginBy: loginBy.optional().nullable(),
-  comment: z.string().optional().nullable(),
+  'idle-time': z.string().optional().nullable(),
+  'session-time-left': z.string().optional().nullable(),
+  'idle-timeout': z.string().optional().nullable(),
+  'keepalive-timeout': z.string().optional().nullable(),
+  'bytes-in': z.string().optional().nullable(),
+  'packets-in': z.string().optional().nullable(),
+  'bytes-out': z.string().optional().nullable(),
+  'packets-out': z.string().optional().nullable(),
+  'login-by': loginBy.optional().nullable(),
 })
-export type ActiveUser = z.infer<typeof ActiveUser>
+
+export type ActiveUser = z.infer<typeof ActiveUserSchema>
 
 // Hosts table 
 const Hosts = z.object({
@@ -216,10 +188,6 @@ export const NonActiveUser = z.object({
   comment: z.string().optional().nullable(),
 })
 export type NonActiveUser = z.infer<typeof NonActiveUser>
-
-// List s
-export const activeTableList = z.array(ActiveUser)
-export type ActiveTableList = z.infer<typeof activeTableList>
 
 export const hostsTableList = z.array(Hosts)
 export type HostsTableList = z.infer<typeof hostsTableList>

@@ -9,7 +9,11 @@ export interface UserWithRoles {
 	username: string | null; // Made nullable
 	name: string;
 	image: string | null;
-	emailVerified: boolean; // Changed from Date | null to boolean
+	emailVerified: boolean; 
+	isActive: boolean | null;
+	banned: boolean | null;
+	banReason: string | null;
+	banExpires: Date | null;
 	password?: string;
 	createdAt: Date;
 	updatedAt: Date;
@@ -83,6 +87,10 @@ export async function getUserById(id: string): Promise<UserWithRoles | null> {
 		name: user.name,
 		image: user.image,
 		emailVerified: user.emailVerified,
+		isActive: user.is_active,
+		banned: user.banned,
+		banReason: user.banReason,
+		banExpires: user.banExpires,
 		createdAt: user.createdAt,
 		updatedAt: user.updatedAt,
 		roles,
@@ -138,6 +146,10 @@ export async function getUserByEmail(
 		name: user.name,
 		image: user.image,
 		emailVerified: user.emailVerified,
+		isActive: user.is_active,
+		banned: user.banned,
+		banReason: user.banReason,
+		banExpires: user.banExpires,
 		password: user.password,
 		createdAt: user.createdAt,
 		updatedAt: user.updatedAt,

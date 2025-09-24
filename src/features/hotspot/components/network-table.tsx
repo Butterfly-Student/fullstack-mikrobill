@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Checkbox } from "@/components/ui/checkbox"
 import { ChevronDown, Power, PowerOff, ChevronRight } from "lucide-react"
 import { ConfirmationModal } from "./dialogs/confirmation-modal"
-import { EditUserModal } from "./dialogs/edit-user-modal"
+import { EditUserModal } from "../users/components/edit-user-action-dialog"
 import { EditProfileModal } from "./dialogs/edit-profile-modal"
 
 interface NetworkTableProps {

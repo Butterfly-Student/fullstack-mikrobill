@@ -1,15 +1,21 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { addHotspotProfile, updateHotspotProfile, deleteHotspotProfile } from '@/lib/mikrotik';
-import { showSubmittedData } from '@/lib/show-submitted-data';
+import { showSubmittedData } from '@/lib/show-submitted-data'
+import {
+  createHotspotProfile,
+  updateHotspotProfile,
+  deleteHotspotProfile,
+} from '@/features/hotspot/server/hotspot-profiles'
 import { type ProfileForm } from '../../data/schema';
 
 
 export const useHotspotProfile = () => {
   const queryClient = useQueryClient()
+  const routerId = 1
 
   const addProfileMutation = useMutation({
-    mutationFn: (profileData: ProfileForm) => addHotspotProfile(profileData, 1),
+    mutationFn: (profileData: ProfileForm) =>
+      createHotspotProfile({data: {routerId, ...profileData}}),
     onSuccess: (data) => {
       showSubmittedData(data)
       // Invalidate and refetch profiles list
@@ -28,7 +34,7 @@ export const useHotspotProfile = () => {
     }: {
       profileId: string
       profileData: ProfileForm
-    }) => updateHotspotProfile(profileId, profileData),
+    }) => updateHotspotProfile({data: {routerId, profileId, ...profileData}}),
     onSuccess: (data, variables) => {
       showSubmittedData(data)
       // Update cache with new data
@@ -44,7 +50,7 @@ export const useHotspotProfile = () => {
   })
 
   const deleteProfileMutation = useMutation({
-    mutationFn: deleteHotspotProfile,
+    mutationFn: ({profileId}: {routerId: number; profileId: string}) => deleteHotspotProfile({data: {routerId, profileId}}),
     onSuccess: (data, profileId) => {
       showSubmittedData(data)
       // Remove from cache

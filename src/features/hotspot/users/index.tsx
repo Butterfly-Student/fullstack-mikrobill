@@ -1,21 +1,21 @@
-// components/hotspot/hotspot-index.tsx
 "use client"
 
 import { getRouteApi } from "@tanstack/react-router"
 import { HotspotUsersTable } from "./components/hotspot-user-table"
-import { hotspotUsers } from "../data/data"
 import HotspotTopNav from "../components/hotspot-top-nav"
 import { HotspotUserProvider } from "./components/hotspot-user-provider"
 import { HotspotUsersPrimaryButtons } from "./components/hotspot-users-primary-buttons"
-
+import { useHotspotUser } from "./hooks/user"
+import { HotspotUsersDialogs } from "./components/hotspot-user-dialog"
 
 const route = getRouteApi('/_authenticated/hotspot/users')
 
-
 export default function HotspotUser() {
-
   const search = route.useSearch()
   const navigate = route.useNavigate()
+  // const { activeRouter } = useRouterSwitcherData()
+  const { users } = useHotspotUser()
+
 
   return (
     <HotspotUserProvider>
@@ -30,11 +30,12 @@ export default function HotspotUser() {
           <HotspotUsersTable
             search={search}
             navigate={navigate}
-            data={hotspotUsers}
+            data={users || []}
           />
         </div>
-
       </HotspotTopNav>
+
+      <HotspotUsersDialogs/>
     </HotspotUserProvider>
   )
 }

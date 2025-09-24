@@ -35,7 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
-import { ChevronRight, ChevronDown, User, Server, Clock, Activity, Eye, EyeOff, Wifi, Timer, Database, Code, Calendar, MessageSquare } from 'lucide-react'
+import { ChevronRight, ChevronDown, User, Server, Wifi, Timer, Database, MessageSquare } from 'lucide-react'
 import { type HotspotUser } from '../../data/schema'
 import { hotspotUsersColumns as columns } from './hotspot-user-column'
 import { HotspotDataTableBulkActions } from './hotspot-data-table-bulk-action'
@@ -113,14 +113,6 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
     }))
   }
 
-  const formatDate = (date: string | Date) => {
-    if (!date) return 'Never'
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    })
-  }
 
   const renderMobileCard = (row: Row<HotspotUser>, index: number) => {
     const item = row.original
@@ -195,24 +187,6 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
               <div className="border-t pt-4 space-y-4">
                 {/* User Details Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                  {/* Password Status */}
-                  <div className="flex items-center space-x-2">
-                    {item.passwordEnabled ? (
-                      <>
-                        <Eye className="h-4 w-4 text-green-600 flex-shrink-0" />
-                        <span className="font-medium">Password:</span>
-                        <span className="font-mono text-xs">
-                          {item.password ? '••••••••' : 'Not set'}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <EyeOff className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="font-medium">Password:</span>
-                        <span className="text-muted-foreground">Disabled</span>
-                      </>
-                    )}
-                  </div>
 
                   {/* MAC Address */}
                   {item.macAddress && (
@@ -243,35 +217,6 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
                     </div>
                   )}
 
-                  {/* Uptime */}
-                  {item.uptime && (
-                    <div className="flex items-center space-x-2">
-                      <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="font-medium">Uptime:</span>
-                      <code className="text-xs font-mono">{item.uptime}</code>
-                    </div>
-                  )}
-
-                  {/* User Code */}
-                  {item.userCode && (
-                    <div className="flex items-center space-x-2">
-                      <Code className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="font-medium">Code:</span>
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded font-mono">
-                        {item.userCode}
-                      </code>
-                    </div>
-                  )}
-
-                  {/* Expire Date */}
-                  {item.expireDate && (
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="font-medium">Expires:</span>
-                      <span className="text-xs">{formatDate(item.expireDate)}</span>
-                    </div>
-                  )}
-
                   {/* Comment */}
                   {item.comment && (
                     <div className="sm:col-span-2 flex items-start space-x-2">
@@ -285,42 +230,6 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
                     </div>
                   )}
                 </div>
-
-                {/* Data Usage Section */}
-                {(item.bytesIn || item.bytesOut || item.limitBytesTotal || item.limitUptime) && (
-                  <div className="space-y-2">
-                    <h4 className="font-medium text-sm flex items-center">
-                      <Activity className="h-4 w-4 mr-2" />
-                      Usage & Limits
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3 text-xs bg-muted/50 p-3 rounded-md">
-                      {item.bytesIn && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Bytes In:</span>
-                          <code className="font-mono text-green-600">{item.bytesIn}</code>
-                        </div>
-                      )}
-                      {item.bytesOut && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Bytes Out:</span>
-                          <code className="font-mono text-blue-600">{item.bytesOut}</code>
-                        </div>
-                      )}
-                      {item.limitUptime && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Limit Uptime:</span>
-                          <span>{item.limitUptime}</span>
-                        </div>
-                      )}
-                      {item.limitBytesTotal && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Total Limit:</span>
-                          <span>{item.limitBytesTotal}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
 
                 {/* Actions Section */}
                 <div className="flex items-center justify-end pt-2 border-t">

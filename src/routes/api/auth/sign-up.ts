@@ -71,7 +71,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-up').methods({
         return json(
           {
             error: 'Validation error',
-            details: error.errors,
+            details: error.message,
           },
           { status: 400 }
         )
