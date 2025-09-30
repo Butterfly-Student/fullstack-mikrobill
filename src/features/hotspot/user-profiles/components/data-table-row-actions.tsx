@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { type Profile } from '../../data/schema'
 import { useState } from 'react'
-import { ProfileActionsDialog } from '../../components/dialogs/profile-actions-dialog'
+import { ProfileActionsDialog } from './profile-actions-dialog'
 
 
 type DataTableRowActionsProps = {

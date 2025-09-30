@@ -38,7 +38,7 @@ import { DataTablePagination, DataTableToolbar } from '@/components/data-table'
 import { ChevronRight, ChevronDown, User, Server, Wifi, Timer, Database, MessageSquare } from 'lucide-react'
 import { type HotspotUser } from '../../data/schema'
 import { hotspotUsersColumns as columns } from './hotspot-user-column'
-import { HotspotDataTableBulkActions } from './hotspot-data-table-bulk-action'
+import { HotspotDataTableBulkActions } from './data-table-bulk-action'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {

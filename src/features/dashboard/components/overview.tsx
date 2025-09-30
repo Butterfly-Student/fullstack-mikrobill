@@ -1,94 +1,164 @@
-import { useState, useEffect } from 'react'
-import { BarChart, Bar, Rectangle, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
+/* App.tsx - Fixed Axis Version */
+import { Component } from 'react';
+import CanvasJSReact from '@canvasjs/react-charts';
 
-interface NetworkData {
-  time: string
-  rx: number
-  tx: number
+const CanvasJSChart = CanvasJSReact.CanvasJSChart;
+
+interface DataPoint {
+  x?: number;
+  y: number;
 }
 
-export function Overview() {
-  const [data, setData] = useState<NetworkData[]>([])
-  const [timeCounter, setTimeCounter] = useState<number>(0)
+const dataPoints1: DataPoint[] = [];
+const dataPoints2: DataPoint[] = [];
+const updateInterval: number = 2000;
+let yValue1: number = 1024;
+let yValue2: number = 512;
+let xValue: number = 5;
 
-  // Generate random network data
-  const generateNetworkData = (timestamp: number): NetworkData => {
-    return {
-      time: new Date(Date.now() - (19 - timestamp) * 1000).toLocaleTimeString('id-ID', {
-        hour12: false,
-        minute: '2-digit',
-        second: '2-digit'
-      }),
-      rx: Math.floor(Math.random() * 1000) + 200,
-      tx: Math.floor(Math.random() * 600) + 100,
-    }
+class NetworkTraffic extends Component {
+  private chart: any;
+
+  constructor(props: any) {
+    super(props);
+    this.updateChart = this.updateChart.bind(this);
+    this.toggleDataSeries = this.toggleDataSeries.bind(this);
   }
 
-  // Initialize with more data points for scrolling effect
-  useEffect(() => {
-    const initialData: NetworkData[] = []
-    for (let i = 0; i < 50; i++) {
-      initialData.push(generateNetworkData(i))
+  componentDidMount(): void {
+    this.updateChart(20);
+    setInterval(this.updateChart, updateInterval);
+  }
+
+  toggleDataSeries(e: any): void {
+    if (typeof (e.dataSeries.visible) === "undefined" || e.dataSeries.visible) {
+      e.dataSeries.visible = false;
     }
-    setData(initialData)
-    setTimeCounter(50)
-  }, [])
+    else {
+      e.dataSeries.visible = true;
+    }
+    this.chart.render();
+  }
 
-  return (
-    <div className="w-full bg-white rounded-lg border p-6 shadow-sm">
+  updateChart(count?: number): void {
+    count = count || 1;
+    for (let i = 0; i < count; i++) {
+      xValue += 2;
+      yValue1 = Math.floor(Math.random() * (102400 - 800 + 1) + 800);  // RX: 800 - 102400 KB/s
+      yValue2 = Math.floor(Math.random() * (51200 - 256 + 1) + 256);   // TX: 256 - 51200 KB/s
 
-      <div className="relative">
-        <ResponsiveContainer width='100%' height={350}>
-          <BarChart
-            data={data}
-            margin={{
-              top: 0,
-              right: 0,
-              left: 0,
-              bottom: 0,
-            }}
-            maxBarSize={6}
-            barCategoryGap={2}
-            barSize={4}
-            barGap={2}
-            style={{
-              marginLeft: 0,
-              marginRight: 0,
-              marginTop: 0,
-              marginBottom: 0,
-              padding: 0
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <Tooltip />
-            <Bar
-              dataKey="rx"
-              fill="#8884d8"
-              activeBar={<Rectangle fill="pink" stroke="blue" />}
-            />
-            <Bar
-              dataKey="tx"
-              fill="#82ca9d"
-              activeBar={<Rectangle fill="gold" stroke="purple" />}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+      dataPoints1.push({
+        x: xValue,
+        y: yValue1
+      });
+      dataPoints2.push({
+        x: xValue,
+        y: yValue2
+      });
+    }
 
-        {/* Floating info panel */}
-        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm border p-2 text-xs">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-blue-500 rounded"></div>
-              <span className="text-gray-600">RX: {data[data.length - 1]?.rx || 0} Mbps</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <div className="w-2 h-2 bg-green-500 rounded"></div>
-              <span className="text-gray-600">TX: {data[data.length - 1]?.tx || 0} Mbps</span>
-            </div>
-          </div>
+    this.chart.options.data[0].legendText = " RX Traffic - " + yValue1 + " KB/s";
+    this.chart.options.data[1].legendText = " TX Traffic - " + yValue2 + " KB/s";
+
+    this.chart.render();
+  }
+
+  render() {
+    // Opsi 1: Auto-scaling (tanpa maximum/minimum)
+    const optionsAutoScale = {
+      zoomEnabled: true,
+      theme: "light2",
+      axisY: {
+        suffix: " KB/s",
+        title: "Network Speed",
+        // Tidak ada maximum/minimum - biarkan chart auto-scale
+      },
+      axisX: {
+        crosshair: {
+          enabled: true,
+          snapToDataPoint: true
+        }
+      },
+      toolTip: {
+        shared: true
+      },
+      legend: {
+        cursor: "pointer",
+        verticalAlign: "top",
+        fontSize: 18,
+        fontColor: "dimGrey",
+        itemclick: this.toggleDataSeries
+      },
+      data: [
+        {
+          type: "stepLine",
+          color: "#4CAF50",
+          yValueFormatString: "#,##0 KB/s",
+          showInLegend: true,
+          dataPoints: dataPoints1
+        },
+        {
+          type: "stepLine",
+          color: "#2196F3",
+          yValueFormatString: "#,##0 KB/s",
+          showInLegend: true,
+          dataPoints: dataPoints2
+        }
+      ]
+    }
+
+    // Fixed scale sesuai permintaan: 0 - 102400 KB/s
+    const optionsFixedScale = {
+      zoomEnabled: true,
+      theme: "light2",
+      axisY: {
+        suffix: " KB/s",
+        title: "Network Speed",
+        maximum: 102400,  // Maksimum 102400 KB/s (100 MB/s)
+        minimum: 0,       // Minimum 0 KB/s
+      },
+      toolTip: {
+        shared: true
+      },
+      legend: {
+        cursor: "pointer",
+        verticalAlign: "top",
+        fontSize: 18,
+        fontColor: "dimGrey",
+        itemclick: this.toggleDataSeries
+      },
+      data: [
+        {
+          type: "stepLine",
+          color: "#4CAF50",
+          yValueFormatString: "#,##0 KB/s",
+          showInLegend: true,
+          dataPoints: dataPoints1
+        },
+        {
+          type: "stepLine",
+          color: "#2196F3",
+          yValueFormatString: "#,##0 KB/s",
+          showInLegend: true,
+          dataPoints: dataPoints2
+        }
+      ]
+    }
+
+    // Gunakan fixed scale 0-102400 KB/s
+    const options = optionsFixedScale;
+
+    return (
+      <div>
+        <div style={{ marginBottom: '10px', fontSize: '14px', color: '#666' }}>
+          Current Values: RX = {yValue1} KB/s, TX = {yValue2} KB/s
         </div>
+        <CanvasJSChart options={options}
+          onRef={ref => this.chart = ref}
+        />
       </div>
-
-    </div>
-  )
+    );
+  }
 }
+
+export default NetworkTraffic;

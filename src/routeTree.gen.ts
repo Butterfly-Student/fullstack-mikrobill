@@ -42,11 +42,19 @@ import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-
 import { Route as AuthenticatedUsersSessionsRouteImport } from './routes/_authenticated/users/sessions'
 import { Route as AuthenticatedUsersRolesRouteImport } from './routes/_authenticated/users/roles'
 import { Route as AuthenticatedUsersPermissionsRouteImport } from './routes/_authenticated/users/permissions'
+import { Route as AuthenticatedSystemTemplate_tagihanRouteImport } from './routes/_authenticated/system/template_tagihan'
+import { Route as AuthenticatedSystemTagihanRouteImport } from './routes/_authenticated/system/tagihan'
+import { Route as AuthenticatedSystemPelangganRouteImport } from './routes/_authenticated/system/pelanggan'
+import { Route as AuthenticatedSystemLaporanRouteImport } from './routes/_authenticated/system/laporan'
+import { Route as AuthenticatedSystemKasRouteImport } from './routes/_authenticated/system/kas'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
-import { Route as AuthenticatedHotspotUsersNonActiveRouteImport } from './routes/_authenticated/hotspot/users-non-active'
+import { Route as AuthenticatedPppSecretsRouteImport } from './routes/_authenticated/ppp/secrets'
+import { Route as AuthenticatedPppInactivesRouteImport } from './routes/_authenticated/ppp/inactives'
+import { Route as AuthenticatedPppActivesRouteImport } from './routes/_authenticated/ppp/actives'
+import { Route as AuthenticatedHotspotUsersInactiveRouteImport } from './routes/_authenticated/hotspot/users-inactive'
 import { Route as AuthenticatedHotspotUsersActiveRouteImport } from './routes/_authenticated/hotspot/users-active'
 import { Route as AuthenticatedHotspotUsersRouteImport } from './routes/_authenticated/hotspot/users'
 import { Route as AuthenticatedHotspotUserProfilesRouteImport } from './routes/_authenticated/hotspot/user-profiles'
@@ -256,6 +264,35 @@ const AuthenticatedUsersPermissionsRoute =
     path: '/users/permissions',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSystemTemplate_tagihanRoute =
+  AuthenticatedSystemTemplate_tagihanRouteImport.update({
+    id: '/system/template_tagihan',
+    path: '/system/template_tagihan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSystemTagihanRoute =
+  AuthenticatedSystemTagihanRouteImport.update({
+    id: '/system/tagihan',
+    path: '/system/tagihan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSystemPelangganRoute =
+  AuthenticatedSystemPelangganRouteImport.update({
+    id: '/system/pelanggan',
+    path: '/system/pelanggan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSystemLaporanRoute =
+  AuthenticatedSystemLaporanRouteImport.update({
+    id: '/system/laporan',
+    path: '/system/laporan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSystemKasRoute = AuthenticatedSystemKasRouteImport.update({
+  id: '/system/kas',
+  path: '/system/kas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -280,10 +317,26 @@ const AuthenticatedSettingsAccountRoute =
     path: '/account',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedHotspotUsersNonActiveRoute =
-  AuthenticatedHotspotUsersNonActiveRouteImport.update({
-    id: '/hotspot/users-non-active',
-    path: '/hotspot/users-non-active',
+const AuthenticatedPppSecretsRoute = AuthenticatedPppSecretsRouteImport.update({
+  id: '/ppp/secrets',
+  path: '/ppp/secrets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPppInactivesRoute =
+  AuthenticatedPppInactivesRouteImport.update({
+    id: '/ppp/inactives',
+    path: '/ppp/inactives',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPppActivesRoute = AuthenticatedPppActivesRouteImport.update({
+  id: '/ppp/actives',
+  path: '/ppp/actives',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHotspotUsersInactiveRoute =
+  AuthenticatedHotspotUsersInactiveRouteImport.update({
+    id: '/hotspot/users-inactive',
+    path: '/hotspot/users-inactive',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHotspotUsersActiveRoute =
@@ -562,11 +615,19 @@ export interface FileRoutesByFullPath {
   '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
-  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
+  '/hotspot/users-inactive': typeof AuthenticatedHotspotUsersInactiveRoute
+  '/ppp/actives': typeof AuthenticatedPppActivesRoute
+  '/ppp/inactives': typeof AuthenticatedPppInactivesRoute
+  '/ppp/secrets': typeof AuthenticatedPppSecretsRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/system/kas': typeof AuthenticatedSystemKasRoute
+  '/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
+  '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
+  '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
   '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/users/roles': typeof AuthenticatedUsersRolesRoute
   '/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -603,11 +664,19 @@ export interface FileRoutesByTo {
   '/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
-  '/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
+  '/hotspot/users-inactive': typeof AuthenticatedHotspotUsersInactiveRoute
+  '/ppp/actives': typeof AuthenticatedPppActivesRoute
+  '/ppp/inactives': typeof AuthenticatedPppInactivesRoute
+  '/ppp/secrets': typeof AuthenticatedPppSecretsRoute
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/system/kas': typeof AuthenticatedSystemKasRoute
+  '/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
+  '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
+  '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
   '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/users/roles': typeof AuthenticatedUsersRolesRoute
   '/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -649,11 +718,19 @@ export interface FileRoutesById {
   '/_authenticated/hotspot/user-profiles': typeof AuthenticatedHotspotUserProfilesRoute
   '/_authenticated/hotspot/users': typeof AuthenticatedHotspotUsersRoute
   '/_authenticated/hotspot/users-active': typeof AuthenticatedHotspotUsersActiveRoute
-  '/_authenticated/hotspot/users-non-active': typeof AuthenticatedHotspotUsersNonActiveRoute
+  '/_authenticated/hotspot/users-inactive': typeof AuthenticatedHotspotUsersInactiveRoute
+  '/_authenticated/ppp/actives': typeof AuthenticatedPppActivesRoute
+  '/_authenticated/ppp/inactives': typeof AuthenticatedPppInactivesRoute
+  '/_authenticated/ppp/secrets': typeof AuthenticatedPppSecretsRoute
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/system/kas': typeof AuthenticatedSystemKasRoute
+  '/_authenticated/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/_authenticated/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
+  '/_authenticated/system/tagihan': typeof AuthenticatedSystemTagihanRoute
+  '/_authenticated/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
   '/_authenticated/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/_authenticated/users/roles': typeof AuthenticatedUsersRolesRoute
   '/_authenticated/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -694,11 +771,19 @@ export interface FileRouteTypes {
     | '/hotspot/user-profiles'
     | '/hotspot/users'
     | '/hotspot/users-active'
-    | '/hotspot/users-non-active'
+    | '/hotspot/users-inactive'
+    | '/ppp/actives'
+    | '/ppp/inactives'
+    | '/ppp/secrets'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/system/kas'
+    | '/system/laporan'
+    | '/system/pelanggan'
+    | '/system/tagihan'
+    | '/system/template_tagihan'
     | '/users/permissions'
     | '/users/roles'
     | '/users/sessions'
@@ -735,11 +820,19 @@ export interface FileRouteTypes {
     | '/hotspot/user-profiles'
     | '/hotspot/users'
     | '/hotspot/users-active'
-    | '/hotspot/users-non-active'
+    | '/hotspot/users-inactive'
+    | '/ppp/actives'
+    | '/ppp/inactives'
+    | '/ppp/secrets'
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
     | '/settings/notifications'
+    | '/system/kas'
+    | '/system/laporan'
+    | '/system/pelanggan'
+    | '/system/tagihan'
+    | '/system/template_tagihan'
     | '/users/permissions'
     | '/users/roles'
     | '/users/sessions'
@@ -780,11 +873,19 @@ export interface FileRouteTypes {
     | '/_authenticated/hotspot/user-profiles'
     | '/_authenticated/hotspot/users'
     | '/_authenticated/hotspot/users-active'
-    | '/_authenticated/hotspot/users-non-active'
+    | '/_authenticated/hotspot/users-inactive'
+    | '/_authenticated/ppp/actives'
+    | '/_authenticated/ppp/inactives'
+    | '/_authenticated/ppp/secrets'
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/system/kas'
+    | '/_authenticated/system/laporan'
+    | '/_authenticated/system/pelanggan'
+    | '/_authenticated/system/tagihan'
+    | '/_authenticated/system/template_tagihan'
     | '/_authenticated/users/permissions'
     | '/_authenticated/users/roles'
     | '/_authenticated/users/sessions'
@@ -1309,6 +1410,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersPermissionsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/system/template_tagihan': {
+      id: '/_authenticated/system/template_tagihan'
+      path: '/system/template_tagihan'
+      fullPath: '/system/template_tagihan'
+      preLoaderRoute: typeof AuthenticatedSystemTemplate_tagihanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/system/tagihan': {
+      id: '/_authenticated/system/tagihan'
+      path: '/system/tagihan'
+      fullPath: '/system/tagihan'
+      preLoaderRoute: typeof AuthenticatedSystemTagihanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/system/pelanggan': {
+      id: '/_authenticated/system/pelanggan'
+      path: '/system/pelanggan'
+      fullPath: '/system/pelanggan'
+      preLoaderRoute: typeof AuthenticatedSystemPelangganRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/system/laporan': {
+      id: '/_authenticated/system/laporan'
+      path: '/system/laporan'
+      fullPath: '/system/laporan'
+      preLoaderRoute: typeof AuthenticatedSystemLaporanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/system/kas': {
+      id: '/_authenticated/system/kas'
+      path: '/system/kas'
+      fullPath: '/system/kas'
+      preLoaderRoute: typeof AuthenticatedSystemKasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
@@ -1337,11 +1473,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsAccountRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/hotspot/users-non-active': {
-      id: '/_authenticated/hotspot/users-non-active'
-      path: '/hotspot/users-non-active'
-      fullPath: '/hotspot/users-non-active'
-      preLoaderRoute: typeof AuthenticatedHotspotUsersNonActiveRouteImport
+    '/_authenticated/ppp/secrets': {
+      id: '/_authenticated/ppp/secrets'
+      path: '/ppp/secrets'
+      fullPath: '/ppp/secrets'
+      preLoaderRoute: typeof AuthenticatedPppSecretsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ppp/inactives': {
+      id: '/_authenticated/ppp/inactives'
+      path: '/ppp/inactives'
+      fullPath: '/ppp/inactives'
+      preLoaderRoute: typeof AuthenticatedPppInactivesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/ppp/actives': {
+      id: '/_authenticated/ppp/actives'
+      path: '/ppp/actives'
+      fullPath: '/ppp/actives'
+      preLoaderRoute: typeof AuthenticatedPppActivesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hotspot/users-inactive': {
+      id: '/_authenticated/hotspot/users-inactive'
+      path: '/hotspot/users-inactive'
+      fullPath: '/hotspot/users-inactive'
+      preLoaderRoute: typeof AuthenticatedHotspotUsersInactiveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/hotspot/users-active': {
@@ -1699,7 +1856,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHotspotUserProfilesRoute: typeof AuthenticatedHotspotUserProfilesRoute
   AuthenticatedHotspotUsersRoute: typeof AuthenticatedHotspotUsersRoute
   AuthenticatedHotspotUsersActiveRoute: typeof AuthenticatedHotspotUsersActiveRoute
-  AuthenticatedHotspotUsersNonActiveRoute: typeof AuthenticatedHotspotUsersNonActiveRoute
+  AuthenticatedHotspotUsersInactiveRoute: typeof AuthenticatedHotspotUsersInactiveRoute
+  AuthenticatedPppActivesRoute: typeof AuthenticatedPppActivesRoute
+  AuthenticatedPppInactivesRoute: typeof AuthenticatedPppInactivesRoute
+  AuthenticatedPppSecretsRoute: typeof AuthenticatedPppSecretsRoute
+  AuthenticatedSystemKasRoute: typeof AuthenticatedSystemKasRoute
+  AuthenticatedSystemLaporanRoute: typeof AuthenticatedSystemLaporanRoute
+  AuthenticatedSystemPelangganRoute: typeof AuthenticatedSystemPelangganRoute
+  AuthenticatedSystemTagihanRoute: typeof AuthenticatedSystemTagihanRoute
+  AuthenticatedSystemTemplate_tagihanRoute: typeof AuthenticatedSystemTemplate_tagihanRoute
   AuthenticatedUsersPermissionsRoute: typeof AuthenticatedUsersPermissionsRoute
   AuthenticatedUsersRolesRoute: typeof AuthenticatedUsersRolesRoute
   AuthenticatedUsersSessionsRoute: typeof AuthenticatedUsersSessionsRoute
@@ -1723,8 +1888,17 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHotspotUserProfilesRoute: AuthenticatedHotspotUserProfilesRoute,
   AuthenticatedHotspotUsersRoute: AuthenticatedHotspotUsersRoute,
   AuthenticatedHotspotUsersActiveRoute: AuthenticatedHotspotUsersActiveRoute,
-  AuthenticatedHotspotUsersNonActiveRoute:
-    AuthenticatedHotspotUsersNonActiveRoute,
+  AuthenticatedHotspotUsersInactiveRoute:
+    AuthenticatedHotspotUsersInactiveRoute,
+  AuthenticatedPppActivesRoute: AuthenticatedPppActivesRoute,
+  AuthenticatedPppInactivesRoute: AuthenticatedPppInactivesRoute,
+  AuthenticatedPppSecretsRoute: AuthenticatedPppSecretsRoute,
+  AuthenticatedSystemKasRoute: AuthenticatedSystemKasRoute,
+  AuthenticatedSystemLaporanRoute: AuthenticatedSystemLaporanRoute,
+  AuthenticatedSystemPelangganRoute: AuthenticatedSystemPelangganRoute,
+  AuthenticatedSystemTagihanRoute: AuthenticatedSystemTagihanRoute,
+  AuthenticatedSystemTemplate_tagihanRoute:
+    AuthenticatedSystemTemplate_tagihanRoute,
   AuthenticatedUsersPermissionsRoute: AuthenticatedUsersPermissionsRoute,
   AuthenticatedUsersRolesRoute: AuthenticatedUsersRolesRoute,
   AuthenticatedUsersSessionsRoute: AuthenticatedUsersSessionsRoute,

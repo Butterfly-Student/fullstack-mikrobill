@@ -22,6 +22,8 @@ import {
   Command,
   GalleryVerticalEnd,
   Wifi,
+  Network,
+  CircleDollarSign,
 } from 'lucide-react'
 import { ClerkLogo } from '@/assets/clerk-logo'
 import { useAuthStore } from '@/stores/auth-store'
@@ -120,6 +122,54 @@ export const useSidebarData = (): SidebarData => {
             title: 'Hotspot',
             url: '/hotspot/users',
             icon: Wifi,
+          },
+          {
+            title: 'PPP',
+            icon: Network,
+            items: [
+              {
+                title: 'Secrets',
+                url: '/ppp/secrets',
+              },
+              {
+                title: 'Active',
+                url: '/ppp/actives',
+              },
+              {
+                title: 'Inactive',
+                url: '/ppp/inactives',
+              },
+            ],
+          },
+          {
+            title: 'System',
+            icon: CircleDollarSign,
+            items: [
+              {
+                title: 'Kas',
+                url: '/system/kas',
+              },
+              {
+                title: 'Pelanggan',
+                url: '/system/pelanggan',
+              },
+              {
+                title: 'Tagihan',
+                url: '/system/tagihan',
+              },
+              {
+                title: 'Template Tagihan',
+                url: '/system/template_tagihan',
+              },
+              {
+                title: "Laporan",
+                url: '/system/laporan',
+              },
+              {
+                title: 'Logs',
+                url: '/system/logs',
+              }
+            ]
           },
           {
             title: 'Secured by Clerk',

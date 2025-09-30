@@ -1,0 +1,1 @@
+ALTER TABLE "template_tagihan" ADD COLUMN "jatuh_tempo" date NOT NULL;

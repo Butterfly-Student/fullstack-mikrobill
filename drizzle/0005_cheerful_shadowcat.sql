@@ -1,0 +1,2 @@
+ALTER TABLE "template_tagihan" ALTER COLUMN "jatuh_tempo" SET DEFAULT CURRENT_DATE + INTERVAL '10 days';--> statement-breakpoint
+ALTER TABLE "template_tagihan" ALTER COLUMN "jatuh_tempo" DROP NOT NULL;

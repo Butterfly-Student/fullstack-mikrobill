@@ -2,7 +2,7 @@ import { UserPlus, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { AddUserHotspotDialog } from './add-user-action-dialog';
-import { GenerateUsersActionDialog } from '../../components/dialogs/generate-users-action-dialog';
+import { GenerateUsersActionDialog } from '../../components/generate-users-action-dialog';
 
 
 export function HotspotUsersPrimaryButtons() {

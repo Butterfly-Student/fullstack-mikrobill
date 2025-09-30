@@ -52,7 +52,7 @@ import {
 } from 'lucide-react'
 import { type Profile } from '../../data/schema'
 import { hotspotProfileColumns as columns } from './hotspot-profile-column'
-import { HotspotDataTableBulkActions } from './hotspot-data-table-bulk-action'
+import { HotspotDataTableBulkActions } from './data-table-bulk-action'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {

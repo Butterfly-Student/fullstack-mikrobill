@@ -8,6 +8,41 @@
       "when": 1757520774949,
       "tag": "0000_broken_veda",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1759061691726,
+      "tag": "0001_flippant_blink",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1759085839624,
+      "tag": "0002_tiny_klaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1759099816939,
+      "tag": "0003_kind_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1759103490372,
+      "tag": "0004_whole_maverick",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1759103623417,
+      "tag": "0005_cheerful_shadowcat",
+      "breakpoints": true
     }
   ]
 }

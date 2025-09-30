@@ -14,7 +14,7 @@ import { TopNav } from '@/components/layout/top-nav'
 import { ProfileDropdown } from '@/components/profile-dropdown'
 import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
-import { Overview } from './components/overview'
+import NetworkTraffic from './components/overview'
 import { RecentSales } from './components/recent-sales'
 
 export function Dashboard() {
@@ -168,7 +168,7 @@ export function Dashboard() {
                   <CardTitle>Overview</CardTitle>
                 </CardHeader>
                 <CardContent className='ps-2'>
-                  <Overview />
+                  <NetworkTraffic />
                 </CardContent>
               </Card>
               <Card className='col-span-1 lg:col-span-3'>

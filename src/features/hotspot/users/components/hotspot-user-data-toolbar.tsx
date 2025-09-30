@@ -5,7 +5,7 @@ import { Cross2Icon } from '@radix-ui/react-icons'
 import { type Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { HotspotDataTableFacetedFilter } from './hotspot-user-data-table-faceted-filter'
+import { DataTableFacetedFilter } from '@/components/data-table'
 
 interface HotspotDataTableToolbarProps<TData> {
   table: Table<TData>
@@ -44,7 +44,7 @@ export function HotspotDataTableToolbar<TData>({
         {filters.map((filter) => {
           const column = table.getColumn(filter.columnId)
           return column ? (
-            <HotspotDataTableFacetedFilter
+            <DataTableFacetedFilter
               key={filter.columnId}
               column={column}
               title={filter.title}

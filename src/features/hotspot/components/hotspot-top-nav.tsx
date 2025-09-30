@@ -14,7 +14,7 @@ type HotspotTopNavProps = {
   children: React.ReactNode;
 };
 
-export default function HotspotTopNav({ children }: HotspotTopNavProps): JSX.Element{
+export default function HotspotTopNav({ children }: HotspotTopNavProps): JSX.Element {
 
   const { pathname } = useLocation()
 
@@ -24,7 +24,7 @@ export default function HotspotTopNav({ children }: HotspotTopNavProps): JSX.Ele
       { title: "Users", href: "/hotspot/users" },
       { title: "Profiles", href: "/hotspot/user-profiles" },
       { title: "Active", href: "/hotspot/users-active" },
-      { title: "Non-Active", href: "/hotspot/users-non-active" },
+      { title: "Inactive", href: "/hotspot/users-inactive" },
       { title: "Hosts", href: "/hotspot/hosts" },
     ]
 

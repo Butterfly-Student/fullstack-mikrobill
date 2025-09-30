@@ -1,6 +1,7 @@
-import { type IRosOptions } from 'routeros-api'
-import { db } from '@/db/index'
-import { MikrotikClient } from './client'
+import { db } from '@/db/index';
+import { type IRosOptions } from 'routeros-api';
+import { MikrotikClient } from './client';
+
 
 // Profile Management Interfaces
 export interface ProfileConfig {
@@ -1541,15 +1542,17 @@ export class MikrotikHotspot extends MikrotikClient {
 export const createMikrotikHotspot = MikrotikHotspot.createFromDatabase
 export const createMikrotikHotspotDirect = MikrotikHotspot.createDirect
 
-// Cleanup on process exit
-process.on("SIGINT", async () => {
-  console.log("Cleaning up MikroTik connections...");
-  await MikrotikHotspot.cleanup();
-  process.exit(0);
-});
+const cleanupHandler = async () => {
+  console.log('Cleaning up MikroTik connections...')
+  await MikrotikClient.cleanup()
+  process.exit(0)
+}
 
-process.on("SIGTERM", async () => {
-  console.log("Cleaning up MikroTik connections...");
-  await MikrotikHotspot.cleanup();
-  process.exit(0);
-});
+// Daftar listener cuma kalau belum ada
+if (process.listenerCount('SIGINT') === 0) {
+  process.on('SIGINT', cleanupHandler)
+}
+
+if (process.listenerCount('SIGTERM') === 0) {
+  process.on('SIGTERM', cleanupHandler)
+}
