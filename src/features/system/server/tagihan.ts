@@ -1,66 +1,201 @@
-import { z } from 'zod'
-import { db } from '@/db'
-import {
-  pelanggan,
-  type Tagihan,
-  tagihan,
-  templateTagihan,
-} from '@/db/schema/system'
-import { createServerFn } from '@tanstack/react-start'
-import { desc, eq, like, sql, inArray } from 'drizzle-orm'
-import { type TagihanForm, tagihanFormSchema } from '../tagihan/data/schema'
+import { z } from 'zod';
+import { db } from '@/db';
+import { pelanggan, type Tagihan, tagihan, templateTagihan } from '@/db/schema/system';
+import { createServerFn } from '@tanstack/react-start';
+import { desc, eq, and, gte, lt, sql, inArray, like } from 'drizzle-orm';
+import { type TagihanForm, tagihanFormSchema } from '../tagihan/data/schema';
+
 
 const updateTagihanValidator = tagihanFormSchema.partial()
 
-const idValidator = z.string().uuid('Invalid ID format')
+const idValidator = z.uuid('Invalid ID format')
 
-// Validator untuk multiple IDs
-const multipleIdsValidator = z
-  .array(z.string().uuid('Invalid ID format'))
-  .min(1, 'At least one ID is required')
+const deleteTagihanValidator = z.union([z.string(), z.array(z.string())])
+
+const updateTagihanStatusValidator = z.object({
+  id: z.union([z.string(), z.array(z.string())]),
+  status: z.enum(['belum_lunas', 'lunas', 'sebagian', 'jatuh_tempo']),
+})
 
 type ApiResponse<T = any> = {
   success: boolean
   message: string
   data?: T
+  summary?: T
+}
+
+// ✅ Fixed: Handle zero properly
+function calculateGrowth(current: number, previous: number): number | null {
+  if (previous === 0) return current === 0 ? 0 : null
+  return ((current - previous) / previous) * 100
+}
+
+// ✅ Extract reusable query function
+async function getSummaryForPeriod(startDate: Date, endDate: Date) {
+  // Convert Date to ISO string for PgDateString comparison
+  const startStr = startDate.toISOString().split('T')[0]
+  const endStr = endDate.toISOString().split('T')[0]
+  
+  return await db
+    .select({
+      status: tagihan.status,
+      total: sql<string>`COALESCE(SUM(${tagihan.total}), 0)`.as('total'),
+      count: sql<string>`COALESCE(COUNT(${tagihan.id}), 0)`.as('count'),
+      uniqueCustomers: sql<string>`COALESCE(COUNT(DISTINCT ${tagihan.pelangganId}), 0)`.as('unique_customers'),
+    })
+    .from(tagihan)
+    .where(and(gte(tagihan.tanggal, startStr), lt(tagihan.tanggal, endStr)))
+    .groupBy(tagihan.status)
+}
+
+type StatusType = 'belum_lunas' | 'lunas' | 'sebagian' | 'jatuh_tempo' | null
+
+function mapSummary(data: Array<{ status: StatusType; total: string; count: string; uniqueCustomers: string }>) {
+  const totalCount = data.reduce((acc, d) => acc + Number(d.count), 0)
+  const totalNominal = data.reduce((acc, d) => acc + Number(d.total), 0)
+
+  const lunas = data.find((d) => d.status === 'lunas')
+  const belum = data.find((d) => d.status === 'belum_lunas')
+
+  return {
+    total: {
+      jumlahTagihan: totalCount,
+      nominal: totalNominal,
+    },
+    lunas: {
+      jumlahTagihan: Number(lunas?.count ?? 0),
+      nominal: Number(lunas?.total ?? 0),
+      jumlahOrang: Number(lunas?.uniqueCustomers ?? 0),
+    },
+    belumLunas: {
+      jumlahTagihan: Number(belum?.count ?? 0),
+      nominal: Number(belum?.total ?? 0),
+      jumlahOrang: Number(belum?.uniqueCustomers ?? 0),
+    },
+  }
 }
 
 export const getAllTagihan = createServerFn().handler(
-  async (): Promise<ApiResponse<any[]>> => {
-    console.info('Fetching all tagihan with pelanggan info...')
+  async (): Promise<ApiResponse<any>> => {
+    console.info('Fetching all tagihan with pelanggan info & summary...')
 
     try {
-      const result = await db
-        .select({
-          id: tagihan.id,
-          noTagihan: tagihan.noTagihan,
-          tanggal: tagihan.tanggal,
-          jatuhTempo: tagihan.jatuhTempo,
-          deskripsi: tagihan.deskripsi,
-          status: tagihan.status,
-          total: tagihan.total,
-          pelangganId: tagihan.pelangganId,
-          templateId: tagihan.templateId,
-          createdAt: tagihan.createdAt,
-          pelangganName: pelanggan.name,
-          pelangganEmail: pelanggan.email,
-        })
-        .from(tagihan)
-        .leftJoin(pelanggan, eq(tagihan.pelangganId, pelanggan.id))
-        .orderBy(desc(tagihan.createdAt))
+      // Date ranges
+      const now = new Date()
+      const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+      const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+
+      // ✅ Parallel queries for better performance
+      const [result, thisMonth, lastMonth] = await Promise.all([
+        // Detail data with JOIN
+        db
+          .select({
+            id: tagihan.id,
+            noTagihan: tagihan.noTagihan,
+            tanggal: tagihan.tanggal,
+            jatuhTempo: tagihan.jatuhTempo,
+            deskripsi: tagihan.deskripsi,
+            status: tagihan.status,
+            total: tagihan.total,
+            pelangganId: tagihan.pelangganId,
+            templateId: tagihan.templateId,
+            createdAt: tagihan.createdAt,
+            pelangganName: pelanggan.name,
+            pelangganEmail: pelanggan.email,
+          })
+          .from(tagihan)
+          .leftJoin(pelanggan, eq(tagihan.pelangganId, pelanggan.id))
+          .orderBy(desc(tagihan.createdAt)),
+
+        // This month summary
+        getSummaryForPeriod(startOfThisMonth, startOfNextMonth),
+
+        // Last month summary
+        getSummaryForPeriod(startOfLastMonth, startOfThisMonth),
+      ])
+
+      // Map summaries
+      const current = mapSummary(thisMonth)
+      const previous = mapSummary(lastMonth)
+
+      // Calculate growth
+      const growth = {
+        total: {
+          jumlahTagihan: calculateGrowth(
+            current.total.jumlahTagihan,
+            previous.total.jumlahTagihan,
+          ),
+          nominal: calculateGrowth(
+            current.total.nominal,
+            previous.total.nominal,
+          ),
+        },
+        lunas: {
+          jumlahTagihan: calculateGrowth(
+            current.lunas.jumlahTagihan,
+            previous.lunas.jumlahTagihan,
+          ),
+          nominal: calculateGrowth(current.lunas.nominal, previous.lunas.nominal),
+          jumlahOrang: calculateGrowth(
+            current.lunas.jumlahOrang,
+            previous.lunas.jumlahOrang,
+          ),
+        },
+        belumLunas: {
+          jumlahTagihan: calculateGrowth(
+            current.belumLunas.jumlahTagihan,
+            previous.belumLunas.jumlahTagihan,
+          ),
+          nominal: calculateGrowth(
+            current.belumLunas.nominal,
+            previous.belumLunas.nominal,
+          ),
+          jumlahOrang: calculateGrowth(
+            current.belumLunas.jumlahOrang,
+            previous.belumLunas.jumlahOrang,
+          ),
+        },
+      }
 
       return {
         success: true,
         message: 'Tagihan fetched successfully',
         data: result,
+        summary: {
+          current,
+          previous,
+          growth,
+        },
       }
     } catch (error) {
       console.error('Error fetching tagihan:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to fetch tagihan'
-      )
+      
+      // ✅ Fixed: Return ApiResponse instead of throwing
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch tagihan',
+        data: [],
+        summary: {
+          current: {
+            total: { jumlahTagihan: 0, nominal: 0 },
+            lunas: { jumlahTagihan: 0, nominal: 0, jumlahOrang: 0 },
+            belumLunas: { jumlahTagihan: 0, nominal: 0, jumlahOrang: 0 },
+          },
+          previous: {
+            total: { jumlahTagihan: 0, nominal: 0 },
+            lunas: { jumlahTagihan: 0, nominal: 0, jumlahOrang: 0 },
+            belumLunas: { jumlahTagihan: 0, nominal: 0, jumlahOrang: 0 },
+          },
+          growth: {
+            total: { jumlahTagihan: null, nominal: null },
+            lunas: { jumlahTagihan: null, nominal: null, jumlahOrang: null },
+            belumLunas: { jumlahTagihan: null, nominal: null, jumlahOrang: null },
+          },
+        },
+      }
     }
-  }
+  },
 )
 
 export const getTagihanById = createServerFn()
@@ -259,63 +394,53 @@ export const updateTagihan = createServerFn()
   })
 
 export const deleteTagihan = createServerFn()
-  .validator((id: string) => idValidator.parse(id))
-  .handler(async ({ data: id }): Promise<ApiResponse<boolean>> => {
-    console.info(`Deleting tagihan with ID: ${id}`)
-
-    try {
-      const result = await db.delete(tagihan).where(eq(tagihan.id, id))
-
-      if (result.count === 0) {
-        throw new Error('Tagihan not found')
-      }
-
-      return {
-        success: true,
-        message: 'Tagihan deleted successfully',
-        data: true,
-      }
-    } catch (error) {
-      console.error('Error deleting tagihan:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to delete tagihan'
-      )
-    }
-  })
-
-// NEW: Multi-delete function
-export const deleteMultipleTagihan = createServerFn()
-  .validator((ids: string[]) => multipleIdsValidator.parse(ids))
+  .validator((data: string | string[]) => deleteTagihanValidator.parse(data))
   .handler(
     async ({
-      data: ids,
-    }): Promise<ApiResponse<{ deletedCount: number; failedIds: string[] }>> => {
-      console.info(`Deleting multiple tagihan with IDs: ${ids.join(', ')}`)
+      data,
+    }): Promise<ApiResponse<boolean | { deletedCount: number; failedIds: string[] }>> => {
+      const ids = Array.isArray(data) ? data : [data]
+      const isSingle = !Array.isArray(data)
+
+      console.info(
+        `Deleting tagihan with ID${ids.length > 1 ? 's' : ''}: ${ids.join(', ')}`
+      )
 
       try {
-        // First, check which IDs exist
+        // Check which IDs exist
         const existingTagihan = await db
           .select({ id: tagihan.id })
           .from(tagihan)
-          .where(inArray(tagihan.id, ids))
+          .where(ids.length === 1 ? eq(tagihan.id, ids[0]) : inArray(tagihan.id, ids))
 
         const existingIds = existingTagihan.map((t) => t.id)
         const failedIds = ids.filter((id) => !existingIds.includes(id))
 
         if (existingIds.length === 0) {
-          return {
-            success: false,
-            message: 'No valid tagihan found to delete',
-            data: { deletedCount: 0, failedIds: ids },
-          }
+          throw new Error(
+            isSingle ? 'Tagihan not found' : 'No valid tagihan found to delete'
+          )
         }
 
         // Delete existing tagihan
         const result = await db
           .delete(tagihan)
-          .where(inArray(tagihan.id, existingIds))
+          .where(
+            existingIds.length === 1
+              ? eq(tagihan.id, existingIds[0])
+              : inArray(tagihan.id, existingIds)
+          )
 
         const deletedCount = result.count || 0
+
+        // Return format based on input type
+        if (isSingle) {
+          return {
+            success: true,
+            message: 'Tagihan deleted successfully',
+            data: true,
+          }
+        }
 
         return {
           success: true,
@@ -326,96 +451,68 @@ export const deleteMultipleTagihan = createServerFn()
           },
         }
       } catch (error) {
-        console.error('Error deleting multiple tagihan:', error)
+        console.error('Error deleting tagihan:', error)
         throw new Error(
-          error instanceof Error
-            ? error.message
-            : 'Failed to delete multiple tagihan'
+          error instanceof Error ? error.message : 'Failed to delete tagihan'
         )
       }
     }
   )
 
+
 export const updateTagihanStatus = createServerFn()
-  .validator(
-    (input: { id: string; status: 'belum_lunas' | 'lunas' | 'sebagian' }) => ({
-      id: idValidator.parse(input.id),
-      status: z.enum(['belum_lunas', 'lunas', 'sebagian']).parse(input.status),
-    })
-  )
-  .handler(async ({ data: { id, status } }): Promise<ApiResponse<Tagihan>> => {
-    console.info(`Updating tagihan status with ID: ${id} to ${status}`)
-
-    try {
-      const result = await db
-        .update(tagihan)
-        .set({ status })
-        .where(eq(tagihan.id, id))
-        .returning()
-
-      if (result.length === 0) {
-        throw new Error('Tagihan not found')
-      }
-
-      return {
-        success: true,
-        message: 'Tagihan status updated successfully',
-        data: result[0],
-      }
-    } catch (error) {
-      console.error('Error updating tagihan status:', error)
-      throw new Error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update tagihan status'
-      )
-    }
-  })
-
-// NEW: Multi-update status function
-export const updateMultipleTagihanStatus = createServerFn()
-  .validator(
-    (input: {
-      ids: string[]
-      status: 'belum_lunas' | 'lunas' | 'sebagian'
-    }) => ({
-      ids: multipleIdsValidator.parse(input.ids),
-      status: z.enum(['belum_lunas', 'lunas', 'sebagian']).parse(input.status),
-    })
-  )
+  .validator((input: {
+    id: string | string[]
+    status: 'belum_lunas' | 'lunas' | 'sebagian' | 'jatuh_tempo'
+  }) => updateTagihanStatusValidator.parse(input))
   .handler(
     async ({
-      data: { ids, status },
-    }): Promise<ApiResponse<{ updatedCount: number; failedIds: string[] }>> => {
+      data: { id, status },
+    }): Promise<ApiResponse<Tagihan | { updatedCount: number; failedIds: string[] }>> => {
+      const ids = Array.isArray(id) ? id : [id]
+      const isSingle = !Array.isArray(id)
+
       console.info(
-        `Updating multiple tagihan status with IDs: ${ids.join(', ')} to ${status}`
+        `Updating tagihan status with ID${ids.length > 1 ? 's' : ''}: ${ids.join(', ')} to ${status}`
       )
 
       try {
-        // First, check which IDs exist
+        // Check which IDs exist
         const existingTagihan = await db
           .select({ id: tagihan.id })
           .from(tagihan)
-          .where(inArray(tagihan.id, ids))
+          .where(ids.length === 1 ? eq(tagihan.id, ids[0]) : inArray(tagihan.id, ids))
 
         const existingIds = existingTagihan.map((t) => t.id)
         const failedIds = ids.filter((id) => !existingIds.includes(id))
 
         if (existingIds.length === 0) {
-          return {
-            success: false,
-            message: 'No valid tagihan found to update',
-            data: { updatedCount: 0, failedIds: ids },
-          }
+          throw new Error(
+            isSingle ? 'Tagihan not found' : 'No valid tagihan found to update'
+          )
         }
 
         // Update existing tagihan
         const result = await db
           .update(tagihan)
           .set({ status })
-          .where(inArray(tagihan.id, existingIds))
+          .where(
+            existingIds.length === 1
+              ? eq(tagihan.id, existingIds[0])
+              : inArray(tagihan.id, existingIds)
+          )
+          .returning()
 
-        const updatedCount = result.count || 0
+        const updatedCount = result.length
+
+        // Return format based on input type
+        if (isSingle) {
+          return {
+            success: true,
+            message: 'Tagihan status updated successfully',
+            data: result[0],
+          }
+        }
 
         return {
           success: true,
@@ -426,11 +523,11 @@ export const updateMultipleTagihanStatus = createServerFn()
           },
         }
       } catch (error) {
-        console.error('Error updating multiple tagihan status:', error)
+        console.error('Error updating tagihan status:', error)
         throw new Error(
           error instanceof Error
             ? error.message
-            : 'Failed to update multiple tagihan status'
+            : 'Failed to update tagihan status'
         )
       }
     }

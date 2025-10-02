@@ -81,32 +81,53 @@ async function generateAutoTagihanBySchedule() {
         }
 
         // Cek apakah sudah ada tagihan untuk periode ini
+        console.log(
+          `Checking existing tagihan for template ID: ${template.id} on date: ${currentDate}`
+        )
+
         const existingTagihan = await db
-          .select({ count: sql<number>`COUNT(*)` })
+          .select()
           .from(tagihan)
           .where(
             and(
               eq(tagihan.templateId, template.id),
-              sql`DATE(${tagihan.tanggal}) = ${currentDate}`
+              sql`DATE(${tagihan.tanggal}) = DATE(${currentDate})`
             )
           )
 
-        if (existingTagihan[0].count > 0) {
+        console.log(`Found ${existingTagihan.length} existing tagihan`)
+
+        if (existingTagihan.length > 0) {
           console.log(
             `Template ${template.nama} already generated today, skipping...`
           )
           continue
         }
 
-        // Perbaikan: Hitung jatuh tempo secara dinamis
-        // Asumsi: template.jatuhTempo menyimpan jumlah hari dari tanggal tagihan
-        const jatuhTempoHari = template.jatuhTempo || 10 // Default 10 hari
-        const jatuhTempoDate = new Date(today)
-        jatuhTempoDate.setDate(today.getDate() + Number(jatuhTempoHari))
-        const jatuhTempo = jatuhTempoDate.toISOString().split('T')[0]
+        // Perbaikan: Hitung jatuh tempo berdasarkan periode
+        let jatuhTempo: string
+
+        if (template.jatuhTempo) {
+          // Ambil selisih hari antara tanggalMulai dan jatuhTempo template
+          const templateStart = new Date(template.tanggalMulai)
+          const templateDue = new Date(template.jatuhTempo)
+          const daysDifference = Math.round(
+            (templateDue.getTime() - templateStart.getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
+
+          // Terapkan selisih yang sama dari tanggal tagihan hari ini
+          const jatuhTempoDate = new Date(today)
+          jatuhTempoDate.setDate(today.getDate() + daysDifference)
+          jatuhTempo = jatuhTempoDate.toISOString().split('T')[0]
+        } else {
+          // Default: 10 hari dari hari ini
+          const jatuhTempoDate = new Date(today)
+          jatuhTempoDate.setDate(today.getDate() + 10)
+          jatuhTempo = jatuhTempoDate.toISOString().split('T')[0]
+        }
 
         // Generate tagihan menggunakan fungsi yang sudah ada
-        // Wrapped dalam transaction implicitly oleh generateTagihan
         const generateResult = await generateTagihan({
           data: {
             templateId: template.id,
@@ -304,7 +325,7 @@ export function startCronJobs() {
   )
 
   // Test cron untuk development - uncomment jika diperlukan untuk testing
-  // cron.schedule('*/10 * * * *', async () => {
+  // cron.schedule('*/1 * * * *', async () => {
   //   console.log('🧪 Test cron - checking templates:', new Date().toISOString())
   //   await generateAutoTagihanBySchedule()
   // })

@@ -9,9 +9,6 @@ import {
   updateTagihan,
   deleteTagihan,
   updateTagihanStatus,
-  deleteMultipleTagihan,
-  // NEW
-  updateMultipleTagihanStatus, // NEW
 } from '@/features/system/server/tagihan'
 import { type TagihanForm } from '../data/schema'
 
@@ -74,45 +71,23 @@ export const useTagihan = () => {
   })
 
   const deleteTagihanMutation = useMutation({
-    mutationFn: ({ tagihanId }: { tagihanId: string }) =>
+    mutationFn: ({ tagihanId }: { tagihanId: string | string[] }) =>
       deleteTagihan({ data: tagihanId }),
     onSuccess: (response, variables) => {
       showSubmittedData(response)
+      const ids = Array.isArray(variables.tagihanId)
+        ? variables.tagihanId
+        : [variables.tagihanId]
+      const isSingle = !Array.isArray(variables.tagihanId)
+
       // Remove from cache
       queryClient.invalidateQueries({ queryKey: ['tagihan'] })
-      queryClient.removeQueries({
-        queryKey: ['tagihan', variables.tagihanId],
-      })
-      // Also invalidate all tagihan by pelanggan queries
-      queryClient.invalidateQueries({
-        queryKey: ['tagihan', 'by-pelanggan'],
-      })
-      toast.success('Tagihan berhasil dihapus!')
-    },
-    onError: (error: Error) => {
-      toast.error(`Gagal menghapus tagihan: ${error.message}`)
-    },
-  })
 
-  // NEW: Multi-delete mutation
-  const deleteMultipleTagihanMutation = useMutation({
-    mutationFn: ({ tagihanIds }: { tagihanIds: string[] }) =>
-      deleteMultipleTagihan({ data: tagihanIds }),
-    onSuccess: (response, variables) => {
-      const { deletedCount = 0, failedIds } = response.data || {}
-
-      // Show detailed response
-      showSubmittedData(response)
-
-      // Invalidate main tagihan list
-      queryClient.invalidateQueries({ queryKey: ['tagihan'] })
-
-      // Remove successfully deleted items from cache
-      const successfulIds = variables.tagihanIds.filter(
-        (id) => !failedIds?.includes(id)
-      )
-      successfulIds.forEach((id) => {
-        queryClient.removeQueries({ queryKey: ['tagihan', id] })
+      // Remove individual queries for each deleted tagihan
+      ids.forEach((id) => {
+        queryClient.removeQueries({
+          queryKey: ['tagihan', id],
+        })
       })
 
       // Also invalidate all tagihan by pelanggan queries
@@ -121,14 +96,20 @@ export const useTagihan = () => {
       })
 
       // Show appropriate toast message
-      if (deletedCount === variables.tagihanIds.length) {
-        toast.success(`${deletedCount} tagihan berhasil dihapus!`)
-      } else if (deletedCount > 0) {
-        toast.warning(
-          `${deletedCount} tagihan berhasil dihapus, ${failedIds?.length || 0} gagal`
-        )
+      if (isSingle) {
+        toast.success('Tagihan berhasil dihapus!')
       } else {
-        toast.error('Tidak ada tagihan yang berhasil dihapus')
+        const data = response.data as {
+          deletedCount: number
+          failedIds: string[]
+        }
+        if (data.failedIds.length > 0) {
+          toast.success(
+            `${data.deletedCount} tagihan berhasil dihapus, ${data.failedIds.length} gagal`
+          )
+        } else {
+          toast.success(`${data.deletedCount} tagihan berhasil dihapus!`)
+        }
       }
     },
     onError: (error: Error) => {
@@ -141,69 +122,48 @@ export const useTagihan = () => {
       tagihanId,
       status,
     }: {
-      tagihanId: string
-      status: 'belum_lunas' | 'lunas' | 'sebagian'
+      tagihanId: string | string[]
+      status: 'belum_lunas' | 'lunas' | 'sebagian' | 'jatuh_tempo'
     }) => updateTagihanStatus({ data: { id: tagihanId, status } }),
     onSuccess: (response, variables) => {
       showSubmittedData(response)
+      const ids = Array.isArray(variables.tagihanId)
+        ? variables.tagihanId
+        : [variables.tagihanId]
+      const isSingle = !Array.isArray(variables.tagihanId)
+
       // Update cache with new data
       queryClient.invalidateQueries({ queryKey: ['tagihan'] })
-      queryClient.invalidateQueries({
-        queryKey: ['tagihan', variables.tagihanId],
-      })
-      // Also invalidate tagihan by pelanggan if exists
-      if (response.data?.pelangganId) {
+
+      // Invalidate individual queries for each updated tagihan
+      ids.forEach((id) => {
         queryClient.invalidateQueries({
-          queryKey: ['tagihan', 'by-pelanggan', response.data.pelangganId],
+          queryKey: ['tagihan', id],
         })
-      }
-      toast.success('Status tagihan berhasil diupdate!')
-    },
-    onError: (error: Error) => {
-      toast.error(`Gagal mengupdate status tagihan: ${error.message}`)
-    },
-  })
-
-  // NEW: Multi-update status mutation
-  const updateMultipleStatusMutation = useMutation({
-    mutationFn: ({
-      tagihanIds,
-      status,
-    }: {
-      tagihanIds: string[]
-      status: 'belum_lunas' | 'lunas' | 'sebagian'
-    }) => updateMultipleTagihanStatus({ data: { ids: tagihanIds, status } }),
-    onSuccess: (response, variables) => {
-      const { updatedCount = 0, failedIds } = response.data || {}
-
-      // Show detailed response
-      showSubmittedData(response)
-
-      // Invalidate main tagihan list
-      queryClient.invalidateQueries({ queryKey: ['tagihan'] })
-
-      // Invalidate individual tagihan that were successfully updated
-      const successfulIds = variables.tagihanIds.filter(
-        (id) => !failedIds?.includes(id)
-      )
-      successfulIds.forEach((id) => {
-        queryClient.invalidateQueries({ queryKey: ['tagihan', id] })
       })
 
-      // Also invalidate all tagihan by pelanggan queries
+      // Also invalidate tagihan by pelanggan
       queryClient.invalidateQueries({
         queryKey: ['tagihan', 'by-pelanggan'],
       })
 
       // Show appropriate toast message
-      if (updatedCount === variables.tagihanIds.length) {
-        toast.success(`Status ${updatedCount} tagihan berhasil diupdate!`)
-      } else if (updatedCount > 0) {
-        toast.warning(
-          `Status ${updatedCount} tagihan berhasil diupdate, ${failedIds?.length || 0} gagal`
-        )
+      if (isSingle) {
+        toast.success('Status tagihan berhasil diupdate!')
       } else {
-        toast.error('Tidak ada status tagihan yang berhasil diupdate')
+        const data = response.data as {
+          updatedCount: number
+          failedIds: string[]
+        }
+        if (data.failedIds.length > 0) {
+          toast.success(
+            `${data.updatedCount} status tagihan berhasil diupdate, ${data.failedIds.length} gagal`
+          )
+        } else {
+          toast.success(
+            `${data.updatedCount} status tagihan berhasil diupdate!`
+          )
+        }
       }
     },
     onError: (error: Error) => {
@@ -214,7 +174,7 @@ export const useTagihan = () => {
   return {
     // Query methods
     getAllTagihan: getAllTagihanQuery,
-    tagihan: getAllTagihanQuery.data?.data || [],
+    tagihan: getAllTagihanQuery.data || [],
     isLoadingTagihan: getAllTagihanQuery.isLoading,
     tagihanError: getAllTagihanQuery.error,
 
@@ -222,17 +182,13 @@ export const useTagihan = () => {
     addTagihan: addTagihanMutation,
     updateTagihan: updateTagihanMutation,
     deleteTagihan: deleteTagihanMutation,
-    deleteMultipleTagihan: deleteMultipleTagihanMutation, // NEW
     updateStatus: updateStatusMutation,
-    updateMultipleStatus: updateMultipleStatusMutation, // NEW
 
     // Loading states untuk UI
     isAdding: addTagihanMutation.isPending,
     isUpdating: updateTagihanMutation.isPending,
     isDeleting: deleteTagihanMutation.isPending,
-    isDeletingMultiple: deleteMultipleTagihanMutation.isPending, // NEW
     isUpdatingStatus: updateStatusMutation.isPending,
-    isUpdatingMultipleStatus: updateMultipleStatusMutation.isPending, // NEW
   }
 }
 
@@ -246,7 +202,7 @@ export const useTagihanById = (tagihanId: string, enabled: boolean = true) => {
   })
 
   return {
-    tagihan: getTagihanQuery.data?.data || null,
+    tagihan: getTagihanQuery.data || [],
     isLoading: getTagihanQuery.isLoading,
     error: getTagihanQuery.error,
     refetch: getTagihanQuery.refetch,

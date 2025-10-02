@@ -28,5 +28,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src", "drizzle.config.ts"]
+  "include": ["src", "drizzle.config.ts", "src/socket-server.ts"]
 }

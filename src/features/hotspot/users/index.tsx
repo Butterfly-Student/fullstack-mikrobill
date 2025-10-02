@@ -13,7 +13,7 @@ const route = getRouteApi('/_authenticated/hotspot/users')
 export default function HotspotUser() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  // const { activeRouter } = useRouterSwitcherData()
+  // const { activeRouter } = useRouterManagement()
   const { users } = useHotspotUser()
 
 

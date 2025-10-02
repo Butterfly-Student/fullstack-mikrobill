@@ -127,6 +127,8 @@ export class MikrotikHotspot extends MikrotikClient {
         keepalive: overrideConfig?.keepalive ?? true,
       }
 
+      console.log(clientConfig)
+
       if (!clientConfig.host || !clientConfig.user || !clientConfig.password) {
         throw new Error(
           'Missing required router configuration (host, user, password)'
@@ -1113,7 +1115,7 @@ export class MikrotikHotspot extends MikrotikClient {
   async getReportByDate(
     date: string,
     useCache: boolean = true
-  ): Promise<any[]> {
+  ) {
     try {
       const today = new Date()
         .toLocaleDateString('en-US', {
@@ -1180,7 +1182,7 @@ export class MikrotikHotspot extends MikrotikClient {
   async getSystemScripts(filter?: {
     source?: string
     name?: string
-  }): Promise<any[]> {
+  }) {
     try {
       let query = this.connectedApi?.menu('/system/script/print')
 
@@ -1246,7 +1248,7 @@ export class MikrotikHotspot extends MikrotikClient {
   }
 
   // Scheduler Management
-  async getSchedulers(name?: string): Promise<any[]> {
+  async getSchedulers(name?: string) {
     try {
       let query = this.connectedApi?.menu('/system/scheduler/print')
 

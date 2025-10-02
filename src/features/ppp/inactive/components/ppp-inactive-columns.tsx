@@ -1,9 +1,10 @@
-import { type ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge'
-import { Checkbox } from '@/components/ui/checkbox'
-import { DataTableColumnHeader } from '@/components/data-table'
-import { type PppoeUser } from '../../data/schema'
-import { DataTableRowActions } from './data-table-row-actions'
+import { type ColumnDef } from '@tanstack/react-table';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DataTableColumnHeader } from '@/components/data-table';
+import { type PppoeUser } from '../../data/schema';
+import { DataTableRowActions } from './data-table-row-actions';
+
 
 // Status untuk service types
 const services = [
@@ -123,14 +124,13 @@ export const pppColumns: ColumnDef<PppoeUser>[] = [
   {
     accessorKey: 'disabled',
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Status' />
+      <DataTableColumnHeader column={column} title='Disabled' />
     ),
     cell: ({ row }) => {
-      const isDisabled = row.getValue('disabled') as boolean
-
+      const isDisabled = row.getValue('disabled') === true ? true : false
       return (
         <Badge variant={isDisabled ? 'destructive' : 'default'}>
-          {isDisabled ? 'Disabled' : 'Active'}
+          {isDisabled ? 'Yes' : 'No'}
         </Badge>
       )
     },

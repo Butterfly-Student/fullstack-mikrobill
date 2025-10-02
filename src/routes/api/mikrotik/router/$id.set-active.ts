@@ -40,15 +40,12 @@ export const ServerRoute = createServerFileRoute(
         )
       }
 
-      // If router is already active, return success without changes
+      // If router is already active, return the full router object
       if (router.is_active) {
+        console.info(`Router ${routerId} is already active`)
         return json({
-          data: {
-            id: router.id,
-            name: router.name,
-            is_active: true,
-            was_already_active: true,
-          },
+          success: true,
+          data: router,  // ✅ Return full router object
           message: 'Router is already active',
         })
       }
@@ -75,27 +72,31 @@ export const ServerRoute = createServerFileRoute(
           .returning()
       })
 
+      console.info(`Router ${routerId} set as active successfully`)
+
+      // ✅ PENTING: Return full router object dengan semua field
       return json({
-        data: {
-          id: updatedRouter.id,
-          name: updatedRouter.name,
-          is_active: updatedRouter.is_active,
-          was_already_active: false,
-        },
+        success: true,
+        data: updatedRouter,  // Return FULL router object, not partial
         message: 'Router set as active successfully',
       })
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error setting router ${params.id} as active:`, error)
 
       if (error.message === 'Invalid router ID format') {
         return json(
-          { error: 'Validation error', message: error.message },
+          { 
+            success: false,
+            error: 'Validation error', 
+            message: error.message 
+          },
           { status: 400 }
         )
       }
 
       return json(
         {
+          success: false,
           error: 'Failed to set router as active',
           message: error.message || 'Unknown error occurred',
         },

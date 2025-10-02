@@ -1,13 +1,12 @@
 import z from "zod";
 
-
 const routerStatusSchema = z.enum(['online', 'offline', 'error'])
 
 export const routerSchema = z.object({
   id: z.number().int().positive(),
   uuid: z.string().uuid(),
   name: z.string().min(1).max(100),
-  hostname: z.string().min(1).max(45), // Sesuai database length: 45
+  hostname: z.string().min(1).max(45),
   username: z.string().min(1).max(50),
   password: z.string().min(1).max(255),
   keepalive: z.boolean().nullable().default(true),
@@ -25,6 +24,7 @@ export const routerSchema = z.object({
 })
 
 export type Router = z.infer<typeof routerSchema>
+
 export const formSchema = z.object({
   name: z.string().min(1, 'Router name is required.').max(100),
   hostname: z
@@ -47,6 +47,9 @@ export const formSchema = z.object({
 
 export type RouterForm = z.infer<typeof formSchema>
 
+// ============================================
+// HOTSPOT PROFILES
+// ============================================
 
 export const getHotspotProfiles = async (routerId: number) => {
   const response = await fetch(
@@ -66,8 +69,9 @@ export const getHotspotProfiles = async (routerId: number) => {
   return data
 }
 
-// Query key factory for consistency
-
+// ============================================
+// GET ALL ROUTERS
+// ============================================
 
 export const getAllRouters = async (): Promise<Router[]> => {
   const response = await fetch('/api/mikrotik/router')
@@ -82,8 +86,13 @@ export const getAllRouters = async (): Promise<Router[]> => {
     throw new Error(data.message || 'Failed to fetch routers')
   }
   
+  console.log('📦 [API] Get all routers:', data.data)
   return data.data
 }
+
+// ============================================
+// GET ACTIVE ROUTER
+// ============================================
 
 export const getActiveRouter = async (): Promise<Router> => {
   const response = await fetch('/api/mikrotik/router/active')
@@ -98,10 +107,14 @@ export const getActiveRouter = async (): Promise<Router> => {
     throw new Error(data.message || 'Failed to fetch active router')
   }
   
+  console.log('📦 [API] Get active router:', data.data)
   return data.data
 }
 
-// Get single router by ID
+// ============================================
+// GET SINGLE ROUTER BY ID
+// ============================================
+
 export const getRouterById = async (id: number): Promise<Router> => {
   const response = await fetch(`/api/mikrotik/router/${id}`)
  
@@ -118,7 +131,13 @@ export const getRouterById = async (id: number): Promise<Router> => {
   return data.data
 }
 
-export const setActiveRouter = async (routerId: number) => {
+// ============================================
+// SET ACTIVE ROUTER - FIXED VERSION
+// ============================================
+
+export const setActiveRouter = async (routerId: number): Promise<Router> => {
+  console.log('🚀 [API] Setting active router:', routerId)
+  
   const response = await fetch(`/api/mikrotik/router/${routerId}/set-active`, {
     method: 'POST',
     headers: {
@@ -127,19 +146,39 @@ export const setActiveRouter = async (routerId: number) => {
   })
   
   if (!response.ok) {
+    const errorText = await response.text()
+    console.error('❌ [API] Response not OK:', response.status, errorText)
     throw new Error(`Failed to set active router: ${response.statusText}`)
   }
   
   const data = await response.json()
+  console.log('📦 [API] Raw response from backend:', data)
   
   if (data.error) {
     throw new Error(data.message || 'Failed to set active router')
   }
   
-  return data.data
+  // ✅ CRITICAL: Pastikan return FULL router object
+  if (!data.data) {
+    console.error('❌ [API] Invalid response structure:', data)
+    throw new Error('Invalid response: missing router data')
+  }
+  
+  // Validate that we got a complete router object
+  const router = data.data
+  if (!router.id || !router.name || !router.hostname) {
+    console.error('❌ [API] Incomplete router object:', router)
+    throw new Error('Incomplete router data received from server')
+  }
+  
+  console.log('✅ [API] Returning full router object:', router)
+  return router
 }
 
-// Add new router
+// ============================================
+// ADD NEW ROUTER
+// ============================================
+
 export const addRouter = async (data: RouterForm): Promise<Router> => {
   const response = await fetch('/api/mikrotik/router', {
     method: 'POST',
@@ -162,7 +201,10 @@ export const addRouter = async (data: RouterForm): Promise<Router> => {
   return result.data
 }
 
-// Update existing router
+// ============================================
+// UPDATE ROUTER
+// ============================================
+
 export const updateRouter = async (id: number, data: RouterForm): Promise<Router> => {
   const response = await fetch(`/api/mikrotik/router/${id}`, {
     method: 'PUT',
@@ -185,7 +227,10 @@ export const updateRouter = async (id: number, data: RouterForm): Promise<Router
   return result.data
 }
 
-// Delete router
+// ============================================
+// DELETE ROUTER
+// ============================================
+
 export const deleteRouter = async (id: number): Promise<void> => {
   const response = await fetch(`/api/mikrotik/router/${id}`, {
     method: 'DELETE',
@@ -205,7 +250,10 @@ export const deleteRouter = async (id: number): Promise<void> => {
   }
 }
 
-// Bulk delete routers
+// ============================================
+// BULK DELETE ROUTERS
+// ============================================
+
 export const deleteRouters = async (ids: number[]): Promise<void> => {
   const response = await fetch('/api/mikrotik/router/bulk-delete', {
     method: 'POST',
@@ -226,7 +274,10 @@ export const deleteRouters = async (ids: number[]): Promise<void> => {
   }
 }
 
-// Test router connection
+// ============================================
+// TEST ROUTER CONNECTION
+// ============================================
+
 export const testRouterConnection = async (data: RouterForm): Promise<{ success: boolean; message: string }> => {
   const response = await fetch('/api/mikrotik/router/test-connection', {
     method: 'POST',

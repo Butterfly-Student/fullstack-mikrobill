@@ -19,7 +19,7 @@ export const tagihanSchema = z.object({
   total: z.string().regex(/^\d+(\.\d{1,2})?$/, 'Total harus angka desimal'), // sinkron dengan decimal di DB
   pelangganId: z.uuid('pelangganId harus UUID'),
   templateId: z.uuid().optional(),
-  createdAt: z.string().nullable(),
+  createdAt: z.date().nullable(),
 })
 
 

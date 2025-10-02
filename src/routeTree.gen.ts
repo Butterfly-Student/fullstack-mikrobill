@@ -13,6 +13,7 @@ import { createServerRootRoute } from '@tanstack/react-start/server'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ClerkRouteRouteImport } from './routes/clerk/route'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as TesIndexRouteImport } from './routes/tes/index'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as errors503RouteImport } from './routes/(errors)/503'
 import { Route as errors500RouteImport } from './routes/(errors)/500'
@@ -110,6 +111,11 @@ const ClerkRouteRoute = ClerkRouteRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TesIndexRoute = TesIndexRouteImport.update({
+  id: '/tes/',
+  path: '/tes/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
@@ -608,6 +614,7 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/tes': typeof TesIndexRoute
   '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -657,6 +664,7 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/tes': typeof TesIndexRoute
   '/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -711,6 +719,7 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/tes/': typeof TesIndexRoute
   '/_authenticated/dashboard/customer': typeof AuthenticatedDashboardCustomerRoute
   '/_authenticated/dashboard/product': typeof AuthenticatedDashboardProductRoute
   '/_authenticated/errors/$error': typeof AuthenticatedErrorsErrorRoute
@@ -764,6 +773,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/tes'
     | '/dashboard/customer'
     | '/dashboard/product'
     | '/errors/$error'
@@ -813,6 +823,7 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/tes'
     | '/dashboard/customer'
     | '/dashboard/product'
     | '/errors/$error'
@@ -866,6 +877,7 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/tes/'
     | '/_authenticated/dashboard/customer'
     | '/_authenticated/dashboard/product'
     | '/_authenticated/errors/$error'
@@ -916,6 +928,7 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
+  TesIndexRoute: typeof TesIndexRoute
 }
 export interface FileServerRoutesByFullPath {
   '/api/actions/$id': typeof ApiActionsIdServerRoute
@@ -1205,6 +1218,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: ''
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tes/': {
+      id: '/tes/'
+      path: '/tes'
+      fullPath: '/tes'
+      preLoaderRoute: typeof TesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/': {
@@ -2047,6 +2067,7 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
+  TesIndexRoute: TesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

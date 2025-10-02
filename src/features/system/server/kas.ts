@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { db } from '@/db';
 import { kas, type NewKas, type Kas } from '@/db/schema/system';
 import { createServerFn } from '@tanstack/react-start';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lt, sql } from 'drizzle-orm';
 import { kasFormSchema } from '../kas/data/schema';
 
 
@@ -14,26 +14,95 @@ type ApiResponse<T = any> = {
   success: boolean
   message: string
   data?: T
+  summary?: T
+}
+
+// Helper: Calculate growth percentage safely
+const calculateGrowth = (current: number, previous: number): number | null => {
+  if (previous === 0) return current === 0 ? 0 : null
+  return ((current - previous) / previous) * 100
+}
+
+// Helper: Get summary for a date range using SQL aggregation
+const getSummaryForPeriod = async (startDate: Date, endDate: Date) => {
+  const result = await db
+    .select({
+      masuk: sql<string>`COALESCE(SUM(CASE WHEN ${kas.jenis} = 'masuk' THEN ${kas.jumlah} ELSE 0 END), 0)`,
+      keluar: sql<string>`COALESCE(SUM(CASE WHEN ${kas.jenis} = 'keluar' THEN ${kas.jumlah} ELSE 0 END), 0)`,
+    })
+    .from(kas)
+    .where(and(gte(kas.tanggal, startDate), lt(kas.tanggal, endDate)))
+
+  const masuk = Number(result[0]?.masuk ?? 0)
+  const keluar = Number(result[0]?.keluar ?? 0)
+
+  return {
+    masuk,
+    keluar,
+    saldo: masuk - keluar,
+  }
 }
 
 
-export const getAllKas = createServerFn().handler(
-  async (): Promise<ApiResponse<Kas[]>> => {
-    console.info('Fetching all kas entries...')
 
+export const getAllKas = createServerFn().handler(
+  async (): Promise<ApiResponse<{ data: Kas[]; summary: any }>> => {
+    console.info('Fetching kas entries for this month...')
+    
     try {
-      const result = await db.select().from(kas).orderBy(desc(kas.tanggal))
+      const now = new Date()
+      
+      // Current month range
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+      const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      
+      // Previous month range
+      const prevFirstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const prevNextMonth = firstDay
+
+      // Fetch current month data
+      const result = await db
+        .select()
+        .from(kas)
+        .where(and(gte(kas.tanggal, firstDay), lt(kas.tanggal, nextMonth)))
+        .orderBy(desc(kas.tanggal))
+
+      // Get summaries using optimized SQL aggregation
+      const [current, previous] = await Promise.all([
+        getSummaryForPeriod(firstDay, nextMonth),
+        getSummaryForPeriod(prevFirstDay, prevNextMonth),
+      ])
+
+      // Calculate growth percentages
+      const growth = {
+        masuk: calculateGrowth(current.masuk, previous.masuk),
+        keluar: calculateGrowth(current.keluar, previous.keluar),
+        saldo: calculateGrowth(current.saldo, previous.saldo),
+      }
 
       return {
         success: true,
         message: 'Kas entries fetched successfully',
         data: result,
+        summary: {
+          current,
+          previous,
+          growth,
+        },
       }
     } catch (error) {
       console.error('Error fetching kas entries:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to fetch kas entries'
-      )
+      
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to fetch kas entries',
+        data: [],
+        summary: {
+          current: { masuk: 0, keluar: 0, saldo: 0 },
+          previous: { masuk: 0, keluar: 0, saldo: 0 },
+          growth: { masuk: null, keluar: null, saldo: null },
+        },
+      }
     }
   }
 )

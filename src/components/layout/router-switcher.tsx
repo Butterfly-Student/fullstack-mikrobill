@@ -1,6 +1,15 @@
 'use client'
 
-import { ChevronsUpDown, Router as RouterIcon, Wifi, WifiOff, Loader2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import {
+  ChevronsUpDown,
+  Router as RouterIcon,
+  Wifi,
+  WifiOff,
+  Loader2,
+  Check,
+} from 'lucide-react'
+import { useRouterManagement } from '@/hooks/use-router'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,46 +23,75 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
-import { useRouterSwitcherData } from '@/hooks/use-router'
 
 // Router Status Icon Component
-const RouterStatusIcon = ({ status, isActive }: { status?: "error" | "online" | "offline" | null; isActive: boolean | null }) => {
+const RouterStatusIcon = ({
+  status,
+  isActive,
+  size = 4,
+}: {
+  status?: 'error' | 'online' | 'offline' | null
+  isActive: boolean | null
+  size?: number
+}) => {
+  const sizeClass = `size-${size}`
+
   if (status === 'online') {
-    return <Wifi className={`size-4 ${isActive ? 'text-green-500' : 'text-green-400'}`} />
+    return (
+      <Wifi
+        className={`${sizeClass} ${isActive ? 'text-green-600' : 'text-green-500'}`}
+      />
+    )
   } else if (status === 'offline') {
-    return <WifiOff className={`size-4 ${isActive ? 'text-red-500' : 'text-red-400'}`} />
+    return (
+      <WifiOff
+        className={`${sizeClass} ${isActive ? 'text-red-600' : 'text-red-500'}`}
+      />
+    )
   }
-  return <RouterIcon className={`size-4 ${isActive ? 'text-blue-500' : 'text-gray-400'}`} />
+  return (
+    <RouterIcon
+      className={`${sizeClass} ${isActive ? 'text-blue-600' : 'text-gray-500'}`}
+    />
+  )
 }
 
 // RouterSwitcher component
 export function RouterSwitcher() {
   const { isMobile } = useSidebar()
+  const [switchingRouterId, setSwitchingRouterId] = useState<number | null>(
+    null
+  )
 
-  // Using the composite hook - super simple!
+  // Using the improved composite hook
   const {
     routers,
     activeRouter,
-    handleRouterSwitch,
+    switchRouter,
     isLoading,
     isSwitching,
-    error
-  } = useRouterSwitcherData({
-    refetchInterval: false, // Refresh every 30s
+    routersError: error,
+  } = useRouterManagement({
+    refetchInterval: 30 * 1000, // Refresh every 30s to update status
     enableToast: true,
   })
+  console.log(routers)
+  console.log(activeRouter)
 
-  const handleSwitch = async (router: any) => {
-    if (router.id === activeRouter?.id || isSwitching) {
+  const handleSwitch = async (routerId: number) => {
+    // Prevent switching if already active or currently switching
+    if (routerId === activeRouter?.id || isSwitching) {
       return
     }
 
-    console.log(router)
+    setSwitchingRouterId(routerId)
 
     try {
-      await handleRouterSwitch(router.id)
+      await switchRouter(routerId)
     } catch (error) {
       console.error('Failed to switch router:', error)
+    } finally {
+      setSwitchingRouterId(null)
     }
   }
 
@@ -82,12 +120,14 @@ export function RouterSwitcher() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size='lg' disabled>
-            <div className='bg-red-500 text-white flex aspect-square size-8 items-center justify-center rounded-lg'>
+            <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-red-500 text-white'>
               <WifiOff className='size-4' />
             </div>
             <div className='grid flex-1 text-start text-sm leading-tight'>
               <span className='truncate font-semibold text-red-600'>Error</span>
-              <span className='truncate text-xs text-red-500'>Failed to load routers</span>
+              <span className='truncate text-xs text-red-500'>
+                Failed to load routers
+              </span>
             </div>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -101,7 +141,7 @@ export function RouterSwitcher() {
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton size='lg' disabled>
-            <div className='bg-gray-500 text-white flex aspect-square size-8 items-center justify-center rounded-lg'>
+            <div className='flex aspect-square size-8 items-center justify-center rounded-lg bg-gray-500 text-white'>
               <RouterIcon className='size-4' />
             </div>
             <div className='grid flex-1 text-start text-sm leading-tight'>
@@ -130,22 +170,25 @@ export function RouterSwitcher() {
                 {isSwitching ? (
                   <Loader2 className='size-4 animate-spin' />
                 ) : (
-                    <RouterStatusIcon status={displayRouter.status} isActive={displayRouter.is_active} />
+                  <RouterStatusIcon
+                    status={displayRouter.status}
+                    isActive={displayRouter.is_active}
+                  />
                 )}
               </div>
               <div className='grid flex-1 text-start text-sm leading-tight'>
                 <span className='truncate font-semibold'>
                   {displayRouter.name}
                   {displayRouter.is_active && (
-                    <span className='ml-1 text-green-500'>●</span>
+                    <span className='ml-1.5 font-bold text-green-600'>●</span>
                   )}
                 </span>
-                <span className='truncate text-xs'>
+                <span className='text-muted-foreground truncate text-xs'>
                   {displayRouter.hostname}
                   {displayRouter.location && ` • ${displayRouter.location}`}
                 </span>
               </div>
-              <ChevronsUpDown className='ms-auto' />
+              <ChevronsUpDown className='ms-auto size-4' />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -155,46 +198,77 @@ export function RouterSwitcher() {
             sideOffset={4}
           >
             <DropdownMenuLabel className='text-muted-foreground text-xs'>
-              Routers
+              Available Routers
             </DropdownMenuLabel>
-            <div className='flex flex-col flex-wrap gap-2'>
-              {routers.map((router) => (
+            {routers.map((router) => {
+              const isActiveRouter = router.id === activeRouter?.id
+              const isSwitchingThis = switchingRouterId === router.id
+
+              return (
                 <DropdownMenuItem
                   key={router.id}
-                  onClick={() => handleSwitch(router)}
-                  className={`gap-2 p-2 ${router.is_active ? 'bg-accent' : ''
-                    } ${isSwitching ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                    }`}
-                  disabled={isSwitching}
+                  onClick={() => handleSwitch(router.id)}
+                  className={`cursor-pointer gap-2 p-2 transition-colors ${
+                    isActiveRouter
+                      ? 'bg-accent/50 hover:bg-accent/70'
+                      : 'hover:bg-accent/30'
+                  } ${isSwitching ? 'cursor-wait opacity-50' : ''}`}
+                  disabled={isSwitching || isActiveRouter}
                 >
-                  <div className='flex size-6 items-center justify-center rounded-sm border'>
-                    {isSwitching ? (
-                      <Loader2 className='size-4 animate-spin' />
+                  <div
+                    className={`flex size-6 items-center justify-center rounded-sm border ${
+                      isActiveRouter
+                        ? 'border-green-500 bg-green-50'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    {isSwitchingThis ? (
+                      <Loader2 className='size-4 animate-spin text-blue-500' />
+                    ) : isActiveRouter ? (
+                      <Check className='size-4 font-bold text-green-600' />
                     ) : (
-                      <RouterStatusIcon status={router.status} isActive={router.is_active} />
+                      <RouterStatusIcon
+                        status={router.status}
+                        isActive={router.is_active}
+                      />
                     )}
                   </div>
-                  <div className='flex-1'>
-                    <div className='font-medium'>
+                  <div className='min-w-0 flex-1'>
+                    <div
+                      className={`truncate font-medium ${
+                        isActiveRouter ? 'text-green-700' : ''
+                      }`}
+                    >
                       {router.name}
-                      {router.is_active && (
-                        <span className='ml-1 text-green-500 text-xs'>• Active</span>
+                      {isActiveRouter && (
+                        <span className='ml-1.5 text-xs font-semibold text-green-600'>
+                          • Active
+                        </span>
                       )}
                     </div>
-                    <div className='text-xs text-muted-foreground'>
+                    <div className='text-muted-foreground truncate text-xs'>
                       {router.hostname}
                       {router.status && (
-                        <span className={`ml-1 ${router.status === 'online' ? 'text-green-500' :
-                            router.status === 'offline' ? 'text-red-500' : 'text-gray-500'
-                          }`}>
+                        <span
+                          className={`ml-1.5 font-medium ${
+                            router.status === 'online'
+                              ? 'text-green-600'
+                              : router.status === 'offline'
+                                ? 'text-red-600'
+                                : 'text-gray-500'
+                          }`}
+                        >
                           • {router.status}
                         </span>
+                      )}
+                      {router.location && (
+                        <span className='ml-1.5'>• {router.location}</span>
                       )}
                     </div>
                   </div>
                 </DropdownMenuItem>
-              ))}
-            </div>
+              )
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

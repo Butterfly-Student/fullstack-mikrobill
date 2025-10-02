@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { type UserConfig } from '@/lib/mikrotik/hotspot';
 import { showSubmittedData } from '@/lib/show-submitted-data';
-import { useRouterSwitcherData } from '@/hooks/use-router';
+import { useRouterManagement } from '@/hooks/use-router';
 import { getHotspotProfiles } from '@/features/hotspot/server/hotspot-profiles';
 import { getHotspotUsers, createHotspotUser, updateHotspotUser, deleteHotspotUser } from '@/features/hotspot/server/hotspot-users';
 
@@ -24,7 +24,7 @@ export interface UserForm extends Omit<UserConfig, 'routerId'> {
 
 export const useHotspotUser = (commentFilter?: string) => {
   const queryClient = useQueryClient()
-  const { activeRouter } = useRouterSwitcherData({ refetchInterval: false }) 
+  const { activeRouter } = useRouterManagement({ refetchInterval: false }) 
   const routerId = activeRouter?.id
   // Get all users
   const usersQuery = useQuery({

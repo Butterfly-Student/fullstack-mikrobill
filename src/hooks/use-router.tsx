@@ -1,6 +1,13 @@
 'use client'
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useCallback } from 'react'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   getAllRouters,
   getActiveRouter,
@@ -11,142 +18,93 @@ import {
   deleteRouters,
   testRouterConnection,
   type Router,
-  type RouterForm
+  type RouterForm,
 } from '@/lib/mikrotik/api'
-import { toast } from 'sonner'
 
-// Configuration options
+// ============================================
+// TYPES
+// ============================================
+
 interface RouterHookOptions {
   staleTime?: number
-  refetchInterval?: number | false | undefined
+  refetchInterval?: number | false
   enableToast?: boolean
   onRouterSwitch?: (router: Router) => void
   onSuccess?: () => void
   onError?: (error: Error) => void
 }
 
-// Default configuration
-const DEFAULT_OPTIONS: RouterHookOptions = {
-  staleTime: 30 * 1000, // 30 seconds
+interface TestConnectionResult {
+  success: boolean
+  message: string
+}
+
+interface MutationContext {
+  previousRouters?: Router[]
+  previousActiveRouter?: Router | null
+}
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+const DEFAULT_OPTIONS: Required<
+  Omit<RouterHookOptions, 'onRouterSwitch' | 'onSuccess' | 'onError'>
+> = {
+  staleTime: 30 * 1000,
   refetchInterval: false,
   enableToast: true,
 }
 
+const QUERY_KEYS = {
+  routers: ['routers'] as const,
+  activeRouter: ['active-router'] as const,
+  routerById: (id: number) => ['routers', id] as const,
+}
+
 // ============================================
-// READ OPERATIONS (existing hooks)
+// HELPER FUNCTIONS
 // ============================================
 
-/**
- * Main router hook - provides all router functionality
- */
-export function useRouter(options: RouterHookOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options }
-  const queryClient = useQueryClient()
+function invalidateRouterQueries(queryClient: QueryClient): void {
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.routers })
+  queryClient.invalidateQueries({ queryKey: QUERY_KEYS.activeRouter })
+  // Also invalidate dependent queries
+  queryClient.invalidateQueries({ queryKey: ['hotspot-profiles'] })
+}
 
-  // Query for all routers
-  const {
-    data: routers = [],
-    isLoading: isLoadingRouters,
-    error: routersError,
-    refetch: refetchRouters,
-  } = useQuery({
-    queryKey: ['routers'],
-    queryFn: getAllRouters,
-    staleTime: opts.staleTime,
-    refetchInterval: opts.refetchInterval,
-  })
-
-  // Query for active router
-  const {
-    data: activeRouter = null,
-    isLoading: isLoadingActive,
-    error: activeError,
-    refetch: refetchActiveRouter,
-  } = useQuery({
-    queryKey: ['active-router'],
-    queryFn: getActiveRouter,
-    staleTime: opts.staleTime,
-    refetchInterval: opts.refetchInterval,
-    retry: (failureCount, error) => {
-      if (error.message.includes('No active router found')) {
-        return false
-      }
-      return failureCount < 3
-    },
-  })
-
-  // Mutation for setting active router
-  const setActiveMutation = useMutation({
-    mutationFn: setActiveRouter,
-    onSuccess: (routerId) => {
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['active-router'] })
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
-      queryClient.invalidateQueries({ queryKey: ['hotspot-profiles'] })
-
-      const router = routers.find(r => r.id === routerId)
-
-      // Custom callback
-      if (router && opts.onRouterSwitch) {
-        opts.onRouterSwitch(router)
-      }
-
-      // Toast notification
-      if (opts.enableToast && router) {
-        toast('Router switched successfully', {
-          description: `Now using ${router.name} as active router`,
-        })
-      }
-    },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
-      }
-
-      // Toast notification
-      if (opts.enableToast) {
-        toast('Failed to switch router', {
-          description: error.message,
-        })
-      }
-    },
-  })
-
-  const handleRouterSwitch = async (routerId: number) => {
-    return setActiveMutation.mutateAsync(routerId)
-  }
-
-  return {
-    // Data
-    routers,
-    activeRouter,
-
-    // Loading states
-    isLoading: isLoadingRouters || isLoadingActive,
-    isSwitching: setActiveMutation.isPending,
-
-    // Error states
-    error: routersError || activeError,
-
-    // Actions
-    handleRouterSwitch,
-    refetchRouters,
-    refetchActiveRouter,
-
-    // Raw mutation for advanced usage
-    setActiveMutation,
+function showSuccessToast(
+  title: string,
+  description: string,
+  enableToast: boolean
+): void {
+  if (enableToast) {
+    toast.success(title, { description })
   }
 }
 
+function showErrorToast(
+  title: string,
+  error: Error,
+  enableToast: boolean
+): void {
+  if (enableToast) {
+    toast.error(title, { description: error.message })
+  }
+}
+
+// ============================================
+// READ OPERATIONS
+// ============================================
+
 /**
- * Hook for getting all routers
+ * Hook for fetching all routers
  */
 export function useRouters(options: RouterHookOptions = {}) {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   return useQuery({
-    queryKey: ['routers'],
+    queryKey: QUERY_KEYS.routers,
     queryFn: getAllRouters,
     staleTime: opts.staleTime,
     refetchInterval: opts.refetchInterval,
@@ -154,18 +112,22 @@ export function useRouters(options: RouterHookOptions = {}) {
 }
 
 /**
- * Hook for getting active router only
+ * Hook for fetching active router
  */
 export function useActiveRouter(options: RouterHookOptions = {}) {
   const opts = { ...DEFAULT_OPTIONS, ...options }
 
   return useQuery({
-    queryKey: ['active-router'],
+    queryKey: QUERY_KEYS.activeRouter,
     queryFn: getActiveRouter,
     staleTime: opts.staleTime,
     refetchInterval: opts.refetchInterval,
     retry: (failureCount, error) => {
-      if (error.message.includes('No active router found')) {
+      // Don't retry if no active router exists
+      if (
+        error instanceof Error &&
+        error.message.includes('No active router found')
+      ) {
         return false
       }
       return failureCount < 3
@@ -174,112 +136,84 @@ export function useActiveRouter(options: RouterHookOptions = {}) {
 }
 
 /**
- * Hook for router switching functionality
- */
-export function useRouterSwitcher(options: RouterHookOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options }
-  const queryClient = useQueryClient()
-  const { data: routers = [] } = useRouters({ enableToast: false })
-
-  const mutation = useMutation({
-    mutationFn: setActiveRouter,
-    onSuccess: (routerId) => {
-      // Invalidate related queries
-      queryClient.invalidateQueries({ queryKey: ['active-router'] })
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
-      queryClient.invalidateQueries({ queryKey: ['hotspot-profiles'] })
-
-      const router = routers.find(r => r.id === routerId)
-
-      // Custom callback
-      if (router && opts.onRouterSwitch) {
-        opts.onRouterSwitch(router)
-      }
-
-      // Toast notification
-      if (opts.enableToast && router) {
-        toast('Router switched successfully', {
-          description: `Now using ${router.name} as active router`,
-        })
-      }
-    },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
-      }
-
-      // Toast notification
-      if (opts.enableToast) {
-        toast('Failed to switch router', {
-          description: error.message,
-        })
-      }
-    },
-  })
-
-  const switchRouter = async (routerId: number) => {
-    return mutation.mutateAsync(routerId)
-  }
-
-  return {
-    switchRouter,
-    isSwitching: mutation.isPending,
-    error: mutation.error,
-    reset: mutation.reset,
-  }
-}
-
-/**
- * Hook for getting router by ID
+ * Hook for fetching router by ID
  */
 export function useRouterById(id: number, options: RouterHookOptions = {}) {
-  const routersQuery = useRouters(options)
+  const { data: routers, isLoading, error } = useRouters(options)
 
-  const router = routersQuery.data?.find(r => r.id === id)
+  const router = routers?.find((r) => r.id === id) ?? null
 
   return {
-    router: router || null,
-    isLoading: routersQuery.isLoading,
-    error: routersQuery.error,
+    data: router,
+    isLoading,
+    error,
     exists: !!router,
   }
 }
 
+// ============================================
+// MUTATION OPERATIONS
+// ============================================
+
 /**
- * Composite hook for RouterSwitcher component
+ * Hook for switching active router
  */
-export function useRouterSwitcherData(options: RouterHookOptions = {}) {
-  const opts = {
-    ...DEFAULT_OPTIONS,
-    refetchInterval: 0, // Auto-refresh for UI seconds or false
-    ...options
-  }
+export function useSwitchRouter(options: RouterHookOptions = {}) {
+  const opts = { ...DEFAULT_OPTIONS, ...options }
+  const queryClient = useQueryClient()
 
-  const routersQuery = useRouters(opts)
-  const activeRouterQuery = useActiveRouter(opts)
-  const switcher = useRouterSwitcher(opts)
+  return useMutation({
+    mutationFn: setActiveRouter,
+    onMutate: async (routerId): Promise<MutationContext> => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.activeRouter })
 
-  return {
-    // Data
-    routers: routersQuery.data || [],
-    activeRouter: activeRouterQuery.data || null,
+      // Snapshot previous value
+      const previousActiveRouter = queryClient.getQueryData<Router>(
+        QUERY_KEYS.activeRouter
+      )
 
-    // States
-    isLoading: routersQuery.isLoading || activeRouterQuery.isLoading,
-    isSwitching: switcher.isSwitching,
-    error: routersQuery.error || activeRouterQuery.error,
+      // Optimistically update
+      const routers = queryClient.getQueryData<Router[]>(QUERY_KEYS.routers)
+      const newActiveRouter = routers?.find((r) => r.id === routerId)
 
-    // Actions
-    handleRouterSwitch: switcher.switchRouter,
-    refetchRouters: routersQuery.refetch,
-    refetchActiveRouter: activeRouterQuery.refetch,
-  }
+      if (newActiveRouter) {
+        queryClient.setQueryData(QUERY_KEYS.activeRouter, newActiveRouter)
+      }
+
+      return { previousActiveRouter }
+    },
+    onSuccess: (routerId) => {
+      const routers = queryClient.getQueryData<Router[]>(QUERY_KEYS.routers)
+      const router = routers?.find((r) => r.id === routerId)
+
+      invalidateRouterQueries(queryClient)
+
+      if (router) {
+        opts.onRouterSwitch?.(router)
+        showSuccessToast(
+          'Router switched',
+          `Now using ${router.name}`,
+          opts.enableToast
+        )
+      }
+
+      opts.onSuccess?.()
+    },
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousActiveRouter) {
+        queryClient.setQueryData(
+          QUERY_KEYS.activeRouter,
+          context.previousActiveRouter
+        )
+      }
+
+      opts.onError?.(error)
+      showErrorToast('Failed to switch router', error, opts.enableToast)
+    },
+  })
 }
-
-// ============================================
-// CRUD OPERATIONS (new hooks)
-// ============================================
 
 /**
  * Hook for adding new router
@@ -290,34 +224,32 @@ export function useAddRouter(options: RouterHookOptions = {}) {
 
   return useMutation({
     mutationFn: addRouter,
-    onSuccess: (data) => {
-      // Invalidate and refetch routers
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
-
-      // Custom callback
-      if (opts.onSuccess) {
-        opts.onSuccess()
-      }
-
-      // Toast notification
-      if (opts.enableToast) {
-        toast.success('Router added successfully', {
-          description: `${data.name} has been added to your network`,
-        })
-      }
+    onMutate: async (): Promise<MutationContext> => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.routers })
+      const previousRouters = queryClient.getQueryData<Router[]>(
+        QUERY_KEYS.routers
+      )
+      return { previousRouters }
     },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
+    onSuccess: (newRouter) => {
+      invalidateRouterQueries(queryClient)
+
+      showSuccessToast(
+        'Router added',
+        `${newRouter.name} has been added`,
+        opts.enableToast
+      )
+
+      opts.onSuccess?.()
+    },
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousRouters) {
+        queryClient.setQueryData(QUERY_KEYS.routers, context.previousRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.error('Failed to add router', {
-          description: error.message,
-        })
-      }
+      opts.onError?.(error)
+      showErrorToast('Failed to add router', error, opts.enableToast)
     },
   })
 }
@@ -332,37 +264,42 @@ export function useUpdateRouter(options: RouterHookOptions = {}) {
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: RouterForm }) =>
       updateRouter(id, data),
-    onSuccess: (data) => {
-      // Invalidate and refetch routers
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
+    onMutate: async ({ id, data }): Promise<MutationContext> => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.routers })
 
-      // If this was the active router, refetch active router too
-      queryClient.invalidateQueries({ queryKey: ['active-router'] })
+      const previousRouters = queryClient.getQueryData<Router[]>(
+        QUERY_KEYS.routers
+      )
 
-      // Custom callback
-      if (opts.onSuccess) {
-        opts.onSuccess()
+      // Optimistically update
+      if (previousRouters) {
+        const updatedRouters = previousRouters.map((router) =>
+          router.id === id ? { ...router, ...data } : router
+        )
+        queryClient.setQueryData(QUERY_KEYS.routers, updatedRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.success('Router updated successfully', {
-          description: `${data.name} configuration has been updated`,
-        })
-      }
+      return { previousRouters }
     },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
+    onSuccess: (updatedRouter) => {
+      invalidateRouterQueries(queryClient)
+
+      showSuccessToast(
+        'Router updated',
+        `${updatedRouter.name} has been updated`,
+        opts.enableToast
+      )
+
+      opts.onSuccess?.()
+    },
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousRouters) {
+        queryClient.setQueryData(QUERY_KEYS.routers, context.previousRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.error('Failed to update router', {
-          description: error.message,
-        })
-      }
+      opts.onError?.(error)
+      showErrorToast('Failed to update router', error, opts.enableToast)
     },
   })
 }
@@ -376,37 +313,42 @@ export function useDeleteRouter(options: RouterHookOptions = {}) {
 
   return useMutation({
     mutationFn: deleteRouter,
-    onSuccess: () => {
-      // Invalidate and refetch routers
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
+    onMutate: async (id): Promise<MutationContext> => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.routers })
 
-      // Check if we need to refetch active router
-      queryClient.invalidateQueries({ queryKey: ['active-router'] })
+      const previousRouters = queryClient.getQueryData<Router[]>(
+        QUERY_KEYS.routers
+      )
 
-      // Custom callback
-      if (opts.onSuccess) {
-        opts.onSuccess()
+      // Optimistically remove
+      if (previousRouters) {
+        const updatedRouters = previousRouters.filter(
+          (router) => router.id !== id
+        )
+        queryClient.setQueryData(QUERY_KEYS.routers, updatedRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.success('Router deleted successfully', {
-          description: 'Router has been removed from your network',
-        })
-      }
+      return { previousRouters }
     },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
+    onSuccess: () => {
+      invalidateRouterQueries(queryClient)
+
+      showSuccessToast(
+        'Router deleted',
+        'Router has been removed',
+        opts.enableToast
+      )
+
+      opts.onSuccess?.()
+    },
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousRouters) {
+        queryClient.setQueryData(QUERY_KEYS.routers, context.previousRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.error('Failed to delete router', {
-          description: error.message,
-        })
-      }
+      opts.onError?.(error)
+      showErrorToast('Failed to delete router', error, opts.enableToast)
     },
   })
 }
@@ -420,37 +362,42 @@ export function useBulkDeleteRouters(options: RouterHookOptions = {}) {
 
   return useMutation({
     mutationFn: deleteRouters,
-    onSuccess: (_, ids) => {
-      // Invalidate and refetch routers
-      queryClient.invalidateQueries({ queryKey: ['routers'] })
+    onMutate: async (ids): Promise<MutationContext> => {
+      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.routers })
 
-      // Check if we need to refetch active router
-      queryClient.invalidateQueries({ queryKey: ['active-router'] })
+      const previousRouters = queryClient.getQueryData<Router[]>(
+        QUERY_KEYS.routers
+      )
 
-      // Custom callback
-      if (opts.onSuccess) {
-        opts.onSuccess()
+      // Optimistically remove
+      if (previousRouters) {
+        const updatedRouters = previousRouters.filter(
+          (router) => !ids.includes(router.id)
+        )
+        queryClient.setQueryData(QUERY_KEYS.routers, updatedRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.success('Routers deleted successfully', {
-          description: `${ids.length} router(s) have been removed from your network`,
-        })
-      }
+      return { previousRouters }
     },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
+    onSuccess: (_, ids) => {
+      invalidateRouterQueries(queryClient)
+
+      showSuccessToast(
+        'Routers deleted',
+        `${ids.length} router(s) removed`,
+        opts.enableToast
+      )
+
+      opts.onSuccess?.()
+    },
+    onError: (error: Error, _, context) => {
+      // Rollback on error
+      if (context?.previousRouters) {
+        queryClient.setQueryData(QUERY_KEYS.routers, context.previousRouters)
       }
 
-      // Toast notification
-      if (opts.enableToast) {
-        toast.error('Failed to delete routers', {
-          description: error.message,
-        })
-      }
+      opts.onError?.(error)
+      showErrorToast('Failed to delete routers', error, opts.enableToast)
     },
   })
 }
@@ -463,99 +410,103 @@ export function useTestConnection(options: RouterHookOptions = {}) {
 
   return useMutation({
     mutationFn: testRouterConnection,
-    onSuccess: (result) => {
-      // Custom callback
-      if (opts.onSuccess) {
-        opts.onSuccess()
-      }
+    onSuccess: (result: TestConnectionResult) => {
+      opts.onSuccess?.()
 
-      // Toast notification
       if (opts.enableToast) {
         if (result.success) {
-          toast.success('Connection test successful', {
+          toast.success('Connection successful', {
             description: result.message,
           })
         } else {
-          toast.warning('Connection test failed', {
-            description: result.message,
-          })
+          toast.warning('Connection failed', { description: result.message })
         }
       }
     },
-    onError: (error) => {
-      // Custom error callback
-      if (opts.onError) {
-        opts.onError(error)
-      }
-
-      // Toast notification
-      if (opts.enableToast) {
-        toast.error('Connection test failed', {
-          description: error.message,
-        })
-      }
+    onError: (error: Error) => {
+      opts.onError?.(error)
+      showErrorToast('Connection test failed', error, opts.enableToast)
     },
   })
 }
 
+// ============================================
+// COMPOSITE HOOKS
+// ============================================
+
 /**
- * Composite hook for router CRUD operations
+ * All-in-one hook for router management
  */
-export function useRouterCrud(options: RouterHookOptions = {}) {
-  const addMutation = useAddRouter(options)
-  const updateMutation = useUpdateRouter(options)
-  const deleteMutation = useDeleteRouter(options)
-  const bulkDeleteMutation = useBulkDeleteRouters(options)
-  const testConnectionMutation = useTestConnection(options)
+export function useRouterManagement(options: RouterHookOptions = {}) {
+  const routers = useRouters(options)
+  const activeRouter = useActiveRouter(options)
+  const switchRouter = useSwitchRouter(options)
+  const addRouter = useAddRouter(options)
+  const updateRouter = useUpdateRouter(options)
+  const deleteRouter = useDeleteRouter(options)
+  const bulkDeleteRouters = useBulkDeleteRouters(options)
+  const testConnection = useTestConnection(options)
 
-  const addRouterAction = async (data: RouterForm) => {
-    return addMutation.mutateAsync(data)
-  }
-
-  const updateRouterAction = async (id: number, data: RouterForm) => {
-    return updateMutation.mutateAsync({ id, data })
-  }
-
-  const deleteRouterAction = async (id: number) => {
-    return deleteMutation.mutateAsync(id)
-  }
-
-  const deleteRoutersAction = async (ids: number[]) => {
-    return bulkDeleteMutation.mutateAsync(ids)
-  }
-
-  const testConnectionAction = async (data: RouterForm) => {
-    return testConnectionMutation.mutateAsync(data)
-  }
+  const isLoading = routers.isLoading || activeRouter.isLoading
+  const isMutating =
+    switchRouter.isPending ||
+    addRouter.isPending ||
+    updateRouter.isPending ||
+    deleteRouter.isPending ||
+    bulkDeleteRouters.isPending ||
+    testConnection.isPending
 
   return {
-    // Actions
-    addRouter: addRouterAction,
-    updateRouter: updateRouterAction,
-    deleteRouter: deleteRouterAction,
-    deleteRouters: deleteRoutersAction,
-    testConnection: testConnectionAction,
+    // Data
+    routers: routers.data ?? [],
+    activeRouter: activeRouter.data ?? null,
 
-    // States
-    isAdding: addMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
-    isBulkDeleting: bulkDeleteMutation.isPending,
-    isTesting: testConnectionMutation.isPending,
-    isLoading: addMutation.isPending || updateMutation.isPending || deleteMutation.isPending || bulkDeleteMutation.isPending,
+    // Loading states
+    isLoading,
+    isMutating,
+    isLoadingRouters: routers.isLoading,
+    isLoadingActive: activeRouter.isLoading,
+
+    // Mutation states
+    isSwitching: switchRouter.isPending,
+    isAdding: addRouter.isPending,
+    isUpdating: updateRouter.isPending,
+    isDeleting: deleteRouter.isPending,
+    isBulkDeleting: bulkDeleteRouters.isPending,
+    isTesting: testConnection.isPending,
 
     // Errors
-    addError: addMutation.error,
-    updateError: updateMutation.error,
-    deleteError: deleteMutation.error,
-    bulkDeleteError: bulkDeleteMutation.error,
-    testError: testConnectionMutation.error,
+    routersError: routers.error,
+    activeRouterError: activeRouter.error,
 
-    // Reset functions
-    resetAdd: addMutation.reset,
-    resetUpdate: updateMutation.reset,
-    resetDelete: deleteMutation.reset,
-    resetBulkDelete: bulkDeleteMutation.reset,
-    resetTest: testConnectionMutation.reset,
+    // Actions with stable references
+    switchRouter: useCallback(
+      (id: number) => switchRouter.mutateAsync(id),
+      [switchRouter]
+    ),
+    addRouter: useCallback(
+      (data: RouterForm) => addRouter.mutateAsync(data),
+      [addRouter]
+    ),
+    updateRouter: useCallback(
+      (id: number, data: RouterForm) => updateRouter.mutateAsync({ id, data }),
+      [updateRouter]
+    ),
+    deleteRouter: useCallback(
+      (id: number) => deleteRouter.mutateAsync(id),
+      [deleteRouter]
+    ),
+    bulkDeleteRouters: useCallback(
+      (ids: number[]) => bulkDeleteRouters.mutateAsync(ids),
+      [bulkDeleteRouters]
+    ),
+    testConnection: useCallback(
+      (data: RouterForm) => testConnection.mutateAsync(data),
+      [testConnection]
+    ),
+
+    // Refetch functions
+    refetchRouters: routers.refetch,
+    refetchActiveRouter: activeRouter.refetch,
   }
 }

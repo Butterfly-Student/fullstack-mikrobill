@@ -4,6 +4,8 @@ import { eq, and } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { db } from "@/db/index";
 import { nanoid } from "nanoid";
+import { faker } from "@faker-js/faker";
+import { kas } from "@/db/schema/system";
 
 
 async function main() {
@@ -535,6 +537,50 @@ async function main() {
 		} else {
 			console.log(`⏭️  User role already assigned to regular user`);
 		}
+
+		// Enum jenis kas
+const kasJenis = ['masuk', 'keluar'] as const
+
+const fakerKasData = async () => {
+  faker.seed(13579) // biar konsisten hasilnya setiap run
+
+  const now = new Date()
+  const bulanIni = now.getMonth()
+
+  const kasData = []
+
+  // Generate data 6 bulan ke belakang termasuk bulan ini
+  for (let i = 0; i < 6; i++) {
+    const bulan = new Date(now.getFullYear(), bulanIni - i, 1)
+
+    // Bikin 20 transaksi per bulan
+    for (let j = 0; j < 20; j++) {
+      const jenis = faker.helpers.arrayElement(kasJenis)
+      const jumlah = faker.number.float({ min: 50_000, max: 5_000_000, multipleOf: 1000 })
+
+      kasData.push({
+        id: faker.string.uuid(),
+        tanggal: faker.date.between({
+          from: bulan,
+          to: new Date(bulan.getFullYear(), bulan.getMonth() + 1, 0),
+        }),
+        keterangan:
+          jenis === 'masuk'
+            ? faker.commerce.productName()
+            : faker.commerce.department(),
+        jenis,
+        jumlah: jumlah.toFixed(2), // karena schema pakai decimal(15,2)
+        createdAt: new Date(),
+      })
+    }
+  }
+
+  await db.insert(kas).values(kasData)
+  console.log(`${kasData.length} data kas berhasil di-insert!`)
+}
+
+// Jalankan sekali buat seeding
+await fakerKasData()
 
 		console.log("🎉 Database seeding completed successfully!");
 		console.log("\n📋 Summary:");

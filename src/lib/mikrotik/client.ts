@@ -1,39 +1,25 @@
-import { db } from "@/db/index";
-import { type IRosOptions, RouterOSAPI, RouterOSClient } from "routeros-api";
-
-
-export interface StreamData {
-	type:
-		| "ip-address"
-		| "dhcp-lease"
-		| "torch"
-		| "interface-traffic"
-		| "write-data"
-		| "write-stream"
-		| "stream-data";
-	interfaceName?: string;
-	data: any;
-	timestamp: Date;
-}
+import EventEmitter from 'events'
+import {
+  type IRosOptions,
+  RouterOSAPI,
+  RouterOSClient,
+  type RosApiCommands,
+} from 'routeros-api'
 
 interface CachedClient {
-	client: MikrotikClient;
-	lastUsed: Date;
-	isConnected: boolean;
+  client: MikrotikClient
+  lastUsed: Date
+  isConnected: boolean
 }
 
-  // Simple types for RouterOS API
+// Simple types for RouterOS API
 interface RouterOSError extends Error {
-  message: string;
+  message: string
 }
-
-// Type for callback functions
-type SuccessCallback<T> = (data: T) => void;
-type ErrorCallback = (error: RouterOSError) => void;
 
 // Type for RouterOS command parameters
-type RouterOSCommand = string | string[];
-type RouterOSParameter = string | string[];
+type RouterOSCommand = string | string[]
+type RouterOSParameter = string | string[]
 
 export class MikrotikClient {
   private client: RouterOSClient
@@ -111,70 +97,6 @@ export class MikrotikClient {
       lastUsed: new Date(),
       isConnected: true,
     })
-  }
-
-  /**
-   * Generic createFromDatabase that can be overridden by subclasses
-   */
-  static async createFromDatabase<T extends MikrotikClient>(
-    this: new (config: IRosOptions) => T,
-    routerId: number,
-    overrideConfig?: Partial<IRosOptions>
-  ): Promise<MikrotikClient> {
-    try {
-      if (!routerId || routerId <= 0) {
-        throw new Error('Invalid router ID provided')
-      }
-
-      const cachedClient = MikrotikClient.getCachedClient(routerId)
-      if (cachedClient && cachedClient instanceof this) {
-        console.log(`♻️ Using cached client for router ${routerId}`)
-        return cachedClient as T
-      }
-
-      // Disconnect if cached client is different type
-      if (cachedClient) {
-        await MikrotikClient.disconnectCachedClient(routerId)
-      }
-
-      const router = await db.query.routers.findFirst({
-        where: (r, { eq }) => eq(r.id, routerId),
-      })
-
-      if (!router) {
-        throw new Error(`Router with ID ${routerId} not found`)
-      }
-
-      if (!router.is_active) {
-        throw new Error(`Router ${router.name} is not active`)
-      }
-
-      const clientConfig: IRosOptions = {
-        host: overrideConfig?.host || router.hostname,
-        user: overrideConfig?.user || router.username,
-        password: overrideConfig?.password || router.password,
-        port: overrideConfig?.port || router.port || 8728,
-        timeout: overrideConfig?.timeout || router.timeout || 30000,
-        keepalive: overrideConfig?.keepalive ?? true,
-      }
-
-      if (!clientConfig.host || !clientConfig.user || !clientConfig.password) {
-        throw new Error(
-          'Missing required router configuration (host, user, password)'
-        )
-      }
-
-      const client = new this(clientConfig)
-      await client.connectWithTimeout(clientConfig.timeout || 30000)
-
-      MikrotikClient.setCachedClient(routerId, client)
-
-      return client
-    } catch (error) {
-      console.error(`Failed to create client for router ${routerId}:`, error)
-      MikrotikClient.clientCache.delete(routerId)
-      throw error
-    }
   }
 
   /**
@@ -379,14 +301,6 @@ export class MikrotikClient {
   }
 
   /**
-   * Static method to reconnect a client (useful for connection recovery)
-   */
-  static async reconnectClient(routerId: number): Promise<MikrotikClient> {
-    await MikrotikClient.disconnectCachedClient(routerId)
-    return MikrotikClient.createFromDatabase(routerId)
-  }
-
-  /**
    * Static method to reconnect direct client (useful for connection recovery)
    */
   static async reconnectDirectClient(
@@ -527,32 +441,32 @@ export class MikrotikClient {
     }
   }
 
-  async getSystemInfo(): Promise<any> {
+  async getSystemInfo() {
     await this.connect()
     return this.connectedApi!.menu('/system/resource').getOnly()
   }
 
-  async getIdentity(): Promise<any> {
+  async getIdentity() {
     await this.connect()
     return this.connectedApi!.menu('/system/identity').getOnly()
   }
 
-  async getResources(): Promise<any> {
+  async getResources() {
     await this.connect()
     return this.connectedApi!.menu('/system/resource').getOnly()
   }
 
-  async getAddressPools(): Promise<any[]> {
+  async getAddressPools() {
     await this.connect()
     return this.connectedApi!.menu('/ip/pool').getAll()
   }
 
-  async getInterfaces(): Promise<any[]> {
+  async getInterfaces() {
     await this.connect()
     return this.connectedApi!.menu('/interface').getAll()
   }
 
-  async getPPPoEProfiles(): Promise<any[]> {
+  async getPPPoEProfiles() {
     await this.connect()
     return this.connectedApi!.menu('/ppp/profile').get()
   }
@@ -560,7 +474,7 @@ export class MikrotikClient {
   /**
    * Get PPPoE secrets from MikroTik
    */
-  async getPPPoESecrets(): Promise<any[]> {
+  async getPPPoESecrets() {
     await this.connect()
     return this.connectedApi!.menu('/ppp/secret').get()
   }
@@ -569,7 +483,7 @@ export class MikrotikClient {
    * Get Active pppoe connections from MikroTik
    */
 
-  async getActivePPPoEConnections(): Promise<any[]> {
+  async getActivePPPoEConnections() {
     await this.connectRouterosApi()
     return this.routerosApi.write('/ppp/active/print')
   }
@@ -577,7 +491,7 @@ export class MikrotikClient {
   /**
    * Get Hotspot profiles from MikroTik
    */
-  async getHotspotProfiles(): Promise<any[]> {
+  async getHotspotProfiles() {
     await this.connect()
     return this.connectedApi!.menu('/ip/hotspot/user/profile').get()
   }
@@ -587,7 +501,7 @@ export class MikrotikClient {
    */
   async exec<T = Record<string, unknown>[]>(
     params: RouterOSCommand,
-    moreParams: RouterOSParameter[] = [],
+    moreParams: RouterOSParameter[] = []
   ): Promise<T> {
     await this.connectRouterosApi()
 
@@ -603,167 +517,157 @@ export class MikrotikClient {
     }
   }
 
-  // Method untuk menggunakan RouterOSAPI untuk tugas-tugas tertentu
-  async execRouterosApi(
-    callback: (data: any) => void,
-    errCallback: (error: any) => void,
-    params: string | string[],
-    ...moreParams: Array<string | string[]>
-  ): Promise<any> {
-    await this.connectRouterosApi()
+  execStream(
+    params: RouterOSCommand,
+    moreParams: RouterOSParameter[] = []
+  ): {
+    emitter: EventEmitter
+    stop: () => void
+    streamId: string
+  } {
+    const emitter = new EventEmitter()
+    const streamId = `execStream-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 9)}`
+    let streamInstance: any = null
 
-    const streamId = `write-data-${Date.now().toString()}`
+    this.connectRouterosApi()
+      .then(() => {
+        const stream = this.routerosApi.writeStream(params, ...moreParams)
+        streamInstance = stream
 
-    const stream = this.routerosApi.write(params, ...moreParams)
-    stream
-      .then((packet: any) => {
-        const streamData: StreamData = {
-          type: 'write-data',
-          data: packet,
-          timestamp: new Date(),
-        }
-        callback(streamData)
+        // Store stream untuk cleanup
+        this.activeStreams.set(streamId, stream)
+
+        stream.on('data', (data) => {
+          // Skip data dengan dead: true jika ada
+          if (data && data.dead) {
+            return
+          }
+          emitter.emit('data', data)
+        })
+
+        stream.on('error', (err) => {
+          emitter.emit('error', err)
+          this.activeStreams.delete(streamId)
+        })
+
+        stream.on('done', () => {
+          emitter.emit('end')
+          this.activeStreams.delete(streamId)
+        })
+
+        // Emit ready event ketika stream siap
+        emitter.emit('ready', stream)
       })
-      .catch((err: any) => {
-        if (err) {
-          console.error('RouterOSAPI stream error:', err)
-          errCallback(err)
-          return
-        }
+      .catch((err) => {
+        emitter.emit('error', err)
+        this.activeStreams.delete(streamId)
       })
-    this.activeStreams.set(streamId, stream)
-    return streamId
+
+    // Return object dengan emitter dan stop function
+    return {
+      emitter,
+      stop: () => {
+        if (streamInstance) {
+          try {
+            streamInstance.stop()
+            this.activeStreams.delete(streamId)
+            emitter.emit('stopped')
+          } catch (error) {
+            console.error(`Error stopping stream ${streamId}:`, error)
+          }
+        }
+      },
+      streamId,
+    }
   }
 
-  // Method untuk menggunakan RouterOSAPI untuk tugas-tugas tertentu
-  async execRouterosApiWithStream(
-    callback: (data: any) => void,
-    errCallback: (error: any) => void,
-    params: string | string[],
-    ...moreParams: Array<string | string[]>
-  ): Promise<any> {
-    await this.connectRouterosApi()
-
-    const streamId = `write-stream-${Date.now().toString()}`
-
-    const stream = this.routerosApi.writeStream(params, ...moreParams)
-    stream.data((err: any, packet: any) => {
-      if (err) {
-        console.error('RouterOSAPI stream error:', err)
-        errCallback(err)
-        return
-      }
-      const streamData: StreamData = {
-        type: 'write-stream',
-        data: packet,
-        timestamp: new Date(),
-      }
-      callback(streamData)
-    })
-    this.activeStreams.set(streamId, stream)
-    return streamId
+  async execClient(path: string): Promise<RosApiCommands> {
+    await this.connect()
+    return this.connectedApi!.menu(path)
   }
 
   // Method untuk menggunakan RouterOSAPI untuk tugas-tugas tertentu dengan streaming
-  async streamData(
-    callback: (data: any) => void,
-    errCallback?: (data: any) => void,
-    params?: string | string[],
-    interfaceName?: string,
-    ...moreParams: any[]
-  ): Promise<any> {
-    await this.connectRouterosApi()
+  async execClientStream(path: string, params?: any) {
+    await this.connect()
 
-    const streamId = `write-stream-${Date.now().toString()}`
+    if (!this.connectedApi) {
+      throw new Error('RouterOS API is not connected')
+    }
 
-    const stream = this.routerosApi.stream(
-      params,
-      `=interface=${interfaceName}`,
-      ...moreParams
-    )
-    stream.data((err: any, packet: any) => {
+    const emitter = new EventEmitter()
+    const menu = this.connectedApi.menu(path)
+
+    // Generate unique stream ID
+    const streamId = `${path}-${Date.now()}`
+
+    // Stream dengan command (default: "listen")
+    const stream = menu.where(params || {}).stream('listen', (err, data) => {
       if (err) {
         console.error('RouterOSAPI stream error:', err)
-        errCallback?.(err)
+        emitter.emit('error', err)
+      }
+
+      // Skip data dengan dead: true (cleanup messages)
+      if (data.dead) {
         return
       }
-      const streamData: StreamData = {
-        type: 'stream-data',
-        interfaceName,
-        data: packet,
-        timestamp: new Date(),
-      }
-      callback(streamData)
+
+      emitter.emit('data', data)
     })
+
+    // Store stream untuk cleanup nanti
     this.activeStreams.set(streamId, stream)
-    return streamId
-  }
 
-  async ping(address: string) {
-    await this.connectRouterosApi()
-    const pingMenu = this.routerosApi!.writeStream('/tool/ping')
-
-    // listen hasil
-    pingMenu.on('data', (packet: any) => {
-      console.log('📡 Ping reply:', packet)
+    // Handle stream events
+    stream.on('end', () => {
+      emitter.emit('end')
+      this.activeStreams.delete(streamId)
     })
 
-    pingMenu.on('trap', (err: any) => {
-      console.error('❌ Ping error:', err)
+    stream.on('error', (err) => {
+      emitter.emit('error', err)
+      this.activeStreams.delete(streamId)
     })
 
-    pingMenu.on('done', () => {
-      console.log('✅ Ping finished')
-    })
-  }
-
-  // Stop specific stream
-  stopStream(streamId: string): boolean {
-    const stream = this.activeStreams.get(streamId)
-    if (stream) {
-      try {
+    // Return object with emitter and stop function
+    return {
+      emitter,
+      stream,
+      stop: () => {
         stream.stop()
         this.activeStreams.delete(streamId)
-        return true
-      } catch (error) {
-        console.error(`Error stopping stream ${streamId}:`, error)
-        return false
-      }
+        emitter.emit('stopped')
+      },
+      streamId,
     }
-    return false
-  }
-
-  // Get active streams count
-  getActiveStreamsCount(): number {
-    return this.activeStreams.size
-  }
-
-  // Get connection status
-  getConnectionStatus(): boolean {
-    return this.isConnected
   }
 }
 
 // Export convenience functions
-export const createMikrotikClient = MikrotikClient.createFromDatabase.bind(MikrotikClient);
-export const createDirectClient = MikrotikClient.createDirect.bind(MikrotikClient);
-export const getCachedClient = MikrotikClient.getCachedClient.bind(MikrotikClient);
-export const disconnectClient = MikrotikClient.disconnectCachedClient.bind(MikrotikClient);
-export const isClientConnected = MikrotikClient.isClientConnected.bind(MikrotikClient);
-export const getConnectionStats = MikrotikClient.getConnectionStats.bind(MikrotikClient);
-export const reconnectClient = MikrotikClient.reconnectClient.bind(MikrotikClient);
+export const createDirectClient =
+  MikrotikClient.createDirect.bind(MikrotikClient)
+export const getCachedClient =
+  MikrotikClient.getCachedClient.bind(MikrotikClient)
+export const disconnectClient =
+  MikrotikClient.disconnectCachedClient.bind(MikrotikClient)
+export const isClientConnected =
+  MikrotikClient.isClientConnected.bind(MikrotikClient)
+export const getConnectionStats =
+  MikrotikClient.getConnectionStats.bind(MikrotikClient)
 
 const cleanupHandler = async () => {
-  console.log("Cleaning up MikroTik connections...");
-  await MikrotikClient.cleanup();
-  process.exit(0);
+  console.log('Cleaning up MikroTik connections...')
+  await MikrotikClient.cleanup()
+  process.exit(0)
 }
 
 // Daftar listener cuma kalau belum ada
-if (process.listenerCount("SIGINT") === 0) {
-  process.on("SIGINT", cleanupHandler);
+if (process.listenerCount('SIGINT') === 0) {
+  process.on('SIGINT', cleanupHandler)
 }
 
-if (process.listenerCount("SIGTERM") === 0) {
-  process.on("SIGTERM", cleanupHandler);
+if (process.listenerCount('SIGTERM') === 0) {
+  process.on('SIGTERM', cleanupHandler)
 }

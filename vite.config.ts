@@ -4,6 +4,7 @@ import react from '@vitejs/plugin-react-swc';
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import tsConfigPaths from 'vite-tsconfig-paths';
+import { socketPlugin } from './src/socket-server';
 
 
 // https://vite.dev/config/
@@ -16,6 +17,7 @@ export default defineConfig({
       projects: ['./tsconfig.json'],
     }),
     tanstackStart({ customViteReactPlugin: true }),
+    socketPlugin(),
     react(),
     tailwindcss(),
   ],

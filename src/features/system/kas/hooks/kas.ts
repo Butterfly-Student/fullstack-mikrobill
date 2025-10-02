@@ -74,7 +74,7 @@ export const useKas = () => {
   return {
     // Query methods
     getAllKas: getAllKasQuery,
-    kas: getAllKasQuery.data?.data || [],
+    kas: getAllKasQuery.data || [],
     isLoadingKas: getAllKasQuery.isLoading,
     kasError: getAllKasQuery.error,
 

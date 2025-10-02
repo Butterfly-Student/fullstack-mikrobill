@@ -44,12 +44,13 @@ import {
   User,
   Globe,
   Phone,
-  Activity,
-  Hash
+  Hash,
+  SquareArrowOutUpRight
 } from 'lucide-react'
 import { type PppoeActive } from '../../data/schema'
 import { pppColumns as columns } from './ppp-columns'
 import { DataTableBulkActions } from './data-table-bulk-actions'
+import { Link } from '@tanstack/react-router'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
@@ -162,6 +163,13 @@ export function PppTable({ data, search, navigate }: PppTableProps) {
                       <div className="flex items-center space-x-2">
                         <User className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <p className="font-medium text-sm truncate">{item.name}</p>
+                        <a
+                          href={item.address ? `http://${item.address}` : "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <SquareArrowOutUpRight className="h-3 w-3 text-muted-foreground flex-shrink-0 hover:underline hover:text-foreground" />
+                        </a>
                       </div>
                       <div className="flex items-center space-x-2 mt-1">
                         <Network className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -268,16 +276,6 @@ export function PppTable({ data, search, navigate }: PppTableProps) {
                     </div>
                   )}
 
-                  {/* Packets */}
-                  {item.packets && (
-                    <div className="flex items-center space-x-2">
-                      <Activity className="h-4 w-4 text-cyan-600 flex-shrink-0" />
-                      <span className="font-medium">Packets:</span>
-                      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-                        {item.packets}
-                      </code>
-                    </div>
-                  )}
                 </div>
 
                 {/* Limits Section */}

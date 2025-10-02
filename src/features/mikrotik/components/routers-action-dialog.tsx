@@ -24,7 +24,7 @@ import { PasswordInput } from '@/components/password-input'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { formSchema, type RouterForm, type Router } from '../data/schema'
-import { useRouterCrud } from '@/hooks/use-router'
+import { useRouterManagement } from '@/hooks/use-router'
 
 type RouterActionDialogProps = {
   currentRow?: Router
@@ -38,7 +38,7 @@ export function RoutersActionDialog({
   open,
   onOpenChange,
 }: RouterActionDialogProps) {
-  const { isLoading, addRouter, updateRouter } = useRouterCrud();
+  const { isLoading, addRouter, updateRouter } = useRouterManagement();
   const isEdit = !!currentRow
   const form = useForm<RouterForm>({
     resolver: zodResolver(formSchema),

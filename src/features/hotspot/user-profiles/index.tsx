@@ -7,14 +7,14 @@ import { HotspotProfilePrimaryButtons } from "./components/hotspot-profile-prima
 import { HotspotProfilesTable } from "./components/hotspot-profile-table"
 import { useQuery } from "@tanstack/react-query"
 import { getHotspotProfiles, hotspotProfilesKeys } from "@/features/hotspot/server/hotspot-profiles"
-import { useRouterSwitcherData } from "@/hooks/use-router"
+import { useRouterManagement } from "@/hooks/use-router"
 
 const route = getRouteApi('/_authenticated/hotspot/user-profiles')
 
 export default function HotspotUserProfiles() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const { activeRouter } = useRouterSwitcherData()
+  const { activeRouter } = useRouterManagement()
   const routerId = activeRouter?.id
   console.log(activeRouter)
   const {

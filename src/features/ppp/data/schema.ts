@@ -16,7 +16,14 @@ export const pppoeUserSchema = z.object({
   'limit-bytes-in': z.string().optional(),
   'limit-bytes-out': z.string().optional(),
   'last-logged-out': z.string().optional(),
-  disabled: z.boolean().optional().default(false),
+  disabled: z.preprocess(
+  (val) => {
+    if (typeof val === "string") {
+      return val.toLowerCase() === "true";
+    }
+    return val;
+  },
+  z.boolean().optional()),
   'local-address': z.string().optional(),
   'remote-address': z.string().optional(),
   'remote-ipv6-prefix': z.string().optional(),
@@ -26,15 +33,14 @@ export const pppoeUserSchema = z.object({
 export const pppoeActiveSchema = z.object({
   '.id': z.string(),
   name: z.string(),
+  service: z.enum(["async","isdn","l2tp","pppoe","pptp","ovpn","sstp"]),
   'caller-id': z.string().optional(),
   address: z.string().optional(),
   uptime: z.string().optional(),
   encoding: z.string().optional(),
-  packets: z.string().optional(),
   'session-id': z.string().optional(),
   'limit-bytes-in': z.string().optional(),
   'limit-bytes-out': z.string().optional(),
-  service: z.enum(["async","isdn","l2tp","pppoe","pptp","ovpn","sstp"]),
 })
 
 // PPPoE Profile Schema

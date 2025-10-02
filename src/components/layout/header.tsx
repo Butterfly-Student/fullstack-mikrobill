@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useMikrotikStream } from '@/hooks/use-mikrotil-stream'
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
@@ -10,6 +11,23 @@ type HeaderProps = React.HTMLAttributes<HTMLElement> & {
 
 export function Header({ className, fixed, children, ...props }: HeaderProps) {
   const [offset, setOffset] = useState(0)
+
+  // Ping monitor configuration
+  const config = {
+    host: '103.139.193.128',
+    user: 'fandi1',
+    password: '001',
+    port: 1012,
+  }
+
+  const { latestData, isSubscribed } = useMikrotikStream(
+    '/ping',
+    config,
+    ['=address=8.8.8.8',],
+    {
+      autoSubscribe: true,
+    }
+  )
 
   useEffect(() => {
     const onScroll = () => {
@@ -22,6 +40,15 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
     // Clean up the event listener on unmount
     return () => document.removeEventListener('scroll', onScroll)
   }, [])
+
+  // Extract ping time from latestData
+  const pingTime = latestData?.time || latestData?.['time'] || null
+  const pingStatus = latestData
+    ? 'timeout' in latestData || latestData?.['timeout']
+      ? 'timeout'
+      : 'ok'
+    : 'waiting'
+  console.log(pingTime)
 
   return (
     <header
@@ -43,6 +70,8 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
       >
         <SidebarTrigger variant='outline' className='max-md:scale-125' />
         <Separator orientation='vertical' className='h-6' />
+        <p className='flex items-center gap-2'>        {pingTime}
+        </p>
         {children}
       </div>
     </header>

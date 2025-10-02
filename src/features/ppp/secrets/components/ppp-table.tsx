@@ -138,6 +138,7 @@ export function PppTable({ data, search, navigate }: PppTableProps) {
     const item = row.original
     const isOpen = openItems[index]
     const isSelected = row.getIsSelected()
+    const isDisabled = row.getValue('disabled') === true ? true : false
 
     return (
       <Card key={`mobile-card-${index}`} className={cn(
@@ -183,7 +184,7 @@ export function PppTable({ data, search, navigate }: PppTableProps) {
                       variant={item.disabled ? 'destructive' : 'default'}
                       className="text-xs"
                     >
-                      {item.disabled ? 'Disabled' : 'Active'}
+                      {isDisabled ? 'Yes' : 'No'}
                     </Badge>
 
                     <Button

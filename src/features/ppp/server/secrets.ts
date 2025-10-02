@@ -4,6 +4,12 @@ import { createMikrotikHotspot } from '@/lib/mikrotik/hotspot';
 import { type PppoeActive, type PppoeUser } from '../data/schema';
 
 
+type ApiResponse<T = any> = {
+  success: boolean
+  total: number
+  data?: T
+}
+
 // Validators
 const secretsValidator = z.object({
   routerId: z.number(),
@@ -46,7 +52,12 @@ const updateSecretValidator = z.object({
 
 const deleteSecretValidator = z.object({
   routerId: z.number(),
-  userId: z.string(),
+  userId: z.union([z.string(), z.array(z.string())]),
+})
+
+const disconnectValidator = z.object({
+  routerId: z.number(),
+  sessionId: z.union([z.string(), z.array(z.string())]),
 })
 
 const routerIdValidator = z.object({
@@ -54,15 +65,12 @@ const routerIdValidator = z.object({
 })
 
 
-const disconnectValidator = z.object({
-  routerId: z.number(),
-  sessionId: z.string(),
-})
+
 
 // Get all PPPoE secrets/users
 export const getPppSecrets = createServerFn()
   .validator((data) => secretsValidator.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<ApiResponse<PppoeUser[]>> => {
     console.info('Fetching MikroTik PPPoE secrets...')
 
     try {
@@ -175,64 +183,10 @@ export const deletePppSecret = createServerFn()
     }
   })
 
-// Enable PPPoE secret/user
-export const enablePppSecret = createServerFn()
-  .validator((data) => deleteSecretValidator.parse(data))
-  .handler(async ({ data }) => {
-    console.info('Enabling MikroTik PPPoE secret...')
-
-    try {
-      const { routerId, userId } = data
-
-      const hotspot = await createMikrotikHotspot(routerId)
-      const result = await hotspot.exec<string>('/ppp/secret/enable', [
-        `=.id=${userId}`,
-      ])
-
-      return {
-        success: true,
-        message: 'PPPoE secret enabled successfully',
-      }
-    } catch (error) {
-      console.error('Error enabling MikroTik PPPoE secret:', error)
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to enable PPPoE secret'
-      )
-    }
-  })
-
-// Disable PPPoE secret/user
-export const disablePppSecret = createServerFn()
-  .validator((data) => deleteSecretValidator.parse(data))
-  .handler(async ({ data }) => {
-    console.info('Disabling MikroTik PPPoE secret...')
-
-    try {
-      const { routerId, userId } = data
-
-      const hotspot = await createMikrotikHotspot(routerId)
-      const result = await hotspot.exec<string>('/ppp/secret/disable', [
-        `=.id=${userId}`,
-      ])
-
-      return {
-        success: true,
-        message: 'PPPoE secret disabled successfully',
-      }
-    } catch (error) {
-      console.error('Error disabling MikroTik PPPoE secret:', error)
-      throw new Error(
-        error instanceof Error
-          ? error.message
-          : 'Failed to disable PPPoE secret'
-      )
-    }
-  })
-
   // Get all active PPPoE sessions
 export const getPppActive = createServerFn()
   .validator((data) => routerIdValidator.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<ApiResponse<PppoeActive[]>> => {
     console.info('Fetching MikroTik PPPoE active sessions...')
 
     try {
@@ -256,9 +210,9 @@ export const getPppActive = createServerFn()
     }
   })
 
-export const getPppNonActive = createServerFn()
+export const getPppInactive = createServerFn()
   .validator((data) => routerIdValidator.parse(data))
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<ApiResponse<PppoeUser[]>> => {
     console.info('Fetching MikroTik PPPoE non-active sessions...')
 
     try {
@@ -301,7 +255,73 @@ export const getPppNonActive = createServerFn()
     }
   })
 
-// Disconnect active PPPoE session
+// Enable PPPoE secret/user (single or multiple)
+export const enablePppSecret = createServerFn()
+  .validator((data) => deleteSecretValidator.parse(data))
+  .handler(async ({ data }) => {
+    console.info('Enabling MikroTik PPPoE secret...')
+
+    try {
+      const { routerId, userId } = data
+      const userIds = Array.isArray(userId) ? userId : [userId]
+
+      const hotspot = await createMikrotikHotspot(routerId)
+      
+      // Process each userId
+      await Promise.all(
+        userIds.map(id => 
+          hotspot.exec<string>('/ppp/secret/enable', [`=.id=${id}`])
+        )
+      )
+
+      return {
+        success: true,
+        message: `PPPoE secret${userIds.length > 1 ? 's' : ''} enabled successfully`,
+        count: userIds.length,
+      }
+    } catch (error) {
+      console.error('Error enabling MikroTik PPPoE secret:', error)
+      throw new Error(
+        error instanceof Error ? error.message : 'Failed to enable PPPoE secret'
+      )
+    }
+  })
+
+// Disable PPPoE secret/user (single or multiple)
+export const disablePppSecret = createServerFn()
+  .validator((data) => deleteSecretValidator.parse(data))
+  .handler(async ({ data }) => {
+    console.info('Disabling MikroTik PPPoE secret...')
+
+    try {
+      const { routerId, userId } = data
+      const userIds = Array.isArray(userId) ? userId : [userId]
+
+      const hotspot = await createMikrotikHotspot(routerId)
+      
+      // Process each userId
+      await Promise.all(
+        userIds.map(id => 
+          hotspot.exec<string>('/ppp/secret/disable', [`=.id=${id}`])
+        )
+      )
+
+      return {
+        success: true,
+        message: `PPPoE secret${userIds.length > 1 ? 's' : ''} disabled successfully`,
+        count: userIds.length,
+      }
+    } catch (error) {
+      console.error('Error disabling MikroTik PPPoE secret:', error)
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to disable PPPoE secret'
+      )
+    }
+  })
+
+// Disconnect active PPPoE session (single or multiple)
 export const disconnectPppActive = createServerFn()
   .validator((data) => disconnectValidator.parse(data))
   .handler(async ({ data }) => {
@@ -309,15 +329,21 @@ export const disconnectPppActive = createServerFn()
 
     try {
       const { routerId, sessionId } = data
+      const sessionIds = Array.isArray(sessionId) ? sessionId : [sessionId]
 
       const hotspot = await createMikrotikHotspot(routerId)
-      const result = await hotspot.exec<string>('/ppp/active/remove', [
-        `=.id=${sessionId}`,
-      ])
+      
+      // Process each sessionId
+      await Promise.all(
+        sessionIds.map(id => 
+          hotspot.exec<string>('/ppp/active/remove', [`=.id=${id}`])
+        )
+      )
 
       return {
         success: true,
-        message: 'PPPoE session disconnected successfully',
+        message: `PPPoE session${sessionIds.length > 1 ? 's' : ''} disconnected successfully`,
+        count: sessionIds.length,
       }
     } catch (error) {
       console.error('Error disconnecting MikroTik PPPoE session:', error)

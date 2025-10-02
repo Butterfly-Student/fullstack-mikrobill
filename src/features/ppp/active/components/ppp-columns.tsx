@@ -134,17 +134,6 @@ export const pppColumns: ColumnDef<PppoeActive>[] = [
     ),
   },
   {
-    accessorKey: 'packets',
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title='Packets' />
-    ),
-    cell: ({ row }) => (
-      <div className='font-mono text-sm'>
-        {row.getValue('packets') || '-'}
-      </div>
-    ),
-  },
-  {
     accessorKey: 'limit-bytes-in',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title='Limit In' />
