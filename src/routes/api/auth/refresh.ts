@@ -55,6 +55,9 @@ export const ServerRoute = createServerFileRoute("/api/auth/refresh").methods({
 
       } catch (jwtError) {
         // If token is expired, allow refresh within 7 days
+        if (jwtError instanceof Error) {
+          console.error("Error verifying token:", jwtError.message);
+        }
         try {
           const decodedPayload = decodeJwt(token) as JWTPayload;
           

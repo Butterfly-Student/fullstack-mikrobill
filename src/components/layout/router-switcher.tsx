@@ -1,28 +1,11 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react'
-import {
-  ChevronsUpDown,
-  Router as RouterIcon,
-  Wifi,
-  WifiOff,
-  Loader2,
-  Check,
-} from 'lucide-react'
-import { useRouterManagement } from '@/hooks/use-router'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
-} from '@/components/ui/sidebar'
+import { useEffect, useState } from 'react';
+import { ChevronsUpDown, Router as RouterIcon, Wifi, WifiOff, Loader2, Check } from 'lucide-react';
+import { useRouterManagement } from '@/hooks/use-router';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@/components/ui/sidebar';
+
 
 // Router Status Icon Component
 const RouterStatusIcon = ({
@@ -75,8 +58,6 @@ export function RouterSwitcher() {
     refetchInterval: 30 * 1000, // Refresh every 30s to update status
     enableToast: true,
   })
-  console.log(routers)
-  console.log(activeRouter)
 
   const handleSwitch = async (routerId: number) => {
     // Prevent switching if already active or currently switching

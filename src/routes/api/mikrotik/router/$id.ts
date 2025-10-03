@@ -119,23 +119,23 @@ export const ServerRoute = createServerFileRoute(
       }
 
       // If hostname is being updated, check for conflicts
-      if (body.hostname && body.hostname !== existingRouter.hostname) {
-        const [conflictingRouter] = await db
-          .select()
-          .from(routers)
-          .where(eq(routers.hostname, body.hostname))
-          .limit(1)
+      // if (body.hostname && body.hostname !== existingRouter.hostname) {
+      //   const [conflictingRouter] = await db
+      //     .select()
+      //     .from(routers)
+      //     .where(eq(routers.hostname, body.hostname))
+      //     .limit(1)
 
-        if (conflictingRouter) {
-          return json(
-            {
-              error: 'Hostname conflict',
-              message: 'A router with this hostname already exists',
-            },
-            { status: 409 }
-          )
-        }
-      }
+      //   if (conflictingRouter) {
+      //     return json(
+      //       {
+      //         error: 'Hostname conflict',
+      //         message: 'A router with this hostname already exists',
+      //       },
+      //       { status: 409 }
+      //     )
+      //   }
+      // }
 
       // Build update object with only provided fields
       const updateData: Partial<typeof routers.$inferInsert> = {

@@ -1,24 +1,42 @@
-import { useSearch } from '@tanstack/react-router'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { AuthLayout } from '../auth-layout'
+// sign-in.tsx - Tidak perlu diubah, sudah sempurna!
+import { useEffect } from 'react';
+import { useSearch, useNavigate } from '@tanstack/react-router';
+import { Route } from '@/routes/(auth)/sign-in';
+import { useAuthStore } from '@/stores/auth-store';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { AuthLayout } from '../auth-layout';
 import { UserAuthForm } from './components/user-auth-form'
-import { checkAuthStatus, useAuthStore } from '@/stores/auth-store'
+
 
 export function SignIn() {
   const { redirect } = useSearch({ from: '/(auth)/sign-in' })
-  const { isAuthenticated, user, accessToken, isTokenExpired } = useAuthStore.getState().auth
-  console.log("login")
-  console.log("AUTHENTICATED:", isAuthenticated())
-  console.log("Access Token:", !!accessToken)
-  console.log("User:", !!user) // 👈 Ini yang mungkin false
-  console.log("Token Expired:", isTokenExpired())
+  const navigate = useNavigate()
+  const { auth } = useAuthStore()
+  const search = Route.useSearch()
+  const redirectTo = search.redirect || '/'
+
+  // Debug logging
+  useEffect(() => {
+    const checkAuth = async () => {
+      console.log('=== Sign In Page Debug ===')
+      console.log('Access Token:', !!auth.accessToken)
+      console.log('User:', auth.user)
+      console.log('Is Authenticated:', auth.isAuthenticated())
+      console.log('Token Expired:', auth.isTokenExpired())
+      console.log('Redirect URL:', redirect)
+
+      // Jika sudah login, redirect ke dashboard atau URL yang diminta
+      if (auth.isAuthenticated() && !auth.isTokenExpired()) {
+        console.log('✅ Already authenticated, redirecting...')
+        navigate({
+          to: redirectTo,
+          replace: true,
+        })
+      }
+    }
+
+    checkAuth()
+  }, [auth.accessToken, auth.user, redirect, navigate])
 
   return (
     <AuthLayout>

@@ -74,13 +74,9 @@ export function RoutersActionDialog({
       if (isEdit && currentRow) {
         // Update existing router
         await updateRouter(currentRow.id, values)
-        // Optional: Show success message
-        console.log('Router updated successfully')
       } else {
         // Add new router
         await addRouter(values)
-        // Optional: Show success message
-        console.log('Router added successfully')
       }
 
       form.reset()

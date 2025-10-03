@@ -75,21 +75,19 @@ function invalidateRouterQueries(queryClient: QueryClient): void {
 
 function showSuccessToast(
   title: string,
-  description: string,
   enableToast: boolean
 ): void {
   if (enableToast) {
-    toast.success(title, { description })
+    toast.success(title)
   }
 }
 
 function showErrorToast(
   title: string,
-  error: Error,
   enableToast: boolean
 ): void {
   if (enableToast) {
-    toast.error(title, { description: error.message })
+    toast.error(title)
   }
 }
 
@@ -193,7 +191,6 @@ export function useSwitchRouter(options: RouterHookOptions = {}) {
         opts.onRouterSwitch?.(router)
         showSuccessToast(
           'Router switched',
-          `Now using ${router.name}`,
           opts.enableToast
         )
       }
@@ -210,7 +207,7 @@ export function useSwitchRouter(options: RouterHookOptions = {}) {
       }
 
       opts.onError?.(error)
-      showErrorToast('Failed to switch router', error, opts.enableToast)
+      showErrorToast('Failed to switch router', opts.enableToast)
     },
   })
 }
@@ -236,7 +233,6 @@ export function useAddRouter(options: RouterHookOptions = {}) {
 
       showSuccessToast(
         'Router added',
-        `${newRouter.name} has been added`,
         opts.enableToast
       )
 
@@ -249,7 +245,7 @@ export function useAddRouter(options: RouterHookOptions = {}) {
       }
 
       opts.onError?.(error)
-      showErrorToast('Failed to add router', error, opts.enableToast)
+      showErrorToast('Failed to add router', opts.enableToast)
     },
   })
 }
@@ -286,7 +282,6 @@ export function useUpdateRouter(options: RouterHookOptions = {}) {
 
       showSuccessToast(
         'Router updated',
-        `${updatedRouter.name} has been updated`,
         opts.enableToast
       )
 
@@ -299,7 +294,7 @@ export function useUpdateRouter(options: RouterHookOptions = {}) {
       }
 
       opts.onError?.(error)
-      showErrorToast('Failed to update router', error, opts.enableToast)
+      showErrorToast('Failed to update router', opts.enableToast)
     },
   })
 }
@@ -335,7 +330,6 @@ export function useDeleteRouter(options: RouterHookOptions = {}) {
 
       showSuccessToast(
         'Router deleted',
-        'Router has been removed',
         opts.enableToast
       )
 
@@ -348,7 +342,7 @@ export function useDeleteRouter(options: RouterHookOptions = {}) {
       }
 
       opts.onError?.(error)
-      showErrorToast('Failed to delete router', error, opts.enableToast)
+      showErrorToast('Failed to delete router', opts.enableToast)
     },
   })
 }
@@ -384,7 +378,6 @@ export function useBulkDeleteRouters(options: RouterHookOptions = {}) {
 
       showSuccessToast(
         'Routers deleted',
-        `${ids.length} router(s) removed`,
         opts.enableToast
       )
 
@@ -397,7 +390,7 @@ export function useBulkDeleteRouters(options: RouterHookOptions = {}) {
       }
 
       opts.onError?.(error)
-      showErrorToast('Failed to delete routers', error, opts.enableToast)
+      showErrorToast('Failed to delete routers', opts.enableToast)
     },
   })
 }
@@ -425,7 +418,7 @@ export function useTestConnection(options: RouterHookOptions = {}) {
     },
     onError: (error: Error) => {
       opts.onError?.(error)
-      showErrorToast('Connection test failed', error, opts.enableToast)
+      showErrorToast('Connection test failed', opts.enableToast)
     },
   })
 }

@@ -42,7 +42,6 @@ export function Tagihan() {
 
   const { current, growth } = summary
 
-  console.log('Tagihan data:', tagihan)
 
   return (
     <TagihanProvider>

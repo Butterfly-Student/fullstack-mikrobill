@@ -31,7 +31,6 @@ export function Kas() {
 
   
   const { current, growth } = summary
-  console.log(current?.total)
 
   return (
     <KasProvider>

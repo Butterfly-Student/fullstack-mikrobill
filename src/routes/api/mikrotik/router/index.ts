@@ -1,11 +1,9 @@
-import { db } from '@/db/index'
-import {
-  routers,
-  type NewRouter,
-} from '@/db/schema/user'
-import { json } from '@tanstack/react-start'
-import { createServerFileRoute } from '@tanstack/react-start/server'
-import { eq } from 'drizzle-orm'
+import { db } from '@/db/index';
+import { routers, type NewRouter } from '@/db/schema/user';
+import { json } from '@tanstack/react-start';
+import { createServerFileRoute } from '@tanstack/react-start/server';
+import { eq } from 'drizzle-orm';
+import { createDirectClient } from '@/lib/mikrotik/client';
 
 
 interface CreateRouterRequest {
@@ -27,9 +25,9 @@ export const ServerRoute = createServerFileRoute(
   // GET /api/mikrotik/router - Get all routers with pagination and filters
   GET: async ({ request }) => {
     console.info('Fetching routers... @', request.url)
+    
 
     try {
-      
 
       const routersList = await db
         .select({
@@ -37,6 +35,8 @@ export const ServerRoute = createServerFileRoute(
           uuid: routers.uuid,
           name: routers.name,
           hostname: routers.hostname,
+          username: routers.username,
+          password: routers.password,
           location: routers.location,
           description: routers.description,
           is_active: routers.is_active,
@@ -51,6 +51,7 @@ export const ServerRoute = createServerFileRoute(
           updated_at: routers.updated_at,
         })
         .from(routers)
+
 
       return json({
         data: routersList,

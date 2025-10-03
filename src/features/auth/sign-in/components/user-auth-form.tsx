@@ -9,6 +9,8 @@ import { IconFacebook, IconGithub } from '@/assets/brand-icons'
 import { useAuthStore } from '@/stores/auth-store'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+// ← Tambahkan import ini
 import {
   Form,
   FormControl,
@@ -24,20 +26,25 @@ const formSchema = z.object({
   emailOrUsername: z
     .string()
     .min(1, 'Please enter your email or username')
-    .refine((value) => {
-      // If it contains @, validate as email
-      if (value.includes('@')) {
-        return z.string().email().safeParse(value).success
+    .refine(
+      (value) => {
+        // If it contains @, validate as email
+        if (value.includes('@')) {
+          return z.string().email().safeParse(value).success
+        }
+        // If no @, validate as username (minimum 3 characters, alphanumeric + underscore)
+        return /^[a-zA-Z0-9_]{3,}$/.test(value)
+      },
+      {
+        message:
+          'Please enter a valid email or username (min 3 characters, alphanumeric)',
       }
-      // If no @, validate as username (minimum 3 characters, alphanumeric + underscore)
-      return /^[a-zA-Z0-9_]{3,}$/.test(value)
-    }, {
-      message: 'Please enter a valid email or username (min 3 characters, alphanumeric)'
-    }),
+    ),
   password: z
     .string()
     .min(1, 'Please enter your password')
     .min(7, 'Password must be at least 7 characters long'),
+  rememberMe: z.boolean().default(false), // ← Tambahkan ini
 })
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLFormElement> {
@@ -58,20 +65,41 @@ export function UserAuthForm({
     defaultValues: {
       emailOrUsername: '',
       password: '',
+      rememberMe: false, // ← Tambahkan default value
     },
   })
 
   async function onSubmit(data: z.infer<typeof formSchema>) {
     setIsLoading(true)
     try {
-      const result = await auth.login(data.emailOrUsername, data.password)
+      // ↓ Pass rememberMe sebagai parameter ketiga
+      const result = await auth.login(
+        data.emailOrUsername,
+        data.password,
+        data.rememberMe
+      )
 
       if (result.success) {
         const userIdentifier = data.emailOrUsername.includes('@')
           ? data.emailOrUsername
           : `@${data.emailOrUsername}`
 
-        toast.success(`Welcome back, ${userIdentifier}!`)
+        // ↓ Update toast message berdasarkan Remember Me
+        const sessionInfo = data.rememberMe
+          ? 'You will stay signed in for 30 days.'
+          : 'Session will expire when browser closes.'
+
+        toast.success(`Welcome back, ${userIdentifier}!`, {
+          description: sessionInfo,
+        })
+
+        console.log('🔐 Login successful with:', {
+          user: userIdentifier,
+          rememberMe: data.rememberMe,
+          sessionType: data.rememberMe
+            ? 'Persistent (30 days)'
+            : 'Session only',
+        })
 
         // Redirect to target path
         const targetPath = redirectTo || '/'
@@ -100,10 +128,7 @@ export function UserAuthForm({
             <FormItem>
               <FormLabel>Email or Username</FormLabel>
               <FormControl>
-                <Input
-                  placeholder='name@example.com or username'
-                  {...field}
-                />
+                <Input placeholder='name@example.com or username' {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -128,6 +153,32 @@ export function UserAuthForm({
             </FormItem>
           )}
         />
+
+        {/* ============================================ */}
+        {/* 🎯 REMEMBER ME CHECKBOX - BAGIAN BARU       */}
+        {/* ============================================ */}
+        <FormField
+          control={form.control}
+          name='rememberMe'
+          render={({ field }) => (
+            <FormItem className='flex flex-row items-start space-y-0 space-x-1'>
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <div className='leading-none'>
+                <FormLabel className='cursor-pointer text-sm font-medium'>
+                  Remember me
+                </FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+        {/* ============================================ */}
+
         <Button className='mt-2' disabled={isLoading}>
           {isLoading ? <Loader2 className='animate-spin' /> : <LogIn />}
           Sign in

@@ -20,7 +20,7 @@ type DataTableRowActionsProps<TData> = {
 export function DataTableRowActions<TData>({
   row,
 }: DataTableRowActionsProps<TData>) {
-  const task = pppoeActiveSchema.parse(row.original)
+  const pppActive = pppoeActiveSchema.parse(row.original)
 
   const { setOpen, setCurrentRow } = usePppActive()
 
@@ -38,7 +38,15 @@ export function DataTableRowActions<TData>({
       <DropdownMenuContent align='end' className='w-[160px]'>
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(pppActive)
+            setOpen('ping')
+          }}
+        >
+          Ping
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            setCurrentRow(pppActive)
             setOpen('update')
           }}
         >
@@ -50,7 +58,7 @@ export function DataTableRowActions<TData>({
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            setCurrentRow(task)
+            setCurrentRow(pppActive)
             setOpen('delete')
           }}
         >

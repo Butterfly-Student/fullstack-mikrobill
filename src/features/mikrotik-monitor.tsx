@@ -2,68 +2,6 @@
 import { useMikrotikStream } from '@/hooks/use-mikrotil-stream';
 
 
-// Example 1: Simple Interface Monitor
-export function InterfaceMonitor() {
-  const config = {
-    host: '103.139.193.128',
-    user: 'fandi1',
-    password: '001',
-    port: 1012,
-  }
-
-  const {
-    isConnected,
-    isSubscribed,
-    latestData,
-    error,
-    subscribe,
-    unsubscribe,
-  } = useMikrotikStream('/log/print', config, [
-    '=.proplist=time,topics,message',
-    '=follow=',
-  ])
-
-  return (
-    <div className='p-6'>
-      <h2 className='mb-4 text-2xl font-bold'>Interface Monitor</h2>
-
-      <div className='mb-4'>
-        <span
-          className={`rounded px-3 py-1 ${isConnected ? 'bg-green-100' : 'bg-red-100'}`}
-        >
-          {isConnected ? 'Connected' : 'Disconnected'}
-        </span>
-      </div>
-
-      <div className='mb-4 flex gap-2'>
-        <button
-          onClick={subscribe}
-          disabled={!isConnected || isSubscribed}
-          className='rounded bg-blue-500 px-4 py-2 text-white disabled:bg-gray-300'
-        >
-          Subscribe
-        </button>
-        <button
-          onClick={unsubscribe}
-          disabled={!isSubscribed}
-          className='rounded bg-red-500 px-4 py-2 text-white disabled:bg-gray-300'
-        >
-          Unsubscribe
-        </button>
-      </div>
-
-      {error && (
-        <div className='mb-4 rounded bg-red-100 p-4 text-red-700'>{error}</div>
-      )}
-
-      <div className='rounded bg-gray-50 p-4'>
-        <pre className='overflow-auto text-xs'>
-          {latestData ? JSON.stringify(latestData, null, 2) : 'No data'}
-        </pre>
-      </div>
-    </div>
-  )
-}
 
 // Example 2: Ping Monitor with Command + Params
 export function PingMonitor() {

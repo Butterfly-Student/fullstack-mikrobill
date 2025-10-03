@@ -35,6 +35,7 @@ export const ServerRoute = createServerFileRoute(
           name: activeRouter.name,
           hostname: activeRouter.hostname,
           username: activeRouter.username, // Include for connection purposes
+          password: activeRouter.password,
           location: activeRouter.location,
           description: activeRouter.description,
           is_active: activeRouter.is_active,

@@ -28,7 +28,6 @@ export function PppActives() {
     staleTime: 5 * 60 * 1000, // Data dianggap fresh selama 5 menit
     refetchOnWindowFocus: true,
   })
-  console.log(data)
   return (
     <PppProvider>
       <Header fixed>

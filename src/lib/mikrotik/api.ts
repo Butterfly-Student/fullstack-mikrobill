@@ -4,7 +4,7 @@ const routerStatusSchema = z.enum(['online', 'offline', 'error'])
 
 export const routerSchema = z.object({
   id: z.number().int().positive(),
-  uuid: z.string().uuid(),
+  uuid: z.uuid(),
   name: z.string().min(1).max(100),
   hostname: z.string().min(1).max(45),
   username: z.string().min(1).max(50),

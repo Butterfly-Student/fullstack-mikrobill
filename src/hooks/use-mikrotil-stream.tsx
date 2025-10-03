@@ -1,17 +1,12 @@
 // app/hooks/useMikrotikStream.tsx
-import { useEffect, useState, useCallback, useRef } from 'react'
-import { io, type Socket } from 'socket.io-client'
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { type IRosOptions } from 'routeros-api';
+import { io, type Socket } from 'socket.io-client';
+import { toast } from 'sonner';
+
 
 const SOCKET_URL = typeof window !== 'undefined' ? window.location.origin : ''
 
-interface MikrotikConfig {
-  host: string
-  user: string
-  password: string
-  port?: number
-  timeout?: number
-  keepalive?: boolean
-}
 
 interface MikrotikStreamData {
   path: string
@@ -38,7 +33,7 @@ interface UseMikrotikStreamOptions {
 
 export function useMikrotikStream(
   path: string | string[],
-  config: MikrotikConfig,
+  config: IRosOptions,
   params?: string | string[],
   options: UseMikrotikStreamOptions = {}
 ) {
@@ -50,7 +45,6 @@ export function useMikrotikStream(
     onError,
     onStreamEnded,
   } = options
-
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [isSubscribed, setIsSubscribed] = useState(false)
@@ -121,6 +115,7 @@ export function useMikrotikStream(
       // Check if error is for this subscription
       if (payload.streamId === streamId || !payload.streamId) {
         console.error('MikroTik error:', payload)
+        toast.error('MikroTik error: ' + payload.message)
         const errorMsg = payload.message || payload.error || 'Unknown error'
         setError(errorMsg)
         setIsSubscribed(false)
@@ -295,7 +290,7 @@ export function useMikrotikStream(
 }
 
 // Hook for executing one-time commands
-export function useMikrotikExec(config: MikrotikConfig) {
+export function useMikrotikExec(config: IRosOptions) {
   const [socket, setSocket] = useState<Socket | null>(null)
   const [isConnected, setIsConnected] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)

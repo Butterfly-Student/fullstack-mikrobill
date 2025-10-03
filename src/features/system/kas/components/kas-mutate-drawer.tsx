@@ -72,7 +72,6 @@ export function KasMutateDrawer({ open, onOpenChange, currentRow }: KasMutateDra
   }, [open, currentRow, form])
 
   const onSubmit = async (data: KasForm) => {
-    console.log(data)
     try {
       if (isUpdate && currentRow?.id) {
         // Update kas yang sudah ada

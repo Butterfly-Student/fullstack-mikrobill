@@ -6,7 +6,7 @@ const routerStatusSchema = z.enum(['online', 'offline', 'error'])
 // Main router schema berdasarkan database schema
 export const routerSchema = z.object({
   id: z.number().int().positive(),
-  uuid: z.string().uuid(),
+  uuid: z.uuid(),
   name: z.string().min(1).max(100),
   hostname: z.string().min(1).max(45), // Sesuai database length: 45
   username: z.string().min(1).max(50),
@@ -34,11 +34,7 @@ export const formSchema = z.object({
   hostname: z
     .string()
     .min(1, 'IP address is required.')
-    .max(45)
-    .regex(
-      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-      'Invalid IP address format'
-    ),
+    .max(45),
   username: z.string().min(1, 'Username is required.').max(50),
   password: z.string().min(1, 'Password is required.').max(255),
   port: z.number().int().min(1).max(65535, 'Port must be between 1-65535'),
@@ -57,11 +53,7 @@ export const formSchemaWithCoerce = z.object({
   hostname: z
     .string()
     .min(1, 'IP address is required.')
-    .max(45)
-    .regex(
-      /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/,
-      'Invalid IP address format'
-    ),
+    .max(45),
   username: z.string().min(1, 'Username is required.').max(50),
   password: z.string().min(1, 'Password is required.').max(255),
   port: z.preprocess(

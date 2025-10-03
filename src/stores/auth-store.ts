@@ -99,8 +99,9 @@ interface AuthState {
     isAuthenticated: () => boolean
     isTokenExpired: () => boolean
     login: (
-      identifier: string, // Changed from email to support username
-      password: string
+      identifier: string,
+      password: string,
+      rememberMe?: boolean // ← Tambahkan parameter ini
     ) => Promise<{ success: boolean; message?: string; user?: AuthUser }>
     register: (
       data: SignUpData
@@ -155,10 +156,23 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       setUser: (user) =>
         set((state) => ({ ...state, auth: { ...state.auth, user } })),
 
-      setAccessToken: (accessToken) =>
+      setAccessToken: (
+        accessToken,
+        rememberMe = true // ← Tambahkan parameter
+      ) =>
         set((state) => {
           if (accessToken) {
-            setCookie(ACCESS_TOKEN, accessToken, 60 * 60 * 24 * 7) // 7 days
+            if (rememberMe) {
+              // Persistent cookie - 30 hari
+              setCookie(ACCESS_TOKEN, accessToken, 60 * 60 * 24 * 30)
+              console.log('🍪 Setting persistent cookie (30 days)')
+            } else {
+              // Session cookie - hilang saat browser close
+              setCookie(ACCESS_TOKEN, accessToken) // No maxAge = session only
+              console.log(
+                '🍪 Setting session cookie (expires on browser close)'
+              )
+            }
           } else {
             removeCookie(ACCESS_TOKEN)
           }
@@ -180,8 +194,26 @@ export const useAuthStore = create<AuthState>()((set, get) => {
           }
         }),
 
+      // Ganti fungsi isAuthenticated di auth store dengan ini:
       isAuthenticated: () => {
         const { auth } = get()
+
+        // Cek apakah ada token
+        if (!auth.accessToken) {
+          return false
+        }
+
+        // Cek apakah token expired
+        if (auth.isTokenExpired()) {
+          return false
+        }
+
+        // Opsional: cek apakah ada user data
+        // Uncomment jika ingin memastikan user data juga harus ada
+        // if (!auth.user) {
+        //   return false
+        // }
+
         return true
       },
 
@@ -202,13 +234,16 @@ export const useAuthStore = create<AuthState>()((set, get) => {
       },
 
       // Updated login function to handle email or username
-      login: async (identifier: string, password: string) => {
+      login: async (
+        identifier: string,
+        password: string,
+        rememberMe = false
+      ) => {
         try {
-          // Determine if identifier is email or username
           const isEmail = identifier.includes('@')
           const loginData = isEmail
             ? { email: identifier, password }
-            : { email: identifier, password } // API expects email field, but backend should handle username
+            : { email: identifier, password }
 
           const response: SignInResponse = await apiRequest(
             '/api/auth/sign-in',
@@ -240,8 +275,15 @@ export const useAuthStore = create<AuthState>()((set, get) => {
             updatedAt: response.user.updatedAt,
           }
 
-          get().auth.setAccessToken(response.token)
+          // ↓ Pass rememberMe ke setAccessToken
+          get().auth.setAccessToken(response.token, rememberMe)
           get().auth.setUser(userData)
+
+          console.log('✅ Login successful:', {
+            user: response.user.email,
+            rememberMe,
+            sessionType: rememberMe ? 'Persistent (30 days)' : 'Session only',
+          })
 
           return {
             success: true,

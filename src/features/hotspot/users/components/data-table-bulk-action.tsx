@@ -55,7 +55,6 @@ export function HotspotDataTableBulkActions<TData>({
         <DropdownMenuContent sideOffset={14}>
           <DropdownMenuItem
             onClick={() => {
-              console.log('Enable selected items:', selectedRows)
               table.resetRowSelection()
             }}
           >
@@ -88,7 +87,6 @@ export function HotspotDataTableBulkActions<TData>({
         <DropdownMenuContent sideOffset={14}>
           <DropdownMenuItem
             onClick={() => {
-              console.log('Disable selected items:', selectedRows)
               table.resetRowSelection()
             }}
           >
@@ -105,7 +103,6 @@ export function HotspotDataTableBulkActions<TData>({
             size='icon'
             className='size-8'
             onClick={() => {
-              console.log('Delete selected items:', selectedRows)
               table.resetRowSelection()
             }}
             aria-label='Delete selected hotspots'

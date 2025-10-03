@@ -1,13 +1,13 @@
 import { showSubmittedData } from '@/lib/show-submitted-data'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { TasksImportDialog } from './ppp-import-dialog'
+import { PppPingAddressDialog } from './ppp-ping-address-dialog'
 import { usePppActive } from './ppp-provider'
 
 export function PppDialogs() {
   const { open, setOpen, currentRow, setCurrentRow } = usePppActive()
   return (
     <>
-
       <TasksImportDialog
         key='tasks-import'
         open={open === 'import'}
@@ -16,7 +16,6 @@ export function PppDialogs() {
 
       {currentRow && (
         <>
-
           <ConfirmDialog
             key='task-delete'
             destructive
@@ -47,6 +46,17 @@ export function PppDialogs() {
               </>
             }
             confirmText='Delete'
+          />
+          <PppPingAddressDialog
+            key='ppp-ping'
+            open={open === 'ping'}
+            onOpenChange={() => {
+              setOpen(null)
+              setTimeout(() => {
+                setCurrentRow(null)
+              }, 300)
+            }}
+            data={currentRow}
           />
         </>
       )}

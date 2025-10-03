@@ -16,7 +16,6 @@ export default function HotspotUserProfiles() {
   const navigate = route.useNavigate()
   const { activeRouter } = useRouterManagement()
   const routerId = activeRouter?.id
-  console.log(activeRouter)
   const {
     data,
     isLoading,

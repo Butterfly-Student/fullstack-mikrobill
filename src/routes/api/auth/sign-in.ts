@@ -1,7 +1,7 @@
 // /api/auth/sign-in.ts - Updated with session management
 import { z } from 'zod'
-import { getUserByEmail } from '@/db/utils/users'
 import { createSession, cleanupUserSessions } from '@/db/utils/sessions'
+import { getUserByEmail } from '@/db/utils/users'
 import { json } from '@tanstack/react-start'
 import { createServerFileRoute } from '@tanstack/react-start/server'
 import bcrypt from 'bcryptjs'
@@ -42,12 +42,13 @@ const createJWTPayload = (user: any) => {
 
 // Helper function to extract client info
 const getClientInfo = (request: Request) => {
-  const ipAddress = request.headers.get('x-forwarded-for') || 
-                   request.headers.get('x-real-ip') || 
-                   'unknown'
-  
+  const ipAddress =
+    request.headers.get('x-forwarded-for') ||
+    request.headers.get('x-real-ip') ||
+    'unknown'
+
   const userAgent = request.headers.get('user-agent') || 'unknown'
-  
+
   return { ipAddress, userAgent }
 }
 
@@ -76,10 +77,10 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
 
       // Check if user is banned
       if (user.banned) {
-        const banMessage = user.banExpires 
+        const banMessage = user.banExpires
           ? `Account is banned until ${user.banExpires.toISOString()}. Reason: ${user.banReason || 'No reason provided'}`
           : `Account is permanently banned. Reason: ${user.banReason || 'No reason provided'}`
-        
+
         return json({ error: banMessage }, { status: 403 })
       }
 
@@ -113,13 +114,7 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
       const { ipAddress, userAgent } = getClientInfo(request)
 
       // Create session in database
-      await createSession(
-        user.id,
-        token,
-        expiresAt,
-        ipAddress,
-        userAgent
-      )
+      await createSession(user.id, token, expiresAt, ipAddress, userAgent)
 
       // Optional: Cleanup old sessions (keep only 5 most recent)
       await cleanupUserSessions(user.id, 5)
@@ -170,4 +165,3 @@ export const ServerRoute = createServerFileRoute('/api/auth/sign-in').methods({
     }
   },
 })
-

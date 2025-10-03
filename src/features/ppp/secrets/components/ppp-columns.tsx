@@ -128,7 +128,6 @@ export const pppColumns: ColumnDef<PppoeUser>[] = [
     ),
     cell: ({ row }) => {
       const isDisabled = row.getValue('disabled') === true ? true : false
-      console.log(isDisabled)
       return (
         <Badge variant={isDisabled ? 'destructive' : 'default'}>
           {isDisabled ? 'Yes' : 'No'}

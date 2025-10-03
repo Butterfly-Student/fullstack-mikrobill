@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import useDialogState from '@/hooks/use-dialog-state'
 import { type PppoeActive } from '../../data/schema'
 
-type PppActiveDialogType = 'create' | 'update' | 'delete' | 'import'
+type PppActiveDialogType = 'create' | 'update' | 'delete' | 'import' | 'ping'
 
 type TasksContextType = {
   open: PppActiveDialogType | null

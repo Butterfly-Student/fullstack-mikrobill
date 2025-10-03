@@ -105,7 +105,6 @@ export function EditUserHotspotDialog({
   ]
 
   const onSubmit = (values: HotspotUser) => {
-    console.log("Editing user:", values)
     showSubmittedData(values)
     onOpenChange(false)
   }

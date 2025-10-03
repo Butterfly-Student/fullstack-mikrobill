@@ -17,7 +17,6 @@ export function Routers() {
   const {routers} = useRouterManagement()
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  // console.log(route)
 
   return (
     <RoutersProvider>
