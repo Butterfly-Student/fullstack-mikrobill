@@ -1,10 +1,6 @@
-import EventEmitter from 'events'
-import {
-  type IRosOptions,
-  RouterOSAPI,
-  RouterOSClient,
-  type RosApiCommands,
-} from 'routeros-api'
+import EventEmitter from 'events';
+import { type IRosOptions, RouterOSAPI, RouterOSClient, type RosApiCommands } from 'routeros-api';
+
 
 interface CachedClient {
   client: MikrotikClient
@@ -471,6 +467,11 @@ export class MikrotikClient {
     return this.connectedApi!.menu('/ppp/profile').get()
   }
 
+  async getPools() {
+    await this.connect()
+    return this.connectedApi!.menu('/ip/pool').get()
+  }
+
   /**
    * Get PPPoE secrets from MikroTik
    */
@@ -494,6 +495,11 @@ export class MikrotikClient {
   async getHotspotProfiles() {
     await this.connect()
     return this.connectedApi!.menu('/ip/hotspot/user/profile').get()
+  }
+
+  async getHotspotServers() {
+    await this.connect()
+    return this.connectedApi!.menu('/ip/hotspot').get()
   }
 
   /**

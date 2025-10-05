@@ -1,6 +1,6 @@
 import z from 'zod'
 import { createServerFn } from '@tanstack/react-start'
-import { createMikrotikHotspot, type UserConfig } from '@/lib/mikrotik/hotspot'
+import { createMikrotikHotspot, type UserConfig, type VoucherConfig } from '@/lib/mikrotik/hotspot'
 import { type HotspotUser } from '../data/schema'
 
 interface MikrotikApiResult<T = unknown> {
@@ -167,3 +167,195 @@ export const deleteHotspotUser = createServerFn()
       )
     }
   })
+
+
+export const generateBatchUsers = createServerFn()
+  .validator((data: { routerId: number } & VoucherConfig) => data)
+  .handler(async ({ data }) => {
+    console.info('Generating batch MikroTik users...')
+
+    try {
+      const { routerId, ...voucherConfig } = data
+
+      if (!routerId) {
+        throw new Error('Router ID is required')
+      }
+
+      // Validate required fields
+      const requiredFields = [
+        'qty',
+        'userType',
+        'userLength',
+        'charType',
+        'profile',
+      ]
+      const missingFields = requiredFields.filter(
+        (field) => !voucherConfig[field as keyof VoucherConfig]
+      )
+
+      if (missingFields.length > 0) {
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`)
+      }
+
+      // Validate qty range
+      if (voucherConfig.qty < 1 || voucherConfig.qty > 1000) {
+        throw new Error('Quantity must be between 1 and 1000')
+      }
+
+      // Validate userType
+      if (!['up', 'vc'].includes(voucherConfig.userType)) {
+        throw new Error(
+          "userType must be either 'up' (user+password) or 'vc' (voucher code)"
+        )
+      }
+
+      // Validate charType
+      const validCharTypes = [
+        'lower',
+        'upper',
+        'upplow',
+        'mix',
+        'mix1',
+        'mix2',
+        'num',
+        'lower1',
+        'upper1',
+        'upplow1',
+      ]
+      if (!validCharTypes.includes(voucherConfig.charType)) {
+        throw new Error(
+          `charType must be one of: ${validCharTypes.join(', ')}`
+        )
+      }
+
+      // Validate userLength
+      if (voucherConfig.userLength < 3 || voucherConfig.userLength > 20) {
+        throw new Error('userLength must be between 3 and 20 characters')
+      }
+
+      const hotspot = await createMikrotikHotspot(routerId)
+      const result = await hotspot.generateVouchers(voucherConfig)
+
+      if (result.message === 'error') {
+        throw new Error((result.data as unknown as { error: string }).error)
+      }
+
+      // Format the response
+      const formattedUsers =
+        result.data.users?.map((user: any) => {
+          if (typeof user === 'object' && user['.id']) {
+            // MikroTik API response format
+            return {
+              id: user['.id'],
+              name: user.name,
+              password: user.password,
+              profile: user.profile,
+              server: user.server,
+              comment: user.comment,
+              disabled: user.disabled === 'true',
+              limitUptime: user['limit-uptime'],
+              limitBytesTotal: user['limit-bytes-total'],
+              created: true,
+            }
+          } else if (typeof user === 'object' && user.username) {
+            // Generated user format
+            return {
+              username: user.username,
+              password: user.password,
+              profile: voucherConfig.profile,
+              comment: result.data.comment,
+              created: true,
+            }
+          }
+          
+          return user
+        }) || []
+
+      return {
+        success: true,
+        message: `Successfully generated ${result.data.count} users`,
+        data: {
+          count: result.data.count,
+          comment: result.data.comment,
+          profile: result.data.profile,
+          users: formattedUsers,
+          config: {
+            qty: voucherConfig.qty,
+            userType: voucherConfig.userType,
+            userLength: voucherConfig.userLength,
+            charType: voucherConfig.charType,
+            prefix: voucherConfig.prefix || '',
+            timeLimit: voucherConfig.timeLimit,
+            dataLimit: voucherConfig.dataLimit,
+            genCode: voucherConfig.genCode || '',
+          },
+        },
+      }
+    } catch (error) {
+      console.error('Error generating MikroTik user batch:', error)
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to generate user batch'
+      )
+    }
+  })
+
+// Type definitions for request validation
+export interface BatchGenerationRequest {
+  routerId: number
+  qty: number
+  server?: string
+  userType: 'up' | 'vc'
+  userLength: number
+  prefix?: string
+  charType:
+    | 'lower'
+    | 'upper'
+    | 'upplow'
+    | 'mix'
+    | 'mix1'
+    | 'mix2'
+    | 'num'
+    | 'lower1'
+    | 'upper1'
+    | 'upplow1'
+  profile: string
+  timeLimit?: string
+  dataLimit?: string
+  comment?: string
+  genCode?: string
+}
+
+export interface BatchGenerationResponse {
+  success: boolean
+  message: string
+  data: {
+    count: number
+    comment: string
+    profile: string
+    users: Array<{
+      id?: string
+      username?: string
+      name?: string
+      password: string
+      profile: string
+      server?: string
+      comment: string
+      disabled?: boolean
+      limitUptime?: string
+      limitBytesTotal?: string
+      created: boolean
+    }>
+    config: {
+      qty: number
+      userType: string
+      userLength: number
+      charType: string
+      prefix: string
+      timeLimit?: string
+      dataLimit?: string
+      genCode: string
+    }
+  }
+}

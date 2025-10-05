@@ -116,7 +116,7 @@ export const getHotspotProfiles = createServerFn()
 
 // Get specific profile by ID
 export const getHotspotProfile = createServerFn()
-  .validator((data: { routerId: number; profileId: string }) => data)
+  .validator((data: { routerId?: number; profileId: string }) => data)
   .handler(async ({ data }) => {
     console.info(`Fetching MikroTik profile ${data.profileId}...`)
 
@@ -172,7 +172,7 @@ export const getHotspotProfile = createServerFn()
 
 // Create new profile
 export const createHotspotProfile = createServerFn()
-  .validator((data: { routerId: number } & ProfileConfig) => data)
+  .validator((data: { routerId?: number } & ProfileConfig) => data)
   .handler(async ({ data }) => {
     console.info('Creating MikroTik hotspot profile...')
 
@@ -213,7 +213,7 @@ export const createHotspotProfile = createServerFn()
 // Update profile
 export const updateHotspotProfile = createServerFn()
   .validator(
-    (data: { routerId: number; profileId: string } & Partial<ProfileConfig>) =>
+    (data: { routerId?: number; profileId: string } & Partial<ProfileConfig>) =>
       data
   )
   .handler(async ({ data }) => {
@@ -255,7 +255,7 @@ export const updateHotspotProfile = createServerFn()
 
 // Delete profile
 export const deleteHotspotProfile = createServerFn()
-  .validator((data: { routerId: number; profileId: string }) => data)
+  .validator((data: { routerId?: number; profileId: string }) => data)
   .handler(async ({ data }) => {
     console.info(`Deleting MikroTik profile ${data.profileId}...`)
 

@@ -26,6 +26,15 @@ export interface ProfileConfig {
   maxSessions?: string
 }
 
+export interface ExpireMonitorResponse {
+  message: string
+  action?: 'created' | 'updated' | 'already_exists'
+  data?: {
+    id?: string
+    name?: string
+  }
+}
+
 export interface ProfileResponse {
   message: 'success' | 'error'
   data: any
@@ -47,7 +56,7 @@ export interface UserConfig {
 export interface VoucherConfig {
   qty: number
   server?: string
-  userType: 'up' | 'vc' // up = user+password, vc = voucher code
+  userType: 'up' | 'vc'
   userLength: number
   prefix?: string
   charType:
@@ -534,6 +543,46 @@ export class MikrotikHotspot extends MikrotikClient {
     }
   }
 
+  async listPools() {
+    try {
+      const result = await this.connectedApi?.menu('/ip/pool').getAll()
+
+      return {
+        message: 'success',
+        data: result || [],
+      }
+    } catch (error) {
+      console.error('Error listing profiles:', error)
+      return {
+        message: 'error',
+        data: {
+          error:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+      }
+    }
+  }
+
+  async listServers() {
+    try {
+      const result = await this.connectedApi?.menu('/ip/hotspot').getAll()
+
+      return {
+        message: 'success',
+        data: result || [],
+      }
+    } catch (error) {
+      console.error('Error listing profiles:', error)
+      return {
+        message: 'error',
+        data: {
+          error:
+            error instanceof Error ? error.message : 'Unknown error occurred',
+        },
+      }
+    }
+  }
+
   async updateProfile(
     profileId: string,
     updates: Partial<ProfileConfig>
@@ -887,55 +936,64 @@ export class MikrotikHotspot extends MikrotikClient {
 
       const users: { username: string; password: string }[] = []
 
+      // Calculate actual random string length (subtract prefix length)
+      const prefixLength = prefix.length
+      const actualRandomLength = Math.max(1, userLength - prefixLength)
+
       // Generate users based on type
       for (let i = 1; i <= qty; i++) {
         let username = ''
         let password = ''
 
         if (userType === 'up') {
-          // User + Password mode
-          username = prefix + this.generateRandomString(userLength, charType)
-
-          // Generate password based on userLength
-          if (userLength >= 4 && userLength <= 8) {
-            password = this.generateRandomString(userLength, 'num')
-          } else {
-            password = this.generateRandomString(4, 'num')
-          }
+          // User + Password mode - username dan password berbeda
+          // Username dengan prefix, random string disesuaikan agar total = userLength
+          username =
+            prefix + this.generateRandomString(actualRandomLength, charType)
+          // Password tanpa prefix, menggunakan userLength penuh
+          password = this.generateRandomString(userLength, charType)
         } else if (userType === 'vc') {
           // Voucher Code mode (username = password)
           if (charType === 'num') {
-            const code = this.generateRandomString(userLength, 'num')
+            const code = this.generateRandomString(actualRandomLength, 'num')
             username = prefix + code
             password = username
           } else {
-            let codeLength = userLength
+            let codeLength = actualRandomLength
             let numLength = 2 // default
 
-            // Adjust lengths based on userLength
-            if (userLength >= 6 && userLength <= 7) {
-              codeLength = userLength - 3
+            // Adjust lengths based on actualRandomLength (bukan userLength)
+            if (actualRandomLength >= 6 && actualRandomLength <= 7) {
+              codeLength = actualRandomLength - 3
               numLength = 3
-            } else if (userLength === 8) {
-              codeLength = userLength - 4
+            } else if (actualRandomLength >= 8) {
+              codeLength = actualRandomLength - 4
               numLength = 4
-            } else if (userLength >= 4 && userLength <= 5) {
-              codeLength = userLength - 2
+            } else if (actualRandomLength >= 4 && actualRandomLength <= 5) {
+              codeLength = actualRandomLength - 2
               numLength = 2
+            } else if (actualRandomLength < 4) {
+              // Jika terlalu pendek, gunakan semua untuk chars
+              codeLength = actualRandomLength
+              numLength = 0
             }
 
-            if (['lower1', 'upper1', 'upplow1'].includes(charType)) {
+            if (
+              ['lower1', 'upper1', 'upplow1'].includes(charType) &&
+              numLength > 0
+            ) {
               const charPart = this.generateRandomString(
                 codeLength,
                 charType.replace('1', '')
               )
               const numPart = this.generateRandomString(numLength, 'num')
               username = prefix + charPart + numPart
+              password = username // Password sama dengan username untuk voucher
             } else {
               username =
-                prefix + this.generateRandomString(userLength, charType)
+                prefix + this.generateRandomString(actualRandomLength, charType)
+              password = username // Password sama dengan username untuk voucher
             }
-            password = username
           }
         }
 
@@ -1038,84 +1096,214 @@ export class MikrotikHotspot extends MikrotikClient {
   // Expire Monitor Methods
   async setupExpireMonitor(
     expireMonitorScript: string
-  ): Promise<{ message: string }> {
+  ): Promise<ExpireMonitorResponse> {
     try {
+      if (!expireMonitorScript || expireMonitorScript.trim() === '') {
+        throw new Error('Expire monitor script is required')
+      }
+
       // Check if expire monitor already exists
       const existingMonitor = await this.connectedApi
         ?.menu('/system/scheduler/print')
         .where({ name: 'Expire-Monitor' })
         .get()
 
+      // Case 1: Monitor doesn't exist - create new one
       if (!existingMonitor || existingMonitor.length === 0) {
-        // Create new expire monitor
         const result = await this.connectedApi
           ?.menu('/system/scheduler/add')
-          .add({
+          .set({
             name: 'Expire-Monitor',
             'start-time': '00:00:00',
             interval: '00:01:00',
             'on-event': expireMonitorScript,
             disabled: 'no',
-            comment: 'Expire Monitor System',
+            comment: 'Expire Monitor System - Auto-generated',
           })
 
-        if (result?.ret) {
-          return { message: 'success' }
-        }
-      } else {
-        const monitor = existingMonitor[0]
-
-        if (monitor.disabled === 'true') {
-          // Update existing disabled monitor
-          await this.connectedApi
-            ?.menu('/system/scheduler/set')
-            .where({ '.id': monitor['.id'] })
-            .set({
-              interval: '00:01:00',
-              'on-event': expireMonitorScript,
-              disabled: 'no',
-            })
-
-          return { message: 'success' }
-        } else {
-          // Monitor already exists and is enabled
-          return { message: monitor.name }
+        return {
+          message: 'Expire monitor created successfully',
+          action: 'created',
+          data: {
+            id: result?.ret,
+            name: 'Expire-Monitor',
+          },
         }
       }
 
-      return { message: 'error' }
+      // Monitor exists - get details
+      const monitor = existingMonitor[0]
+      const isDisabled = monitor.disabled === 'true'
+
+      // Case 2: Monitor exists but disabled - enable and update
+      if (isDisabled) {
+        await this.connectedApi
+          ?.menu('/system/scheduler/set')
+          .select(monitor['.id'])
+          .set({
+            'start-time': '00:00:00',
+            interval: '00:01:00',
+            'on-event': expireMonitorScript,
+            disabled: 'no',
+          })
+
+        return {
+          message: 'Expire monitor enabled and updated successfully',
+          action: 'updated',
+          data: {
+            id: monitor['.id'],
+            name: monitor.name,
+          },
+        }
+      }
+
+      // Case 3: Monitor exists and enabled - update script only
+      await this.connectedApi
+        ?.menu('/system/scheduler/set')
+        .select(monitor['.id'])
+        .set({
+          'on-event': expireMonitorScript,
+        })
+
+      return {
+        message: 'Expire monitor already exists and is active',
+        action: 'already_exists',
+        data: {
+          id: monitor['.id'],
+          name: monitor.name,
+        },
+      }
     } catch (error) {
       console.error('Error setting up expire monitor:', error)
+      throw new Error(
+        error instanceof Error
+          ? error.message
+          : 'Failed to setup expire monitor'
+      )
+    }
+  }
+
+  /**
+   * Get expire monitor status
+   */
+  async getExpireMonitorStatus(): Promise<{
+    exists: boolean
+    enabled: boolean
+    data?: any
+  }> {
+    try {
+      const monitor = await this.connectedApi
+        ?.menu('/system/scheduler/print')
+        .where({ name: 'Expire-Monitor' })
+        .get()
+
+      if (!monitor || monitor.length === 0) {
+        return {
+          exists: false,
+          enabled: false,
+        }
+      }
+
+      const monitorData = monitor[0]
+      return {
+        exists: true,
+        enabled: monitorData.disabled !== 'true',
+        data: {
+          id: monitorData['.id'],
+          name: monitorData.name,
+          startTime: monitorData['start-time'],
+          interval: monitorData.interval,
+          nextRun: monitorData['next-run'],
+          runCount: monitorData['run-count'],
+          disabled: monitorData.disabled === 'true',
+        },
+      }
+    } catch (error) {
+      console.error('Error getting expire monitor status:', error)
       throw error
     }
   }
 
-  async getExpireMonitorStatus(): Promise<{ expire_monitor: string }> {
+  /**
+   * Disable expire monitor
+   */
+  async disableExpireMonitor(): Promise<{ message: string }> {
     try {
-      const result = await this.connectedApi
+      const monitor = await this.connectedApi
         ?.menu('/system/scheduler/print')
-        .where({
-          name: 'Expire-Monitor',
-          disabled: 'false',
-        })
+        .where({ name: 'Expire-Monitor' })
         .get()
 
-      if (result && result.length > 0 && result[0].name === 'Expire-Monitor') {
-        return { expire_monitor: 'ok' }
-      } else {
-        return { expire_monitor: 'not ready' }
+      if (!monitor || monitor.length === 0) {
+        throw new Error('Expire monitor not found')
       }
+
+      await this.connectedApi
+        ?.menu('/system/scheduler/set')
+        .select(monitor[0]['.id'])
+        .set({ disabled: 'yes' })
+
+      return { message: 'Expire monitor disabled successfully' }
     } catch (error) {
-      console.error('Error getting expire monitor status:', error)
-      return { expire_monitor: 'not ready' }
+      console.error('Error disabling expire monitor:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Enable expire monitor
+   */
+  async enableExpireMonitor(): Promise<{ message: string }> {
+    try {
+      const monitor = await this.connectedApi
+        ?.menu('/system/scheduler/print')
+        .where({ name: 'Expire-Monitor' })
+        .get()
+
+      if (!monitor || monitor.length === 0) {
+        throw new Error('Expire monitor not found')
+      }
+
+      await this.connectedApi
+        ?.menu('/system/scheduler/set')
+        .select(monitor[0]['.id'])
+        .set({ disabled: 'no' })
+
+      return { message: 'Expire monitor enabled successfully' }
+    } catch (error) {
+      console.error('Error enabling expire monitor:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Remove expire monitor
+   */
+  async removeExpireMonitor(): Promise<{ message: string }> {
+    try {
+      const monitor = await this.connectedApi
+        ?.menu('/system/scheduler/print')
+        .where({ name: 'Expire-Monitor' })
+        .get()
+
+      if (!monitor || monitor.length === 0) {
+        throw new Error('Expire monitor not found')
+      }
+
+      await this.connectedApi
+        ?.menu('/system/scheduler/remove')
+        .select(monitor[0]['.id'])
+        .remove()
+
+      return { message: 'Expire monitor removed successfully' }
+    } catch (error) {
+      console.error('Error removing expire monitor:', error)
+      throw error
     }
   }
 
   // Report Methods
-  async getReportByDate(
-    date: string,
-    useCache: boolean = true
-  ) {
+  async getReportByDate(date: string, useCache: boolean = true) {
     try {
       const today = new Date()
         .toLocaleDateString('en-US', {
@@ -1179,10 +1367,7 @@ export class MikrotikHotspot extends MikrotikClient {
   }
 
   // System Scripts Management
-  async getSystemScripts(filter?: {
-    source?: string
-    name?: string
-  }) {
+  async getSystemScripts(filter?: { source?: string; name?: string }) {
     try {
       let query = this.connectedApi?.menu('/system/script/print')
 

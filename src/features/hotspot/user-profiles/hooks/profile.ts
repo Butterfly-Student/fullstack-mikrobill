@@ -7,11 +7,13 @@ import {
   deleteHotspotProfile,
 } from '@/features/hotspot/server/hotspot-profiles'
 import { type ProfileForm } from '../../data/schema';
+import { useRouterManagement } from '@/hooks/use-router';
 
 
 export const useHotspotProfile = () => {
   const queryClient = useQueryClient()
-  const routerId = 1
+  const { activeRouter } = useRouterManagement()
+  const routerId = activeRouter?.id
 
   const addProfileMutation = useMutation({
     mutationFn: (profileData: ProfileForm) =>

@@ -32,7 +32,6 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedMikrotikIndexRouteImport } from './routes/_authenticated/mikrotik/index'
-import { Route as AuthenticatedHotspotIndexRouteImport } from './routes/_authenticated/hotspot/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedDashboardIndexRouteImport } from './routes/_authenticated/dashboard/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
@@ -207,12 +206,6 @@ const AuthenticatedMikrotikIndexRoute =
   AuthenticatedMikrotikIndexRouteImport.update({
     id: '/mikrotik/',
     path: '/mikrotik/',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHotspotIndexRoute =
-  AuthenticatedHotspotIndexRouteImport.update({
-    id: '/hotspot/',
-    path: '/hotspot/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedHelpCenterIndexRoute =
@@ -645,7 +638,6 @@ export interface FileRoutesByFullPath {
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/hotspot': typeof AuthenticatedHotspotIndexRoute
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -695,7 +687,6 @@ export interface FileRoutesByTo {
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
-  '/hotspot': typeof AuthenticatedHotspotIndexRoute
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -750,7 +741,6 @@ export interface FileRoutesById {
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
-  '/_authenticated/hotspot/': typeof AuthenticatedHotspotIndexRoute
   '/_authenticated/mikrotik/': typeof AuthenticatedMikrotikIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -804,7 +794,6 @@ export interface FileRouteTypes {
     | '/chats'
     | '/dashboard'
     | '/help-center'
-    | '/hotspot'
     | '/mikrotik'
     | '/settings/'
     | '/tasks'
@@ -854,7 +843,6 @@ export interface FileRouteTypes {
     | '/chats'
     | '/dashboard'
     | '/help-center'
-    | '/hotspot'
     | '/mikrotik'
     | '/settings'
     | '/tasks'
@@ -908,7 +896,6 @@ export interface FileRouteTypes {
     | '/_authenticated/chats/'
     | '/_authenticated/dashboard/'
     | '/_authenticated/help-center/'
-    | '/_authenticated/hotspot/'
     | '/_authenticated/mikrotik/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
@@ -1351,13 +1338,6 @@ declare module '@tanstack/react-router' {
       path: '/mikrotik'
       fullPath: '/mikrotik'
       preLoaderRoute: typeof AuthenticatedMikrotikIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/hotspot/': {
-      id: '/_authenticated/hotspot/'
-      path: '/hotspot'
-      fullPath: '/hotspot'
-      preLoaderRoute: typeof AuthenticatedHotspotIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/help-center/': {
@@ -1892,7 +1872,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
-  AuthenticatedHotspotIndexRoute: typeof AuthenticatedHotspotIndexRoute
   AuthenticatedMikrotikIndexRoute: typeof AuthenticatedMikrotikIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -1926,7 +1905,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedDashboardIndexRoute: AuthenticatedDashboardIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
-  AuthenticatedHotspotIndexRoute: AuthenticatedHotspotIndexRoute,
   AuthenticatedMikrotikIndexRoute: AuthenticatedMikrotikIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
