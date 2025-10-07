@@ -1,7 +1,7 @@
 import z from 'zod';
 import { createServerFn } from '@tanstack/react-start';
 import { createMikrotikHotspot } from '@/lib/mikrotik/hotspot';
-import { type PppoeActive, type PppoeProfile } from '../data/schema';
+import { type PppoeProfile } from '../data/schema';
 
 
 const routerIdValidator = z.object({
@@ -53,10 +53,6 @@ const deleteProfileValidator = z.object({
 })
 
 
-const disconnectValidator = z.object({
-  routerId: z.number(),
-  sessionId: z.string(),
-})
 
 export const getPppProfiles = createServerFn()
   .validator((data) => routerIdValidator.parse(data))

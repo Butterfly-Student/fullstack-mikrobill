@@ -1107,12 +1107,13 @@ export class MikrotikHotspot extends MikrotikClient {
         ?.menu('/system/scheduler/print')
         .where({ name: 'Expire-Monitor' })
         .get()
+      console.log('exsisten', existingMonitor)
 
       // Case 1: Monitor doesn't exist - create new one
-      if (!existingMonitor || existingMonitor.length === 0) {
+      if (!existingMonitor) {
         const result = await this.connectedApi
           ?.menu('/system/scheduler/add')
-          .set({
+          .add({
             name: 'Expire-Monitor',
             'start-time': '00:00:00',
             interval: '00:01:00',
@@ -1120,6 +1121,8 @@ export class MikrotikHotspot extends MikrotikClient {
             disabled: 'no',
             comment: 'Expire Monitor System - Auto-generated',
           })
+        // const tes = await this.exec("/system/scheduler/add", ['name', 'Expire-Monitor', 'start-time', '00:00:00', 'interval', '00:01:00', 'on-event', expireMonitorScript, 'disabled', 'no', 'comment', 'Expire Monitor System - Auto-generated']);
+        console.log('result', result)
 
         return {
           message: 'Expire monitor created successfully',
@@ -1133,13 +1136,12 @@ export class MikrotikHotspot extends MikrotikClient {
 
       // Monitor exists - get details
       const monitor = existingMonitor[0]
-      const isDisabled = monitor.disabled === 'true'
 
       // Case 2: Monitor exists but disabled - enable and update
-      if (isDisabled) {
+      if (monitor.disabled) {
         await this.connectedApi
           ?.menu('/system/scheduler/set')
-          .select(monitor['.id'])
+          .select(monitor.id)
           .set({
             'start-time': '00:00:00',
             interval: '00:01:00',
@@ -1151,7 +1153,7 @@ export class MikrotikHotspot extends MikrotikClient {
           message: 'Expire monitor enabled and updated successfully',
           action: 'updated',
           data: {
-            id: monitor['.id'],
+            id: monitor.id,
             name: monitor.name,
           },
         }
@@ -1160,7 +1162,7 @@ export class MikrotikHotspot extends MikrotikClient {
       // Case 3: Monitor exists and enabled - update script only
       await this.connectedApi
         ?.menu('/system/scheduler/set')
-        .select(monitor['.id'])
+        .select(monitor.id)
         .set({
           'on-event': expireMonitorScript,
         })
@@ -1169,7 +1171,7 @@ export class MikrotikHotspot extends MikrotikClient {
         message: 'Expire monitor already exists and is active',
         action: 'already_exists',
         data: {
-          id: monitor['.id'],
+          id: monitor.id,
           name: monitor.name,
         },
       }

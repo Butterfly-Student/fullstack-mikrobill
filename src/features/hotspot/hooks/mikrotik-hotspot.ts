@@ -1,11 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { VoucherConfig } from '@/lib/mikrotik/hotspot'
-import {
-  getHotspotServers,
-  getHotspotProfiles,
-  getPools,
-} from '../server/mikrotik-hotspot'
-import { generateBatchUsers } from '../server/hotspot-users'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type { VoucherConfig } from '@/lib/mikrotik/hotspot';
+import { generateBatchUsers } from '../server/hotspot-users';
+import { getHotspotServers, getHotspotProfiles, getPools } from '../server/mikrotik-hotspot';
+import { setExpiredMon } from '../server/cron';
+
 
 interface UseHotspotOptions {
   routerId?: number
@@ -87,6 +85,20 @@ export function useGenerateBatchUsers() {
       queryClient.invalidateQueries({
         queryKey: ['hotspotProfiles', variables.routerId],
       })
+    },
+  })
+}
+
+/**
+ * Hook untuk setup expired monitor script di MikroTik
+ */
+export function useSetExpiredMonitor() {
+  return useMutation({
+    mutationFn: async (data: { routerId: number }) => {
+      return await setExpiredMon({ data })
+    },
+    onError: (error) => {
+      console.error('Failed to set expired monitor:', error)
     },
   })
 }
