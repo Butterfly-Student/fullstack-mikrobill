@@ -472,6 +472,11 @@ export class MikrotikClient {
     return this.connectedApi!.menu('/ip/pool').get()
   }
 
+  async listSimpleQueue(){
+    await this.connect()
+    return this.connectedApi!.menu('/queue/simple/print').get(['dynamic', 'false'])
+  }
+
   /**
    * Get PPPoE secrets from MikroTik
    */

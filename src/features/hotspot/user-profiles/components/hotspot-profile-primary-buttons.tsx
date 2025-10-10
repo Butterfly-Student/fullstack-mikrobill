@@ -24,8 +24,8 @@ export function HotspotProfilePrimaryButtons() {
     setupExpiredMonitor(
   { routerId },
   {
-    onSuccess: () => {
-      toast.success('Expired monitor script has been setup successfully');
+    onSuccess: (data) => {
+      toast.success(data.message);
     },
     onError: (error) => {
       toast.error(error.message);

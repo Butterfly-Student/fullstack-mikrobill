@@ -1,6 +1,5 @@
 import { showSubmittedData } from '@/lib/show-submitted-data'
 import { ConfirmDialog } from '@/components/confirm-dialog'
-import { TasksImportDialog } from './ppp-import-dialog'
 import { PppMutateDrawer } from './ppp-mutate-drawer'
 import { usePpp } from './ppp-provider'
 
@@ -12,12 +11,6 @@ export function PppDialogs() {
         key='task-create'
         open={open === 'create'}
         onOpenChange={() => setOpen('create')}
-      />
-
-      <TasksImportDialog
-        key='tasks-import'
-        open={open === 'import'}
-        onOpenChange={() => setOpen('import')}
       />
 
       {currentRow && (

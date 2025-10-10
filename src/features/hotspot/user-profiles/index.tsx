@@ -29,7 +29,6 @@ export default function HotspotUserProfiles() {
     enabled: !!routerId
   })
 
-  console.log(data)
 
   if (error) {
     return (

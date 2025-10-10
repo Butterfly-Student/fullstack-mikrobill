@@ -39,6 +39,7 @@ import { ChevronRight, ChevronDown, User, Server, Wifi, Timer, Database, Message
 import { type HotspotUser } from '../../data/schema'
 import { hotspotUsersColumns as columns } from './hotspot-user-column'
 import { HotspotDataTableBulkActions } from './data-table-bulk-action'
+import { useHotspotUser } from './hotspot-user-provider'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
@@ -58,6 +59,7 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [sorting, setSorting] = useState<SortingState>([])
   const [openItems, setOpenItems] = useState<Record<number, boolean>>({})
+  const { setFilteredData } = useHotspotUser()
 
   // Synced with URL states
   const {
@@ -101,6 +103,13 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   })
+
+    // Setiap kali hasil filter berubah, update ke context
+  const filteredRows = table.getFilteredRowModel().rows;
+  useEffect(() => {
+    const filtered = filteredRows.map(r => r.original);
+    setFilteredData(filtered);
+  }, [filteredRows, setFilteredData, table]);
 
   useEffect(() => {
     ensurePageInRange(table.getPageCount())
@@ -279,6 +288,14 @@ export function HotspotUsersTable({ data, search, navigate }: HotspotUsersTableP
             options: Array.from(new Set(data.map(item => item.profile))).map(profile => ({
               label: profile,
               value: profile
+            }))
+          },
+          {
+            columnId: 'comment',
+            title: 'Comment',
+            options: Array.from(new Set(data.map(item => item.comment))).map(comment => ({
+              label: comment,
+              value: comment
             }))
           }
         ]}

@@ -258,7 +258,7 @@ export type ProfileFilter = z.infer<typeof profileFilter>
 export const generateVoucherFilter = z.object({
   server: z.string().optional(),
   profile: z.string().optional(),
-  userMode: userMode.optional(),
+  userMode: z.string().optional(),
   characters: characterSet.optional(),
   search: z.string().optional(), // untuk search prefix/comment
   page: z.number().int().positive().default(1),

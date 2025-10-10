@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Voucher</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="pragma" content="no-cache" />
+		<link rel="icon" href="assets/img/favicon.png" />
+		<style>
+			body {
+				color: #000000;
+				background-color: #FFFFFF;
+				font-size: 14px;
+				font-family:  'Helvetica', arial, sans-serif;
+				margin: 0px;
+				-webkit-print-color-adjust: exact;
+			}
+			table.voucher {
+				display: inline-block;
+				border: 2px solid black;
+				margin: 2px;
+			}
+			@page
+			{
+				size: auto;
+				margin-left: 7mm;
+				margin-right: 3mm;
+				margin-top: 9mm;
+				margin-bottom: 3mm;
+			}
+			@media print
+			{
+				table { page-break-after:auto }
+				tr    { page-break-inside:avoid; page-break-after:auto }
+				td    { page-break-inside:avoid; page-break-after:auto }
+				thead { display:table-header-group }
+				tfoot { display:table-footer-group }
+			}
+			.num {
+				float:right;
+				display:inline-block;
+			}
+		</style>
+	</head>
+	<body>
+<% 
+function formatValidity(text) {
+	if (!text) return '';
+	if (text.endsWith('d')) return text.replace('d', 'Hari');
+	if (text.endsWith('h')) return text.replace('h', 'Jam');
+	if (text.endsWith('w')) return text.replace('w', 'Minggu');
+	return text;
+}
+
+it.data.forEach(function(voucher, index) { 
+	const isSameCredential = voucher.username === voucher.password;
+%>
+<table class="voucher" style="width: 140px;">
+	<thead>
+		<tr>
+			<th colspan="2" style="width:100%;text-align: left; font-size: 12px; font-weight:bold; border-bottom: 1px black solid;">
+				<%= voucher.hotspotName || 'HOTSPOT' %><span class="num"><%= index + 1 %></span>
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr style="color: black; font-size: 10px; text-align: center;">
+			<% if (isSameCredential) { %>
+				<td style="width: 160px;">Voucher &nbsp;</td>
+			<% } else { %>
+				<td style="width: 80px;">Username</td>
+				<td style="width: 80px;">Password</td>
+			<% } %>
+		</tr>
+		<tr style="color: black; font-size: 12px; text-align: center;">
+			<td style="border: 1px solid black; font-weight:bold;"><%= voucher.username %></td>
+			<% if (!isSameCredential) { %>
+				<td style="border: 1px solid black; font-weight:bold;"><%= voucher.password %></td>
+			<% } %>
+		</tr>
+	</tbody>
+	<tfoot>
+		<tr style="color: black; font-size: 10px; text-align: center;">
+			<th colspan="2">
+				<span><%= formatValidity(voucher.validity || '') %></span> 
+				<span><%= formatValidity(voucher.limitUptime || '') %></span> 
+				<span><%= voucher.limitBytesTotal || '' %></span> 
+				<span><%= voucher.price || '' %></span>
+			</th>
+		</tr>
+	</tfoot>
+</table>
+<% }) %>
+	</body>
+</html>

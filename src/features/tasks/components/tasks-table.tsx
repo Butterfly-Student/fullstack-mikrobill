@@ -96,6 +96,8 @@ export function TasksTable({ data }: DataTableProps) {
     onGlobalFilterChange,
     onColumnFiltersChange,
   })
+  const f = table.getFilteredRowModel().rows.map((r) => r.original)
+  console.log(f)
 
   const pageCount = table.getPageCount()
   useEffect(() => {

@@ -29,6 +29,7 @@ import { Route as ClerkAuthenticatedRouteRouteImport } from './routes/clerk/_aut
 import { Route as ClerkauthRouteRouteImport } from './routes/clerk/(auth)/route'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
+import { Route as AuthenticatedTemplatesIndexRouteImport } from './routes/_authenticated/templates/index'
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedMikrotikIndexRouteImport } from './routes/_authenticated/mikrotik/index'
@@ -42,6 +43,7 @@ import { Route as ClerkauthSignInRouteImport } from './routes/clerk/(auth)/sign-
 import { Route as AuthenticatedUsersSessionsRouteImport } from './routes/_authenticated/users/sessions'
 import { Route as AuthenticatedUsersRolesRouteImport } from './routes/_authenticated/users/roles'
 import { Route as AuthenticatedUsersPermissionsRouteImport } from './routes/_authenticated/users/permissions'
+import { Route as AuthenticatedTemplatesFileRouteImport } from './routes/_authenticated/templates/$file'
 import { Route as AuthenticatedSystemTemplate_tagihanRouteImport } from './routes/_authenticated/system/template_tagihan'
 import { Route as AuthenticatedSystemTagihanRouteImport } from './routes/_authenticated/system/tagihan'
 import { Route as AuthenticatedSystemPelangganRouteImport } from './routes/_authenticated/system/pelanggan'
@@ -62,6 +64,7 @@ import { Route as AuthenticatedHotspotHostsRouteImport } from './routes/_authent
 import { Route as AuthenticatedErrorsErrorRouteImport } from './routes/_authenticated/errors/$error'
 import { Route as AuthenticatedDashboardProductRouteImport } from './routes/_authenticated/dashboard/product'
 import { Route as AuthenticatedDashboardCustomerRouteImport } from './routes/_authenticated/dashboard/customer'
+import { Route as AuthenticatedTemplatesPreviewFileRouteImport } from './routes/_authenticated/templates/preview.$file'
 import { ServerRoute as ApiUsersIndexServerRouteImport } from './routes/api/users/index'
 import { ServerRoute as ApiRolesIndexServerRouteImport } from './routes/api/roles/index'
 import { ServerRoute as ApiResourceIndexServerRouteImport } from './routes/api/resource/index'
@@ -191,6 +194,12 @@ const AuthenticatedUsersIndexRoute = AuthenticatedUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTemplatesIndexRoute =
+  AuthenticatedTemplatesIndexRouteImport.update({
+    id: '/templates/',
+    path: '/templates/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedTasksIndexRoute = AuthenticatedTasksIndexRouteImport.update({
   id: '/tasks/',
   path: '/tasks/',
@@ -261,6 +270,12 @@ const AuthenticatedUsersPermissionsRoute =
   AuthenticatedUsersPermissionsRouteImport.update({
     id: '/users/permissions',
     path: '/users/permissions',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTemplatesFileRoute =
+  AuthenticatedTemplatesFileRouteImport.update({
+    id: '/templates/$file',
+    path: '/templates/$file',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSystemTemplate_tagihanRoute =
@@ -378,6 +393,12 @@ const AuthenticatedDashboardCustomerRoute =
   AuthenticatedDashboardCustomerRouteImport.update({
     id: '/dashboard/customer',
     path: '/dashboard/customer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTemplatesPreviewFileRoute =
+  AuthenticatedTemplatesPreviewFileRouteImport.update({
+    id: '/templates/preview/$file',
+    path: '/templates/preview/$file',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const ApiUsersIndexServerRoute = ApiUsersIndexServerRouteImport.update({
@@ -628,6 +649,7 @@ export interface FileRoutesByFullPath {
   '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
+  '/templates/$file': typeof AuthenticatedTemplatesFileRoute
   '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/users/roles': typeof AuthenticatedUsersRolesRoute
   '/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -641,7 +663,9 @@ export interface FileRoutesByFullPath {
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
+  '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/templates/preview/$file': typeof AuthenticatedTemplatesPreviewFileRoute
 }
 export interface FileRoutesByTo {
   '/clerk': typeof ClerkAuthenticatedRouteRouteWithChildren
@@ -677,6 +701,7 @@ export interface FileRoutesByTo {
   '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
+  '/templates/$file': typeof AuthenticatedTemplatesFileRoute
   '/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/users/roles': typeof AuthenticatedUsersRolesRoute
   '/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -690,7 +715,9 @@ export interface FileRoutesByTo {
   '/mikrotik': typeof AuthenticatedMikrotikIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
+  '/templates': typeof AuthenticatedTemplatesIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/templates/preview/$file': typeof AuthenticatedTemplatesPreviewFileRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -731,6 +758,7 @@ export interface FileRoutesById {
   '/_authenticated/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/_authenticated/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/_authenticated/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
+  '/_authenticated/templates/$file': typeof AuthenticatedTemplatesFileRoute
   '/_authenticated/users/permissions': typeof AuthenticatedUsersPermissionsRoute
   '/_authenticated/users/roles': typeof AuthenticatedUsersRolesRoute
   '/_authenticated/users/sessions': typeof AuthenticatedUsersSessionsRoute
@@ -744,7 +772,9 @@ export interface FileRoutesById {
   '/_authenticated/mikrotik/': typeof AuthenticatedMikrotikIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
+  '/_authenticated/templates/': typeof AuthenticatedTemplatesIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/templates/preview/$file': typeof AuthenticatedTemplatesPreviewFileRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -784,6 +814,7 @@ export interface FileRouteTypes {
     | '/system/pelanggan'
     | '/system/tagihan'
     | '/system/template_tagihan'
+    | '/templates/$file'
     | '/users/permissions'
     | '/users/roles'
     | '/users/sessions'
@@ -797,7 +828,9 @@ export interface FileRouteTypes {
     | '/mikrotik'
     | '/settings/'
     | '/tasks'
+    | '/templates'
     | '/users'
+    | '/templates/preview/$file'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/clerk'
@@ -833,6 +866,7 @@ export interface FileRouteTypes {
     | '/system/pelanggan'
     | '/system/tagihan'
     | '/system/template_tagihan'
+    | '/templates/$file'
     | '/users/permissions'
     | '/users/roles'
     | '/users/sessions'
@@ -846,7 +880,9 @@ export interface FileRouteTypes {
     | '/mikrotik'
     | '/settings'
     | '/tasks'
+    | '/templates'
     | '/users'
+    | '/templates/preview/$file'
   id:
     | '__root__'
     | '/_authenticated'
@@ -886,6 +922,7 @@ export interface FileRouteTypes {
     | '/_authenticated/system/pelanggan'
     | '/_authenticated/system/tagihan'
     | '/_authenticated/system/template_tagihan'
+    | '/_authenticated/templates/$file'
     | '/_authenticated/users/permissions'
     | '/_authenticated/users/roles'
     | '/_authenticated/users/sessions'
@@ -899,7 +936,9 @@ export interface FileRouteTypes {
     | '/_authenticated/mikrotik/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
+    | '/_authenticated/templates/'
     | '/_authenticated/users/'
+    | '/_authenticated/templates/preview/$file'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1319,6 +1358,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/templates/': {
+      id: '/_authenticated/templates/'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof AuthenticatedTemplatesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/tasks/': {
       id: '/_authenticated/tasks/'
       path: '/tasks'
@@ -1408,6 +1454,13 @@ declare module '@tanstack/react-router' {
       path: '/users/permissions'
       fullPath: '/users/permissions'
       preLoaderRoute: typeof AuthenticatedUsersPermissionsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/templates/$file': {
+      id: '/_authenticated/templates/$file'
+      path: '/templates/$file'
+      fullPath: '/templates/$file'
+      preLoaderRoute: typeof AuthenticatedTemplatesFileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/system/template_tagihan': {
@@ -1548,6 +1601,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/customer'
       fullPath: '/dashboard/customer'
       preLoaderRoute: typeof AuthenticatedDashboardCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/templates/preview/$file': {
+      id: '/_authenticated/templates/preview/$file'
+      path: '/templates/preview/$file'
+      fullPath: '/templates/preview/$file'
+      preLoaderRoute: typeof AuthenticatedTemplatesPreviewFileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
   }
@@ -1865,6 +1925,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSystemPelangganRoute: typeof AuthenticatedSystemPelangganRoute
   AuthenticatedSystemTagihanRoute: typeof AuthenticatedSystemTagihanRoute
   AuthenticatedSystemTemplate_tagihanRoute: typeof AuthenticatedSystemTemplate_tagihanRoute
+  AuthenticatedTemplatesFileRoute: typeof AuthenticatedTemplatesFileRoute
   AuthenticatedUsersPermissionsRoute: typeof AuthenticatedUsersPermissionsRoute
   AuthenticatedUsersRolesRoute: typeof AuthenticatedUsersRolesRoute
   AuthenticatedUsersSessionsRoute: typeof AuthenticatedUsersSessionsRoute
@@ -1874,7 +1935,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedMikrotikIndexRoute: typeof AuthenticatedMikrotikIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
+  AuthenticatedTemplatesIndexRoute: typeof AuthenticatedTemplatesIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedTemplatesPreviewFileRoute: typeof AuthenticatedTemplatesPreviewFileRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1898,6 +1961,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSystemTagihanRoute: AuthenticatedSystemTagihanRoute,
   AuthenticatedSystemTemplate_tagihanRoute:
     AuthenticatedSystemTemplate_tagihanRoute,
+  AuthenticatedTemplatesFileRoute: AuthenticatedTemplatesFileRoute,
   AuthenticatedUsersPermissionsRoute: AuthenticatedUsersPermissionsRoute,
   AuthenticatedUsersRolesRoute: AuthenticatedUsersRolesRoute,
   AuthenticatedUsersSessionsRoute: AuthenticatedUsersSessionsRoute,
@@ -1907,7 +1971,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedMikrotikIndexRoute: AuthenticatedMikrotikIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
+  AuthenticatedTemplatesIndexRoute: AuthenticatedTemplatesIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedTemplatesPreviewFileRoute:
+    AuthenticatedTemplatesPreviewFileRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

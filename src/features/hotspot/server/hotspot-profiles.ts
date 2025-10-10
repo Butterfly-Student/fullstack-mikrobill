@@ -1,6 +1,5 @@
 import { createServerFn } from '@tanstack/react-start';
 import { createMikrotikHotspot, type ProfileConfig } from '@/lib/mikrotik/hotspot';
-import { type Profile } from '@/features/hotspot/data/schema';
 
 
 // Define types for MikroTik profile response
@@ -61,50 +60,18 @@ export const getHotspotProfiles = createServerFn()
       }
 
       const hotspot = await createMikrotikHotspot(routerId)
-      const result = (await hotspot.listProfiles()) as MikrotikApiResult<
-        RawMikrotikProfile[]
-      >
+      const result = await hotspot.listProfiles()
 
       if (result.message === 'error') {
         throw new Error((result.data as unknown as { error: string }).error)
       }
 
-      // Format the response
-      const formattedProfiles: Profile[] = (
-        result.data as RawMikrotikProfile[]
-      ).map((profile) => ({
-        id: profile['.id'],
-        name: profile.name,
-        sharedUsers: Number(profile['shared-users'] ?? 1), // convert ke number
-        rateLimit: profile['rate-limit'] ?? '',
-        addressPool: profile['address-pool'] ?? '',
-        parentQueue: profile['parent-queue'] ?? '',
-        onLogin: profile['on-login'] ?? '',
-        statusAutoRefresh: profile['status-autorefresh'] ?? '', // camelCase
-        sessionTimeout: profile['session-timeout'] ?? '',
-        idleTimeout: profile['idle-timeout'] ?? '',
-        keepaliveTimeout: profile['keepalive-timeout'] ?? '',
-        macCookieTimeout: profile['mac-cookie-timeout'] ?? '',
-        default: profile.default === 'true',
-
-        // tambahin default untuk field yang tidak ada di raw
-        expiredMode: '0',
-        validity: '0',
-        price: '0',
-        sellingPrice: '0',
-        lockUser: 'Disable',
-        lockServer: 'Disable',
-        bandwidth: '',
-        downloadLimit: '',
-        uploadLimit: '',
-        maxSessions: '1',
-      }))
 
 
       return {
         success: true,
-        data: formattedProfiles,
-        total: formattedProfiles.length,
+        data: result.data,
+        total: result.data.length,
       }
     } catch (error) {
       console.error('Error fetching MikroTik profiles:', error)

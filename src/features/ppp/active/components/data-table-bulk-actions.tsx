@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/tooltip'
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
 import { type PppoeActive } from '../../data/schema'
-import { TasksMultiDeleteDialog } from './ppp-multi-delete-dialog'
+import { TasksMultiDeleteDialog } from './ppp-multi-disconnect-dialog'
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
