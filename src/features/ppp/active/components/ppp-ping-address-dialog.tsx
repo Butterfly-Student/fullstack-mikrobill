@@ -1,7 +1,18 @@
+import {
+  Activity,
+  Wifi,
+  WifiOff,
+  Play,
+  Square,
+  Trash2,
+  Signal,
+} from 'lucide-react'
 import { type IRosOptions } from 'routeros-api'
 import { useMikrotikStream } from '@/hooks/use-mikrotil-stream'
 import { useRouterManagement } from '@/hooks/use-router'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Dialog,
   DialogClose,
@@ -11,6 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { type PppoeActive } from '../../data/schema'
 
 type PppPingAddressDialogProps = {
@@ -26,7 +38,6 @@ export function PppPingAddressDialog({
 }: PppPingAddressDialogProps) {
   const { activeRouter } = useRouterManagement()
 
-  // Ping monitor configuration
   const config: IRosOptions = {
     host: activeRouter?.hostname ?? '',
     user: activeRouter?.username,
@@ -55,48 +66,74 @@ export function PppPingAddressDialog({
       maxDataPoints: 50,
     }
   )
-  console.log(pingData)
 
   if (!data) return null
 
+  // Format ping result untuk display
+  const formatPingResult = (item: any) => {
+    if (!item) return null
+
+    const time = item.time || item['time']
+    const ttl = item.ttl || item['ttl']
+    const size = item.size || item['size']
+    const sent = item.sent || item['sent']
+    const received = item.received || item['received']
+
+    return { time, ttl, size, sent, received }
+  }
+
+  const latestResult = formatPingResult(latestData)
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[700px]'>
+      <DialogContent className='sm:max-w-[550px]'>
         <DialogHeader>
-          <DialogTitle>Ping Address - Test Mode</DialogTitle>
+          <DialogTitle className='flex items-center gap-2'>
+            <Activity className='h-5 w-5' />
+            Ping Test
+          </DialogTitle>
           <DialogDescription>
-            Testing connectivity to {data.address}
+            Testing connectivity to{' '}
+            <span className='font-mono font-semibold'>{data.address}</span>
           </DialogDescription>
         </DialogHeader>
 
         <div className='space-y-4'>
-          {/* Connection Info */}
-          <div className='bg-muted/50 rounded-lg border p-4'>
-            <div className='grid grid-cols-2 gap-3 text-sm'>
-              <div>
-                <span className='text-muted-foreground text-xs'>Name:</span>
-                <p className='font-medium'>{data.name}</p>
+          {/* Connection Info Card */}
+          <Card>
+            <CardContent className='pt-4'>
+              <div className='flex items-center justify-between'>
+                <div className='space-y-1'>
+                  <p className='text-muted-foreground text-sm'>User</p>
+                  <p className='font-medium'>{data.name}</p>
+                </div>
+                <div className='flex gap-2'>
+                  <Badge
+                    variant={isConnected ? 'default' : 'destructive'}
+                    className='gap-1'
+                  >
+                    {isConnected ? (
+                      <>
+                        <Wifi className='h-3 w-3' />
+                        Connected
+                      </>
+                    ) : (
+                      <>
+                        <WifiOff className='h-3 w-3' />
+                        Disconnected
+                      </>
+                    )}
+                  </Badge>
+                  {isSubscribed && (
+                    <Badge variant='secondary' className='gap-1'>
+                      <Signal className='h-3 w-3' />
+                      Active
+                    </Badge>
+                  )}
+                </div>
               </div>
-              <div>
-                <span className='text-muted-foreground text-xs'>Address:</span>
-                <p className='font-mono font-medium'>{data.address}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Status */}
-          <div className='flex items-center gap-4'>
-            <span
-              className={`rounded px-3 py-1 ${isConnected ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-            >
-              {isConnected ? '🟢 Connected' : '🔴 Disconnected'}
-            </span>
-            {isSubscribed && (
-              <span className='rounded bg-blue-100 px-3 py-1 text-blue-800'>
-                📡 Monitoring Active
-              </span>
-            )}
-          </div>
+            </CardContent>
+          </Card>
 
           {/* Controls */}
           <div className='flex gap-2'>
@@ -104,58 +141,143 @@ export function PppPingAddressDialog({
               onClick={subscribe}
               disabled={!isConnected || isSubscribed}
               size='sm'
+              className='flex-1'
             >
-              Start Ping
+              <Play className='mr-2 h-4 w-4' />
+              Start
             </Button>
             <Button
               onClick={unsubscribe}
               disabled={!isSubscribed}
-              variant='destructive'
+              variant='outline'
               size='sm'
+              className='flex-1'
             >
-              Stop Ping
+              <Square className='mr-2 h-4 w-4' />
+              Stop
             </Button>
-            <Button onClick={clearData} variant='outline' size='sm'>
-              Clear Data
+            <Button
+              onClick={clearData}
+              variant='ghost'
+              size='sm'
+              disabled={pingData.length === 0}
+            >
+              <Trash2 className='h-4 w-4' />
             </Button>
           </div>
 
-          {/* Error */}
+          {/* Error Alert */}
           {error && (
-            <div className='rounded bg-red-100 p-4 text-red-700'>
-              <strong>Error:</strong> {error}
+            <div className='rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800'>
+              <strong className='font-medium'>Error:</strong> {error}
             </div>
           )}
 
-          {/* Latest Result */}
-          <div className='rounded border bg-white p-4 shadow'>
-            <h3 className='mb-2 text-sm font-semibold'>Latest Result:</h3>
-            <pre className='overflow-auto rounded bg-gray-50 p-3 text-xs'>
-              {latestData ? JSON.stringify(latestData, null, 2) : 'No data yet'}
-            </pre>
-          </div>
+          {/* Latest Result - Compact */}
+          {latestResult && (
+            <Card className='border-primary/20 bg-primary/5'>
+              <CardContent className='pt-4'>
+                <div className='mb-2 flex items-center gap-2'>
+                  <Signal className='text-primary h-4 w-4' />
+                  <span className='text-sm font-medium'>Latest Result</span>
+                </div>
+                <div className='grid grid-cols-2 gap-2 text-sm'>
+                  {latestResult.time && (
+                    <div>
+                      <span className='text-muted-foreground'>Time:</span>
+                      <span className='ml-2 font-mono font-medium'>
+                        {latestResult.time}
+                      </span>
+                    </div>
+                  )}
+                  {latestResult.ttl && (
+                    <div>
+                      <span className='text-muted-foreground'>TTL:</span>
+                      <span className='ml-2 font-mono font-medium'>
+                        {latestResult.ttl}
+                      </span>
+                    </div>
+                  )}
+                  {latestResult.sent !== undefined && (
+                    <div>
+                      <span className='text-muted-foreground'>Sent:</span>
+                      <span className='ml-2 font-mono font-medium'>
+                        {latestResult.sent}
+                      </span>
+                    </div>
+                  )}
+                  {latestResult.received !== undefined && (
+                    <div>
+                      <span className='text-muted-foreground'>Received:</span>
+                      <span className='ml-2 font-mono font-medium'>
+                        {latestResult.received}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Ping History */}
-          <div className='rounded border bg-white p-4 shadow'>
-            <h3 className='mb-2 text-sm font-semibold'>
-              Ping History ({pingData.length} results)
-            </h3>
-            <div className='max-h-64 overflow-auto'>
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <h3 className='text-sm font-medium'>History</h3>
+              <Badge variant='outline'>{pingData.length} results</Badge>
+            </div>
+
+            <ScrollArea className='bg-muted/30 h-[200px] rounded-lg border'>
               {pingData.length === 0 ? (
-                <p className='text-sm text-gray-500'>No ping data yet</p>
+                <div className='flex h-full items-center justify-center p-8 text-center'>
+                  <div className='space-y-2'>
+                    <Activity className='text-muted-foreground/50 mx-auto h-8 w-8' />
+                    <p className='text-muted-foreground text-sm'>
+                      No ping data yet. Click Start to begin.
+                    </p>
+                  </div>
+                </div>
               ) : (
-                <div className='space-y-2'>
-                  {pingData.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className='rounded border border-gray-200 bg-gray-50 p-2 text-xs'
-                    >
-                      <pre>{JSON.stringify(item, null, 2)}</pre>
-                    </div>
-                  ))}
+                <div className='space-y-2 p-3'>
+                  {pingData.map((item, idx) => {
+                    const result = formatPingResult(item)
+                    return (
+                      <div
+                        key={idx}
+                        className='bg-background hover:bg-muted/50 rounded-md border p-2.5 text-xs transition-colors'
+                      >
+                        <div className='flex items-center justify-between'>
+                          <span className='text-muted-foreground'>
+                            #{idx + 1}
+                          </span>
+                          <div className='flex gap-3 font-mono'>
+                            {result?.time && (
+                              <span>
+                                <span className='text-muted-foreground'>
+                                  time:
+                                </span>{' '}
+                                <span className='font-medium'>
+                                  {result.time}
+                                </span>
+                              </span>
+                            )}
+                            {result?.ttl && (
+                              <span>
+                                <span className='text-muted-foreground'>
+                                  ttl:
+                                </span>{' '}
+                                <span className='font-medium'>
+                                  {result.ttl}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
               )}
-            </div>
+            </ScrollArea>
           </div>
         </div>
 

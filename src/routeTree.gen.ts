@@ -47,6 +47,7 @@ import { Route as AuthenticatedTemplatesFileRouteImport } from './routes/_authen
 import { Route as AuthenticatedSystemTemplate_tagihanRouteImport } from './routes/_authenticated/system/template_tagihan'
 import { Route as AuthenticatedSystemTagihanRouteImport } from './routes/_authenticated/system/tagihan'
 import { Route as AuthenticatedSystemPelangganRouteImport } from './routes/_authenticated/system/pelanggan'
+import { Route as AuthenticatedSystemMikrotik_logsRouteImport } from './routes/_authenticated/system/mikrotik_logs'
 import { Route as AuthenticatedSystemLaporanRouteImport } from './routes/_authenticated/system/laporan'
 import { Route as AuthenticatedSystemKasRouteImport } from './routes/_authenticated/system/kas'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
@@ -294,6 +295,12 @@ const AuthenticatedSystemPelangganRoute =
   AuthenticatedSystemPelangganRouteImport.update({
     id: '/system/pelanggan',
     path: '/system/pelanggan',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSystemMikrotik_logsRoute =
+  AuthenticatedSystemMikrotik_logsRouteImport.update({
+    id: '/system/mikrotik_logs',
+    path: '/system/mikrotik_logs',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedSystemLaporanRoute =
@@ -646,6 +653,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/system/kas': typeof AuthenticatedSystemKasRoute
   '/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/system/mikrotik_logs': typeof AuthenticatedSystemMikrotik_logsRoute
   '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
@@ -698,6 +706,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/system/kas': typeof AuthenticatedSystemKasRoute
   '/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/system/mikrotik_logs': typeof AuthenticatedSystemMikrotik_logsRoute
   '/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
@@ -755,6 +764,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/_authenticated/system/kas': typeof AuthenticatedSystemKasRoute
   '/_authenticated/system/laporan': typeof AuthenticatedSystemLaporanRoute
+  '/_authenticated/system/mikrotik_logs': typeof AuthenticatedSystemMikrotik_logsRoute
   '/_authenticated/system/pelanggan': typeof AuthenticatedSystemPelangganRoute
   '/_authenticated/system/tagihan': typeof AuthenticatedSystemTagihanRoute
   '/_authenticated/system/template_tagihan': typeof AuthenticatedSystemTemplate_tagihanRoute
@@ -811,6 +821,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/system/kas'
     | '/system/laporan'
+    | '/system/mikrotik_logs'
     | '/system/pelanggan'
     | '/system/tagihan'
     | '/system/template_tagihan'
@@ -863,6 +874,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/system/kas'
     | '/system/laporan'
+    | '/system/mikrotik_logs'
     | '/system/pelanggan'
     | '/system/tagihan'
     | '/system/template_tagihan'
@@ -919,6 +931,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/_authenticated/system/kas'
     | '/_authenticated/system/laporan'
+    | '/_authenticated/system/mikrotik_logs'
     | '/_authenticated/system/pelanggan'
     | '/_authenticated/system/tagihan'
     | '/_authenticated/system/template_tagihan'
@@ -1484,6 +1497,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSystemPelangganRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/system/mikrotik_logs': {
+      id: '/_authenticated/system/mikrotik_logs'
+      path: '/system/mikrotik_logs'
+      fullPath: '/system/mikrotik_logs'
+      preLoaderRoute: typeof AuthenticatedSystemMikrotik_logsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/system/laporan': {
       id: '/_authenticated/system/laporan'
       path: '/system/laporan'
@@ -1922,6 +1942,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPppSecretsRoute: typeof AuthenticatedPppSecretsRoute
   AuthenticatedSystemKasRoute: typeof AuthenticatedSystemKasRoute
   AuthenticatedSystemLaporanRoute: typeof AuthenticatedSystemLaporanRoute
+  AuthenticatedSystemMikrotik_logsRoute: typeof AuthenticatedSystemMikrotik_logsRoute
   AuthenticatedSystemPelangganRoute: typeof AuthenticatedSystemPelangganRoute
   AuthenticatedSystemTagihanRoute: typeof AuthenticatedSystemTagihanRoute
   AuthenticatedSystemTemplate_tagihanRoute: typeof AuthenticatedSystemTemplate_tagihanRoute
@@ -1957,6 +1978,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPppSecretsRoute: AuthenticatedPppSecretsRoute,
   AuthenticatedSystemKasRoute: AuthenticatedSystemKasRoute,
   AuthenticatedSystemLaporanRoute: AuthenticatedSystemLaporanRoute,
+  AuthenticatedSystemMikrotik_logsRoute: AuthenticatedSystemMikrotik_logsRoute,
   AuthenticatedSystemPelangganRoute: AuthenticatedSystemPelangganRoute,
   AuthenticatedSystemTagihanRoute: AuthenticatedSystemTagihanRoute,
   AuthenticatedSystemTemplate_tagihanRoute:

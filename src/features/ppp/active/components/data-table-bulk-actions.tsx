@@ -1,20 +1,13 @@
-import { type Table } from '@tanstack/react-table'
-import { Trash2, CircleArrowUp, ArrowUpDown, Download } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table'
-import { type PppoeActive } from '../../data/schema'
-import { TasksMultiDeleteDialog } from './ppp-multi-disconnect-dialog'
+import { useState } from 'react';
+import { type Table } from '@tanstack/react-table';
+import { Trash2, Power, PowerOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table';
+import { type PppoeActive } from '../../data/schema';
+import { usePppoeSecret } from '../hooks/ppp-active';
+import { PppActiveMultiDisconnectDialog } from './ppp-multi-disconnect-dialog';
+
 
 type DataTableBulkActionsProps<TData> = {
   table: Table<TData>
@@ -23,74 +16,69 @@ type DataTableBulkActionsProps<TData> = {
 export function DataTableBulkActions<TData>({
   table,
 }: DataTableBulkActionsProps<TData>) {
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const { enableSecret, disableSecret } = usePppoeSecret()
+
+  const selectedRows = table.getFilteredSelectedRowModel().rows
+  const selectedSessions = selectedRows.map((row) => row.original as PppoeActive)
+  const selectedIds = selectedSessions.map((row) => row['.id'])
+
+  const handleEnable = () => {
+    if (selectedIds.length === 0) return
+    enableSecret.mutate({ userId: selectedIds })
+    table.resetRowSelection()
+  }
+
+  const handleDisable = () => {
+    if (selectedIds.length === 0) return
+    disableSecret.mutate({ userId: selectedIds })
+    table.resetRowSelection()
+  }
+
+  const handleDisconnect = () => {
+    setShowDeleteConfirm(true)
+  }
 
   return (
     <>
-      <BulkActionsToolbar table={table} entityName='task'>
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='outline'
-                  size='icon'
-                  className='size-8'
-                  aria-label='Update status'
-                  title='Update status'
-                >
-                  <CircleArrowUp />
-                  <span className='sr-only'>Update status</span>
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Update status</p>
-            </TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent sideOffset={14}>
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        <DropdownMenu>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='outline'
-                  size='icon'
-                  className='size-8'
-                  aria-label='Update priority'
-                  title='Update priority'
-                >
-                  <ArrowUpDown />
-                  <span className='sr-only'>Update priority</span>
-                </Button>
-              </DropdownMenuTrigger>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Update priority</p>
-            </TooltipContent>
-          </Tooltip>
-          <DropdownMenuContent sideOffset={14}>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <BulkActionsToolbar table={table} entityName='session'>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant='outline'
+              size='icon'
+              className='size-8'
+              onClick={handleEnable}
+              disabled={selectedIds.length === 0 || enableSecret.isPending}
+              aria-label='Enable selected secrets'
+              title='Enable selected secrets'
+            >
+              <Power />
+              <span className='sr-only'>Enable</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Enable selected secrets</p>
+          </TooltipContent>
+        </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant='outline'
               size='icon'
-              onClick={() => console.log("export")}
               className='size-8'
-              aria-label='Export tasks'
-              title='Export tasks'
+              onClick={handleDisable}
+              disabled={selectedIds.length === 0 || disableSecret.isPending}
+              aria-label='Disable selected secrets'
+              title='Disable selected secrets'
             >
-              <Download />
-              <span className='sr-only'>Export tasks</span>
+              <PowerOff />
+              <span className='sr-only'>Disable</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Export tasks</p>
+            <p>Disable selected secrets</p>
           </TooltipContent>
         </Tooltip>
 
@@ -99,26 +87,27 @@ export function DataTableBulkActions<TData>({
             <Button
               variant='destructive'
               size='icon'
-              onClick={() => console.log("Delete")}
+              onClick={handleDisconnect}
+              disabled={selectedIds.length === 0}
               className='size-8'
-              aria-label='Delete selected tasks'
-              title='Delete selected tasks'
+              aria-label='Disconnect selected sessions'
+              title='Disconnect selected sessions'
             >
               <Trash2 />
-              <span className='sr-only'>Delete selected tasks</span>
+              <span className='sr-only'>Disconnect selected sessions</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Delete selected tasks</p>
+            <p>Disconnect selected sessions</p>
           </TooltipContent>
         </Tooltip>
       </BulkActionsToolbar>
 
-      {/* <TasksMultiDeleteDialog
+      <PppActiveMultiDisconnectDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         table={table}
-      /> */}
+      />
     </>
   )
 }

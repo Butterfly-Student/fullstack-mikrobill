@@ -20,7 +20,7 @@ export function PppInactives() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const { activeRouter } = useRouterManagement({ refetchInterval: false })
-    const routerId = 1
+    const routerId = activeRouter?.id
     const { data, isLoading, isError, error } = useQuery({
       queryKey: ['pppActive', routerId],
       queryFn: () => getPppInactive({ data: { routerId } }),

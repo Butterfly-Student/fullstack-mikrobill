@@ -167,7 +167,7 @@ export const useSidebarData = (): SidebarData => {
               },
               {
                 title: 'Logs',
-                url: '/system/logs',
+                url: '/system/mikrotik_logs',
               }
             ]
           },

@@ -50,7 +50,6 @@ import {
 import { type PppoeActive } from '../../data/schema'
 import { pppColumns as columns } from './ppp-columns'
 import { DataTableBulkActions } from './data-table-bulk-actions'
-import { Link } from '@tanstack/react-router'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
