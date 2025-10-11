@@ -28,7 +28,6 @@ export const useRouterLogs = (options: UseRouterLogsOptions = {}) => {
     refetchInterval,
     enabled: !!routerId && enabled,
   })
-  console.log(logsQuery.data)
 
   return {
     // Data

@@ -8,10 +8,9 @@ import { ProfileDropdown } from '@/components/profile-dropdown';
 import { Search } from '@/components/search';
 import { ThemeSwitch } from '@/components/theme-switch';
 import { getPppInactive } from '@/features/ppp/server/secrets';
-import { PppDialogs } from './components/ppp-inactive-dialogs';
-import { PppPrimaryButtons } from './components/ppp-inactive-primary-buttons';
 import { PppProvider } from './components/ppp-inactive-provider';
-import { PppTable } from './components/ppp-inactive-table'
+import { PppTable } from './components/ppp-inactive-table';
+import { usePppoeSecret } from '../hooks/use-ppp';
 
 
 const route = getRouteApi('/_authenticated/ppp/inactives')
@@ -19,15 +18,7 @@ const route = getRouteApi('/_authenticated/ppp/inactives')
 export function PppInactives() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const { activeRouter } = useRouterManagement({ refetchInterval: false })
-    const routerId = activeRouter?.id
-    const { data, isLoading, isError, error } = useQuery({
-      queryKey: ['pppActive', routerId],
-      queryFn: () => getPppInactive({ data: { routerId } }),
-      enabled: !!routerId, // Hanya fetch jika routerId tersedia
-      staleTime: 5 * 60 * 1000, // Data dianggap fresh selama 5 menit
-      refetchOnWindowFocus: true,
-    })
+  const { inactiveUsers } = usePppoeSecret()
   return (
     <PppProvider>
       <Header fixed>
@@ -47,14 +38,11 @@ export function PppInactives() {
               Here&apos;s a list of your tasks for this month!
             </p>
           </div>
-          <PppPrimaryButtons />
         </div>
         <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <PppTable data={data?.data || []} search={search} navigate={navigate} />
+          <PppTable data={inactiveUsers} search={search} navigate={navigate} />
         </div>
       </Main>
-
-      <PppDialogs />
     </PppProvider>
   )
 }

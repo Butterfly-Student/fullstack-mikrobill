@@ -1,7 +1,8 @@
-import z from 'zod'
-import { createServerFn } from '@tanstack/react-start'
-import { createMikrotikHotspot, type UserConfig, type VoucherConfig } from '@/lib/mikrotik/hotspot'
-import { type HotspotUser } from '../data/schema'
+import z from 'zod';
+import { createServerFn } from '@tanstack/react-start';
+import { createMikrotikHotspot, type UserConfig, type VoucherConfig } from '@/lib/mikrotik/hotspot';
+import { type HotspotUserForm, type HotspotUser } from '../data/schema';
+
 
 interface MikrotikApiResult<T = unknown> {
   message: 'success' | 'error'
@@ -53,7 +54,7 @@ export const getHotspotUsers = createServerFn()
 
 // Create new hotspot user
 export const createHotspotUser = createServerFn()
-  .validator((data: { routerId: number | undefined } & UserConfig) => data)
+  .validator((data: { routerId: number | undefined } & HotspotUserForm) => data)
   .handler(async ({ data }) => {
     console.info('Creating MikroTik hotspot user...')
 

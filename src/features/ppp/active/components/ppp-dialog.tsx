@@ -1,4 +1,4 @@
-import { usePppoeSecret } from '../hooks/ppp-active'
+import { usePppoeSecret } from '../../hooks/use-ppp'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { usePppActive } from './ppp-provider'
 import { PppPingAddressDialog } from './ppp-ping-address-dialog'

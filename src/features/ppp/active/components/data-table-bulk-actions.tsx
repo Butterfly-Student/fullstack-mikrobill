@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { DataTableBulkActions as BulkActionsToolbar } from '@/components/data-table';
 import { type PppoeActive } from '../../data/schema';
-import { usePppoeSecret } from '../hooks/ppp-active';
+import { usePppoeSecret } from '../../hooks/use-ppp';
 import { PppActiveMultiDisconnectDialog } from './ppp-multi-disconnect-dialog';
 
 

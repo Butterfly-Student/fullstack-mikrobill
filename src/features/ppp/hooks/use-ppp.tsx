@@ -13,23 +13,8 @@ import {
   disablePppSecret,
   disconnectPppActive,
 } from '@/features/ppp/server/secrets'
+import { type PppForm } from '../data/schema'
 
-// Types for PPPoE form
-export interface PppSecretForm {
-  name: string
-  password?: string
-  service?: 'pppoe' | 'pptp' | 'l2tp' | 'ovpn' | 'sstp'
-  'caller-id'?: string
-  profile?: string
-  routes?: string
-  'ipv6-routes'?: string
-  'limit-bytes-in'?: string
-  'limit-bytes-out'?: string
-  disabled?: boolean
-  'local-address'?: string
-  'remote-address'?: string
-  'remote-ipv6-prefix'?: string
-}
 
 export const usePppoeSecret = () => {
   const queryClient = useQueryClient()
@@ -62,7 +47,7 @@ export const usePppoeSecret = () => {
 
   // Create PPPoE secret mutation
   const addSecretMutation = useMutation({
-    mutationFn: (secretData: PppSecretForm) =>
+    mutationFn: (secretData: PppForm) =>
       createPppSecret({ data: { routerId, ...secretData } }),
     onSuccess: (data) => {
       showSubmittedData(data)
@@ -82,7 +67,7 @@ export const usePppoeSecret = () => {
       secretData,
     }: {
       userId: string
-      secretData: Partial<PppSecretForm>
+      secretData: Partial<PppForm>
     }) => updatePppSecret({ data: { routerId, userId, ...secretData } }),
     onSuccess: (data) => {
       showSubmittedData(data)
@@ -183,9 +168,9 @@ export const usePppoeSecret = () => {
 
   return {
     // Query data
-    secrets: secretsQuery.data?.data,
-    activeSessions: activeQuery.data?.data,
-    inactiveUsers: inactiveQuery.data?.data,
+    secrets: secretsQuery.data?.data || [],
+    activeSessions: activeQuery.data?.data || [],
+    inactiveUsers: inactiveQuery.data?.data || [],
 
     // Total counts
     totalSecrets: secretsQuery.data?.total || 0,

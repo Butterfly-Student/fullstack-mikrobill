@@ -1,52 +1,18 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { UserPlus } from "lucide-react"
-import { SelectDropdown } from "@/components/select-dropdown"
-import { showSubmittedData } from "@/lib/show-submitted-data"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserPlus } from "lucide-react";
+import { showSubmittedData } from "@/lib/show-submitted-data";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SelectDropdown } from "@/components/select-dropdown";
+import { type HotspotUserForm, hotspotUserFormSchema } from "../../data/schema";
 
-// Updated schema
-const HotspotUserSchema = z.object({
-  server: z.string().min(1, {
-    message: 'Server must be selected.',
-  }),
-  name: z.string().min(2, {
-    message: 'Name must be at least 2 characters.',
-  }),
-  password: z.string().optional(),
-  macAddress: z.string().optional(),
-  profile: z.string().min(1, {
-    message: 'Profile must be selected.',
-  }),
-  timeLimit: z.string().optional(),
-  dataLimit: z.string().optional(),
-  comment: z.string().optional(),
-  disabled: z.boolean().default(false),
-})
-
-export type HotspotUser = z.infer<typeof HotspotUserSchema>
 
 interface AddUserHotspotDialogProps {
   open: boolean
@@ -54,17 +20,18 @@ interface AddUserHotspotDialogProps {
 }
 
 export function AddUserHotspotDialog({ open, onOpenChange }: AddUserHotspotDialogProps) {
-  const form = useForm<HotspotUser>({
-    resolver: zodResolver(HotspotUserSchema),
+  const form = useForm<HotspotUserForm>({
+    resolver: zodResolver(hotspotUserFormSchema),
     defaultValues: {
-      server: "",
-      name: "",
-      password: "",
-      macAddress: "",
-      profile: "",
-      timeLimit: "",
-      dataLimit: "",
-      comment: "",
+      server: '',
+      name: '',
+      password: '',
+      address: '',
+      macAddress: '',
+      profile: '',
+      timeLimit: '',
+      dataLimit: '',
+      comment: '',
       disabled: false,
     },
   })
@@ -81,7 +48,7 @@ export function AddUserHotspotDialog({ open, onOpenChange }: AddUserHotspotDialo
     { label: "Testing", value: "testing" },
   ]
 
-  const onSubmit = (values: HotspotUser) => {
+  const onSubmit = (values: HotspotUserForm) => {
     form.reset()
     showSubmittedData(values)
     onOpenChange(false)

@@ -5,6 +5,7 @@ import { showSubmittedData } from '@/lib/show-submitted-data';
 import { useRouterManagement } from '@/hooks/use-router';
 import { getHotspotProfiles } from '@/features/hotspot/server/hotspot-profiles';
 import { getHotspotUsers, createHotspotUser, updateHotspotUser, deleteHotspotUser } from '@/features/hotspot/server/hotspot-users';
+import { type HotspotUserCreate } from '../../data/schema';
 
 
 // Types for user form
@@ -44,7 +45,7 @@ export const useHotspotUser = (commentFilter?: string) => {
 
   // Create user mutation
   const addUserMutation = useMutation({
-    mutationFn: (userData: UserForm) =>
+    mutationFn: (userData: HotspotUserCreate) =>
       createHotspotUser({ data: { routerId, ...userData } }),
     onSuccess: (data) => {
       showSubmittedData(data)

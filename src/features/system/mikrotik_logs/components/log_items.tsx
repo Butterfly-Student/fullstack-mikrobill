@@ -1,4 +1,6 @@
+import { Clock } from "lucide-react"
 import { type MikrotikLog } from "../../server/mikrotik-logs"
+import { Badge } from "@/components/ui/badge"
 
 type LogItemProps = {
   log: MikrotikLog

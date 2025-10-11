@@ -7,7 +7,7 @@ import { Search } from '@/components/search'
 import { ThemeSwitch } from '@/components/theme-switch'
 import { PppProvider } from './components/ppp-provider'
 import { PppTable } from './components/ppp-table'
-import { usePppoeSecret } from './hooks/ppp-active'
+import { usePppoeSecret } from '../hooks/use-ppp'
 import { PppActiveDialog } from './components/ppp-dialog'
 
 const route = getRouteApi('/_authenticated/ppp/actives')

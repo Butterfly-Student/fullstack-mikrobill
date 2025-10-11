@@ -5,9 +5,7 @@ import { z } from 'zod';
 export const pppoeUserSchema = z.object({
   '.id': z.string().optional(),
   name: z.string(),
-  service: z
-    .enum(['async', 'isdn', 'l2tp', 'pppoe', 'pptp', 'ovpn', 'sstp'])
-    .default('pppoe'),
+  service: z.string().optional(),
   'caller-id': z.string().optional(),
   password: z.string().optional(),
   profile: z.string().optional(),
@@ -16,24 +14,26 @@ export const pppoeUserSchema = z.object({
   'limit-bytes-in': z.string().optional(),
   'limit-bytes-out': z.string().optional(),
   'last-logged-out': z.string().optional(),
-  disabled: z.preprocess(
-  (val) => {
-    if (typeof val === "string") {
-      return val.toLowerCase() === "true";
-    }
-    return val;
-  },
-  z.boolean().optional()),
+  disabled: z.boolean(),
   'local-address': z.string().optional(),
   'remote-address': z.string().optional(),
   'remote-ipv6-prefix': z.string().optional(),
 })
 
+
+export const pppUserFormSchema = pppoeUserSchema.omit({
+  '.id': true,
+  'last-logged-out': true,
+})
+
+
+export type PppForm = z.infer<typeof pppUserFormSchema>
+
 // PPPoE Active Session Schema
 export const pppoeActiveSchema = z.object({
   '.id': z.string(),
   name: z.string(),
-  service: z.enum(["async","isdn","l2tp","pppoe","pptp","ovpn","sstp"]),
+  service: z.enum(['async', 'isdn', 'l2tp', 'pppoe', 'pptp', 'ovpn', 'sstp']),
   'caller-id': z.string().optional(),
   address: z.string().optional(),
   uptime: z.string().optional(),

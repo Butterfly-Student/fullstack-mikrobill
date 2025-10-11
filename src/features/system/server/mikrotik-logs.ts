@@ -31,10 +31,9 @@ export const getRouterLogs = createServerFn()
       const hotspot = await createMikrotikHotspot(routerId)
 
       // 📡 ambil data log dari RouterOS
-      const logs = await hotspot.exec<MikrotikLog[]>('/log/print', [
-        '=proplist=time,topics,message',
-      ])
-      console.log("Logs", logs)
+     const logs = await hotspot.exec<MikrotikLog[]>('/log/print', [
+       '=.proplist=time,topics,message',
+     ])
       // 🧹 handle data kosong atau undefined
       const cleanLogs = Array.isArray(logs) ? logs : []
 

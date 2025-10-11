@@ -44,13 +44,14 @@ export interface ProfileResponse {
 export interface UserConfig {
   server?: string
   name: string
-  password: string
-  profile: string
+  password?: string
+  profile?: string
   macAddress?: string
   timeLimit?: string
   dataLimit?: string
   comment?: string
   disabled?: boolean
+  [key: string]: unknown
 }
 
 export interface VoucherConfig {

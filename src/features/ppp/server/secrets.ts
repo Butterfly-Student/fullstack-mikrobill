@@ -1,10 +1,10 @@
 import z from 'zod';
 import { createServerFn } from '@tanstack/react-start';
 import { createMikrotikHotspot } from '@/lib/mikrotik/hotspot';
-import { type PppoeActive, type PppoeUser } from '../data/schema';
+import { pppoeUserSchema, type PppoeActive, type PppoeUser } from '../data/schema';
 
 
-type ApiResponse<T = any> = {
+type ApiResponse<T = string | number | boolean | object> = {
   success: boolean
   total: number
   data?: T
@@ -15,39 +15,20 @@ const secretsValidator = z.object({
   routerId: z.number(),
 })
 
-const createSecretValidator = z.object({
+export const createSecretValidator = z.object({
   routerId: z.number(),
-  name: z.string(),
-  service: z.enum(['pppoe', 'pptp', 'l2tp', 'ovpn', 'sstp']).default('pppoe'),
-  'caller-id': z.string().optional(),
-  password: z.string().optional(),
-  profile: z.string().optional(),
-  routes: z.string().optional(),
-  'ipv6-routes': z.string().optional(),
-  'limit-bytes-in': z.string().optional(),
-  'limit-bytes-out': z.string().optional(),
-  disabled: z.boolean().optional().default(false),
-  'local-address': z.string().optional(),
-  'remote-address': z.string().optional(),
-  'remote-ipv6-prefix': z.string().optional(),
+  data: pppoeUserSchema.omit({
+    '.id': true, // ID akan dibuat oleh router
+    'last-logged-out': true, // Field ini tidak diperlukan saat create
+  }),
 })
 
-const updateSecretValidator = z.object({
+export const updateSecretValidator = z.object({
   routerId: z.number(),
-  userId: z.string(),
-  name: z.string().optional(),
-  service: z.enum(['pppoe', 'pptp', 'l2tp', 'ovpn', 'sstp']).optional(),
-  'caller-id': z.string().optional(),
-  password: z.string().optional(),
-  profile: z.string().optional(),
-  routes: z.string().optional(),
-  'ipv6-routes': z.string().optional(),
-  'limit-bytes-in': z.string().optional(),
-  'limit-bytes-out': z.string().optional(),
-  disabled: z.boolean().optional(),
-  'local-address': z.string().optional(),
-  'remote-address': z.string().optional(),
-  'remote-ipv6-prefix': z.string().optional(),
+  userId: z.string(), // ID dari user yang akan diupdate
+  data: pppoeUserSchema
+    .omit({ '.id': true, 'last-logged-out': true })
+    .partial(), // Semua field jadi optional untuk update
 })
 
 const deleteSecretValidator = z.object({
@@ -99,7 +80,7 @@ export const createPppSecret = createServerFn()
     console.info('Creating MikroTik PPPoE secret...')
 
     try {
-      const { routerId, ...secretData } = data
+      const { routerId, data: secretData } = data
 
       const hotspot = await createMikrotikHotspot(routerId)
 
@@ -130,7 +111,7 @@ export const updatePppSecret = createServerFn()
     console.info('Updating MikroTik PPPoE secret...')
 
     try {
-      const { routerId, userId, ...secretData } = data
+      const { routerId, userId, data:secretData } = data
 
       const hotspot = await createMikrotikHotspot(routerId)
 

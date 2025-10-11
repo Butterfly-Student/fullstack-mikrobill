@@ -1,55 +1,41 @@
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { showSubmittedData } from '@/lib/show-submitted-data'
-import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import { SelectDropdown } from '@/components/select-dropdown'
-import { type PppoeUser } from '../../data/schema'
+import { useEffect } from 'react';
+import { type z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Button } from '@/components/ui/button';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
+import { SelectDropdown } from '@/components/select-dropdown';
+import { pppoeUserSchema, type PppoeUser } from '../../data/schema';
+import { usePppoeSecret } from '../../hooks/use-ppp';
+
 
 type PppMutateDrawerProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentRow?: PppoeUser
 }
+type PppForm = z.infer<typeof pppoeUserSchema>
 
-// Fixed form schema to match the data schema structure
-const formSchema = z.object({
-  name: z.string().min(1, 'Username is required.'),
-  service: z.enum(["async", "isdn", "l2tp", "pppoe", "pptp", "ovpn", "sstp"]).default('pppoe'),
-  'caller-id': z.string().optional(),
-  password: z.string().optional(),
-  profile: z.string().optional(),
-  routes: z.string().optional(),
-  'ipv6-routes': z.string().optional(),
-  'limit-bytes-in': z.string().optional(),
-  'limit-bytes-out': z.string().optional(),
-  disabled: z.boolean().default(false), // Removed .optional() to match data schema
-  'local-address': z.string().optional(),
-  'remote-address': z.string().optional(),
-  'remote-ipv6-prefix': z.string().optional(),
-})
-
-type PppForm = z.infer<typeof formSchema>
+// Default form values
+const defaultFormValues: PppForm = {
+  name: '',
+  service: '',
+  'caller-id': '',
+  password: '',
+  profile: '',
+  routes: '',
+  'ipv6-routes': '',
+  'limit-bytes-in': '',
+  'limit-bytes-out': '',
+  disabled: false,
+  'local-address': '',
+  'remote-address': '',
+  'remote-ipv6-prefix': '',
+}
 
 export function PppMutateDrawer({
   open,
@@ -57,48 +43,61 @@ export function PppMutateDrawer({
   currentRow,
 }: PppMutateDrawerProps) {
   const isUpdate = !!currentRow
+  const { addSecret, updateSecret, isCreating, isUpdating } = usePppoeSecret()
 
   const form = useForm<PppForm>({
-    resolver: zodResolver(formSchema),
-    defaultValues: currentRow ?? {
-      name: '',
-      service: 'pppoe',
-      'caller-id': '',
-      password: '',
-      profile: '',
-      routes: '',
-      'ipv6-routes': '',
-      'limit-bytes-in': '',
-      'limit-bytes-out': '',
-      disabled: false,
-      'local-address': '',
-      'remote-address': '',
-      'remote-ipv6-prefix': '',
-    },
-    // Update the type of options to match the expected type
-    resolverOptions: {
-      name: 'service',
-      defaultValues: {
-        service: 'pppoe',
-      },
-    },
-  });
+    resolver: zodResolver(pppoeUserSchema),
+    defaultValues: defaultFormValues,
+  })
 
-  const onSubmit = (data: PppForm) => {
-    // do something with the form data
-    onOpenChange(false)
-    form.reset()
-    showSubmittedData(data)
+  // Update form values when currentRow changes
+  useEffect(() => {
+    if (currentRow) {
+      form.reset({
+        ...defaultFormValues,
+        ...currentRow,
+        disabled: currentRow.disabled ?? false,
+      })
+    } else {
+      form.reset(defaultFormValues)
+    }
+  }, [currentRow, form])
+
+  const onSubmit = async (data: PppForm) => {
+    try {
+      if (isUpdate && currentRow?.['.id']) {
+        // Update existing secret
+        const { '.id': _, ...updateData } = data
+        await updateSecret.mutateAsync({
+          userId: currentRow['.id'],
+          secretData: updateData,
+        })
+      } else {
+        // Create new secret
+        const { '.id': _, ...createData } = data
+        await addSecret.mutateAsync(createData)
+      }
+
+      // Close drawer and reset form on success
+      onOpenChange(false)
+      form.reset(defaultFormValues)
+    } catch (error) {
+      // Error is already handled by the mutation's onError
+      console.error('Form submission error:', error)
+    }
   }
 
+  const handleOpenChange = (v: boolean) => {
+    onOpenChange(v)
+    if (!v) {
+      form.reset(defaultFormValues)
+    }
+  }
+
+  const isSubmitting = isCreating || isUpdating
+
   return (
-    <Sheet
-      open={open}
-      onOpenChange={(v) => {
-        onOpenChange(v)
-        form.reset()
-      }}
-    >
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetContent className='flex flex-col sm:max-w-lg'>
         <SheetHeader className='text-start'>
           <SheetTitle>{isUpdate ? 'Update' : 'Create'} PPPoE User</SheetTitle>
@@ -116,8 +115,8 @@ export function PppMutateDrawer({
             className='flex-1 space-y-6 overflow-y-auto px-4'
           >
             {/* Basic Information */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
+            <div className='space-y-4'>
+              <h3 className='text-muted-foreground border-b pb-2 text-sm font-medium'>
                 Basic Information
               </h3>
 
@@ -128,7 +127,11 @@ export function PppMutateDrawer({
                   <FormItem>
                     <FormLabel>Username *</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder='Enter username' />
+                      <Input
+                        {...field}
+                        placeholder='Enter username'
+                        disabled={isSubmitting}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -144,9 +147,10 @@ export function PppMutateDrawer({
                     <FormControl>
                       <Input
                         {...field}
-                        type="password"
+                        type='password'
                         placeholder='Enter password'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -164,6 +168,7 @@ export function PppMutateDrawer({
                       defaultValue={field.value}
                       onValueChange={field.onChange}
                       placeholder='Select service type'
+                      disabled={isSubmitting}
                       items={[
                         { label: 'PPPoE', value: 'pppoe' },
                         { label: 'PPTP', value: 'pptp' },
@@ -190,6 +195,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='Enter profile name'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -201,17 +207,20 @@ export function PppMutateDrawer({
                 control={form.control}
                 name='disabled'
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                    <div className="space-y-0.5">
+                  <FormItem className='flex flex-row items-center justify-between rounded-lg border p-3'>
+                    <div className='space-y-0.5'>
                       <FormLabel>Account Status</FormLabel>
-                      <div className="text-sm text-muted-foreground">
-                        {field.value ? 'Account is disabled' : 'Account is active'}
+                      <div className='text-muted-foreground text-sm'>
+                        {field.value
+                          ? 'Account is disabled'
+                          : 'Account is active'}
                       </div>
                     </div>
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -221,8 +230,8 @@ export function PppMutateDrawer({
             </div>
 
             {/* Network Configuration */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
+            <div className='space-y-4'>
+              <h3 className='text-muted-foreground border-b pb-2 text-sm font-medium'>
                 Network Configuration
               </h3>
 
@@ -237,6 +246,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='Enter caller ID'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -255,6 +265,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='e.g., 192.168.1.1'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -273,6 +284,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='e.g., 192.168.1.100'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -291,6 +303,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='e.g., 2001:db8::/64'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -300,8 +313,8 @@ export function PppMutateDrawer({
             </div>
 
             {/* Routes */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
+            <div className='space-y-4'>
+              <h3 className='text-muted-foreground border-b pb-2 text-sm font-medium'>
                 Routes
               </h3>
 
@@ -317,6 +330,7 @@ export function PppMutateDrawer({
                         placeholder='Enter IPv4 routes (one per line)'
                         value={field.value || ''}
                         rows={3}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -336,6 +350,7 @@ export function PppMutateDrawer({
                         placeholder='Enter IPv6 routes (one per line)'
                         value={field.value || ''}
                         rows={3}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -345,8 +360,8 @@ export function PppMutateDrawer({
             </div>
 
             {/* Bandwidth Limits */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">
+            <div className='space-y-4'>
+              <h3 className='text-muted-foreground border-b pb-2 text-sm font-medium'>
                 Bandwidth Limits
               </h3>
 
@@ -361,6 +376,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='e.g., 1000000 (bytes)'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -379,6 +395,7 @@ export function PppMutateDrawer({
                         {...field}
                         placeholder='e.g., 1000000 (bytes)'
                         value={field.value || ''}
+                        disabled={isSubmitting}
                       />
                     </FormControl>
                     <FormMessage />
@@ -390,10 +407,12 @@ export function PppMutateDrawer({
         </Form>
         <SheetFooter className='gap-2'>
           <SheetClose asChild>
-            <Button variant='outline'>Close</Button>
+            <Button variant='outline' disabled={isSubmitting}>
+              Close
+            </Button>
           </SheetClose>
-          <Button form='pppoe-form' type='submit'>
-            Save changes
+          <Button form='pppoe-form' type='submit' disabled={isSubmitting}>
+            {isSubmitting ? 'Saving...' : 'Save changes'}
           </Button>
         </SheetFooter>
       </SheetContent>

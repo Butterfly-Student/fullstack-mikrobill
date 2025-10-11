@@ -68,16 +68,6 @@ export function RouterLogs() {
       log.topics?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  // Get topic badge variant
-  const getTopicVariant = (
-    topics: string
-  ): 'default' | 'destructive' | 'secondary' | 'outline' => {
-    const lower = topics?.toLowerCase() || ''
-    if (lower.includes('error') || lower.includes('critical'))
-      return 'destructive'
-    if (lower.includes('warning')) return 'secondary'
-    return 'outline'
-  }
 
   return (
     <div className='space-y-4'>

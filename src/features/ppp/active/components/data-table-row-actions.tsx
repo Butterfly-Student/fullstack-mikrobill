@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { pppoeActiveSchema } from '../../data/schema'
-import { usePppoeSecret } from '../hooks/ppp-active'
+import { usePppoeSecret } from '../../hooks/use-ppp'
 import { usePppActive } from './ppp-provider'
 
 type DataTableRowActionsProps<TData> = {
