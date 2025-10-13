@@ -1,15 +1,6 @@
-import { relations } from 'drizzle-orm'
-import {
-  pgTable,
-  serial,
-  varchar,
-  text,
-  timestamp,
-  integer,
-  index,
-  boolean,
-  uuid,
-} from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm';
+import { pgTable, serial, varchar, text, timestamp, integer, index, boolean, uuid } from 'drizzle-orm/pg-core';
+
 
 // Users table
 export const users = pgTable(
@@ -188,7 +179,7 @@ export const routers = pgTable(
     description: text('description'),
     is_active: boolean('is_active').default(true),
     last_seen: timestamp('last_seen'),
-    status: varchar('status', { length: 20 }).default('offline'), // online, offline, error\
+    status: varchar('status', { length: 20 }).default('offline'), // online, offline, error
     version: varchar('version', { length: 50 }),
     uptime: varchar('uptime', { length: 50 }),
     created_at: timestamp('created_at').defaultNow(),

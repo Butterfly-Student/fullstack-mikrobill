@@ -578,9 +578,9 @@ const fakerKasData = async () => {
   await db.insert(kas).values(kasData)
   console.log(`${kasData.length} data kas berhasil di-insert!`)
 }
-async function routerAdd(){
-	try {
-		const data: schema.NewRouter = [
+export async function routerAdd() {
+  try {
+    const data: schema.NewRouter[] = [
       {
         name: 'Aeng Panas',
         username: 'fandi1',
@@ -590,17 +590,23 @@ async function routerAdd(){
       },
       {
         name: 'Test',
-				username: 'admin',
+        username: 'admin',
         password: 'r00t',
         hostname: '103.139.193.128',
         port: 1251,
       },
     ]
-		await db.insert(schema.routers).values(data)
-	} catch (error) {
-		throw new error()
-	}
+
+    const result = await db.insert(schema.routers).values(data).returning()
+    console.log('Inserted routers:', result)
+    return result
+  } catch (error) {
+    console.error('Error inserting routers:', error)
+    throw new Error(String(error))
+  }
 }
+
+await routerAdd()
 
 // Jalankan sekali buat seeding
 await fakerKasData()
