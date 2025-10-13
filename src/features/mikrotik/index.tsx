@@ -15,6 +15,7 @@ const route = getRouteApi('/_authenticated/mikrotik/')
 
 export function Routers() {
   const {routers} = useRouterManagement()
+  console.log(routers)
   const search = route.useSearch()
   const navigate = route.useNavigate()
 

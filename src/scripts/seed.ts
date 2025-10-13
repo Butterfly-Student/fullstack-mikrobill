@@ -1,11 +1,11 @@
-import "dotenv/config";
-import * as schema from "@/db/schema/user";
-import { eq, and } from "drizzle-orm";
-import bcrypt from "bcryptjs";
 import { db } from "@/db/index";
-import { nanoid } from "nanoid";
-import { faker } from "@faker-js/faker";
 import { kas } from "@/db/schema/system";
+import * as schema from "@/db/schema/user";
+import { faker } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
+import "dotenv/config";
+import { eq, and } from "drizzle-orm";
+import { nanoid } from "nanoid";
 
 
 async function main() {
@@ -578,9 +578,33 @@ const fakerKasData = async () => {
   await db.insert(kas).values(kasData)
   console.log(`${kasData.length} data kas berhasil di-insert!`)
 }
+async function routerAdd(){
+	try {
+		const data: schema.NewRouter = [
+      {
+        name: 'Aeng Panas',
+        username: 'fandi1',
+        password: '001',
+        hostname: '103.139.193.128',
+        port: 1012,
+      },
+      {
+        name: 'Test',
+				username: 'admin',
+        password: 'r00t',
+        hostname: '103.139.193.128',
+        port: 1251,
+      },
+    ]
+		await db.insert(schema.routers).values(data)
+	} catch (error) {
+		throw new error()
+	}
+}
 
 // Jalankan sekali buat seeding
 await fakerKasData()
+
 
 		console.log("🎉 Database seeding completed successfully!");
 		console.log("\n📋 Summary:");
